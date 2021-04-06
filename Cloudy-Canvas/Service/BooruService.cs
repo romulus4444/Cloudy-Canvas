@@ -41,7 +41,7 @@
                 return -1;
             }
 
-            var page = new Random().Next((int)(total / 50))+1;
+            var page = new Random().Next((int)(total / 50)) + 1;
             results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
                 .SetQueryParams(new { key = _settings.token, q = query, per_page = 50, page })
