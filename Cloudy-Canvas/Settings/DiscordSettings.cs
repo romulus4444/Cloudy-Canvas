@@ -1,4 +1,4 @@
-﻿namespace Cloudy_Canvas
+﻿namespace Cloudy_Canvas.Settings
 {
     public class DiscordSettings
     {
