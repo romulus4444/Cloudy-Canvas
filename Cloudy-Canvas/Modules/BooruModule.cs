@@ -15,9 +15,8 @@
 
         [Command("pick")]
         [Summary("Selects an image at random")]
-        public async Task PickAsync([Remainder][Summary("Query string")] string query)
+        public async Task PickAsync([Remainder][Summary("Query string")] string query = "*")
         {
-            await ReplyAsync("Searching Manebooru...");
             var id = await _booru.GetRandomFirstPageImageByQuery(query);
             if (id == -1)
             {
