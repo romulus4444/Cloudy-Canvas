@@ -1,6 +1,8 @@
 namespace Cloudy_Canvas
 {
     using System;
+    using Cloudy_Canvas.Service;
+    using Cloudy_Canvas.Settings;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -39,7 +41,8 @@ namespace Cloudy_Canvas
             {
                 var config = hostContext.Configuration;
                 services.Configure<DiscordSettings>(config.GetSection(nameof(DiscordSettings)));
-
+                services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
+                services.AddTransient<BooruService>();
                 services.AddSingleton(services);
 
                 services.AddHostedService<Worker>();
