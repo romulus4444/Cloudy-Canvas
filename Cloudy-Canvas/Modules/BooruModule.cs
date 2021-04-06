@@ -36,8 +36,16 @@
         [Summary("Selects an image by image id")]
         public async Task IdAsync([Summary("The image ID")] long id = 4010266)
         {
-            _logger.LogInformation($"id: {id}");
-            await ReplyAsync($"https://manebooru.art/images/{id}");
+            var result = await _booru.GetImageById(id);
+            _logger.LogInformation($"id: {id}, {result}");
+            if (result == -1)
+            {
+                await ReplyAsync("I could not find that image.");
+            }
+            else
+            {
+                await ReplyAsync($"https://manebooru.art/images/{id}");
+            }
         }
     }
 }
