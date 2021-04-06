@@ -16,15 +16,21 @@
             _settings = settings.Value;
         }
 
-        public async Task<string> GetImageById(int imageid)
+        public async Task<long> GetImageById(long imageid)
         {
             //GET	/api/v1/json/images/:image_id
-            var image = await _settings.url
-                .AppendPathSegments("api/v1/json/images", imageid)
+            var safequery = "id:" + imageid + ", safe";
+            var results = await _settings.url
+                .AppendPathSegments("/api/v1/json/search/images")
+                .SetQueryParams(new { key = _settings.token, q = safequery })
                 .SetQueryParams(new { key = _settings.token })
                 .GetAsync()
                 .ReceiveJson();
-            return image.image.view_url;
+            if (results.total <= 0)
+            {
+                return -1;
+            }
+            return results.images[0].id;
         }
 
         public async Task<long> GetRandomFirstPageImageByQuery(string query)
