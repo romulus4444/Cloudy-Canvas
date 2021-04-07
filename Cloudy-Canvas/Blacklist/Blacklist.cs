@@ -1,6 +1,7 @@
 ﻿namespace Cloudy_Canvas.Blacklist
 {
     using System.Collections.Generic;
+    using System.IO;
 
     public class Blacklist
     {
@@ -12,13 +13,6 @@
             InitializeList();
         }
 
-        private void InitializeList()
-        {
-            BlackList.Add("aryanne");
-            BlackList.Add("nazi");
-            BlackList.Add("foalcon");
-        }
-
         public bool AddTerm(string term)
         {
             var lower = term.ToLower();
@@ -26,9 +20,10 @@
             {
                 return false;
             }
-            BlackList.Add(lower);
-            return true;
 
+            BlackList.Add(lower);
+            SaveList();
+            return true;
         }
 
         public bool RemoveTerm(string term)
@@ -38,17 +33,21 @@
             {
                 return false;
             }
-            BlackList.Remove(lower);
-            return true;
 
+            BlackList.Remove(lower);
+            SaveList();
+            return true;
         }
 
         public List<string> GetList()
         {
+            LoadList();
             return BlackList;
         }
+
         public string CheckList(string query)
         {
+            LoadList();
             var lower = query.ToLower();
             var matchedTerms = "";
             foreach (var term in BlackList)
@@ -69,6 +68,21 @@
             }
 
             return matchedTerms;
+        }
+
+        private void InitializeList()
+        {
+            LoadList();
+        }
+
+        private void LoadList()
+        {
+            BlackList = new List<string>(File.ReadAllLines(@"blacklist.txt"));
+        }
+
+        private void SaveList()
+        {
+            File.WriteAllLines("Blacklist.txt", BlackList);
         }
     }
 }

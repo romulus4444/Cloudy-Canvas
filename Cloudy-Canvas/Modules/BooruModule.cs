@@ -26,7 +26,7 @@
             var badTerms = _blacklist.CheckList(query);
             if (badTerms != "")
             {
-                _logger.LogInformation($"query: BLACKLISTED {badTerms}");
+                _logger.LogInformation($"query: {query}, BLACKLISTED {badTerms}");
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
@@ -51,13 +51,13 @@
             var badTerms = _blacklist.CheckList(id.ToString());
             if (badTerms != "")
             {
-                _logger.LogInformation($"id: BLACKLISTED {badTerms}");
+                _logger.LogInformation($"id: {id} BLACKLISTED {badTerms}");
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
             {
                 var result = await _booru.GetImageById(id);
-                _logger.LogInformation($"id: {id}, {result}");
+                _logger.LogInformation($"id: requested {id}, found {result}");
                 if (result == -1)
                 {
                     await ReplyAsync("I could not find that image.");

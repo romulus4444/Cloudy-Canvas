@@ -38,5 +38,20 @@ namespace Cloudy_Canvas.Modules
 
             await ReplyAsync($"__Blacklist Terms:__\n{output}");
         }
+
+        [Command("addblacklist")]
+        [Summary("Adds a term to the blacklist")]
+        public async Task AddBlacklist(string term)
+        {
+            var added = _blacklist.AddTerm(term);
+            if (added)
+            {
+                await ReplyAsync($"Added {term} to the blacklist.");
+            }
+            else
+            {
+                await ReplyAsync($"{term} is already on the blacklist.");
+            }
+        }
     }
 }
