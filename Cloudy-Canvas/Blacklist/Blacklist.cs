@@ -2,13 +2,17 @@
 {
     using System.Collections.Generic;
     using System.IO;
+    using Cloudy_Canvas.Settings;
+    using Microsoft.Extensions.Options;
 
     public class Blacklist
     {
+        private readonly DiscordSettings _settings;
         private List<string> BlackList;
 
-        public Blacklist()
+        public Blacklist(IOptions<DiscordSettings> settings)
         {
+            _settings = settings.Value;
             BlackList = new List<string>();
             InitializeList();
         }
@@ -45,6 +49,16 @@
             return BlackList;
         }
 
+        public void ClearList()
+        {
+            if (File.Exists(_settings.blacklistpath))
+            {
+                File.Delete(_settings.blacklistpath);
+            }
+
+            File.WriteAllText(_settings.blacklistpath, "");
+        }
+
         public string CheckList(string query)
         {
             LoadList();
@@ -72,17 +86,24 @@
 
         private void InitializeList()
         {
-            LoadList();
+            if (File.Exists(_settings.blacklistpath))
+            {
+                LoadList();
+            }
+            else
+            {
+                File.WriteAllText(_settings.blacklistpath, "");
+            }
         }
 
         private void LoadList()
         {
-            BlackList = new List<string>(File.ReadAllLines(@"blacklist.txt"));
+            BlackList = new List<string>(File.ReadAllLines(_settings.blacklistpath));
         }
 
         private void SaveList()
         {
-            File.WriteAllLines("Blacklist.txt", BlackList);
+            File.WriteAllLines(_settings.blacklistpath, BlackList);
         }
     }
 }

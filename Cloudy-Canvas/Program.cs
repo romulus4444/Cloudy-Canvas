@@ -43,7 +43,7 @@ namespace Cloudy_Canvas
                 services.Configure<DiscordSettings>(config.GetSection(nameof(DiscordSettings)));
                 services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
                 services.AddTransient<BooruService>();
-                services.AddTransient<Blacklist.Blacklist>();
+                services.AddSingleton<Blacklist.Blacklist>();
                 services.AddSingleton(services);
 
                 services.AddHostedService<Worker>();
