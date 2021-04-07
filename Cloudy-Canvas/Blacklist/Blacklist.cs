@@ -15,6 +15,8 @@
         private void InitializeList()
         {
             BlackList.Add("aryanne");
+            BlackList.Add("nazi");
+            BlackList.Add("foalcon");
         }
 
         public bool AddTerm(string term)
@@ -53,7 +55,7 @@
             {
                 if (!lower.Contains(term))
                 {
-                    return matchedTerms;
+                    continue;
                 }
 
                 if (matchedTerms == "")
