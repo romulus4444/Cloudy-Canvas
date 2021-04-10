@@ -11,12 +11,14 @@
         private readonly BooruService _booru;
         private readonly ILogger<Worker> _logger;
         private readonly Blacklist _blacklist;
+        private readonly LoggingService _logparser;
 
-        public BooruModule(ILogger<Worker> logger, BooruService booru, Blacklist blacklist)
+        public BooruModule(ILogger<Worker> logger, BooruService booru, Blacklist blacklist, LoggingService logparser)
         {
             _logger = logger;
             _booru = booru;
             _blacklist = blacklist;
+            _logparser = logparser;
         }
 
         [Command("pick")]
@@ -24,15 +26,18 @@
         public async Task PickAsync([Remainder] [Summary("Query string")] string query = "*")
         {
             var badTerms = _blacklist.CheckList(query);
+            var logStringPrefix = _logparser.SetUpLogStringPrefix(Context);
             if (badTerms != "")
             {
-                _logger.LogInformation($"query: {query}, BLACKLISTED {badTerms}");
+                logStringPrefix += $"query: {query}, BLACKLISTED {badTerms}";
+                _logger.LogInformation(logStringPrefix);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
             {
                 var id = await _booru.GetRandomFirstPageImageByQuery(query);
-                _logger.LogInformation($"query: {query}, result: {id}");
+                logStringPrefix += $"query: {query}, result: {id}";
+                _logger.LogInformation(logStringPrefix);
                 if (id == -1)
                 {
                     await ReplyAsync("I could not find any images with that query.");
@@ -49,15 +54,18 @@
         public async Task IdAsync([Summary("The image ID")] long id = 4010266)
         {
             var badTerms = _blacklist.CheckList(id.ToString());
+            var logStringPrefix = _logparser.SetUpLogStringPrefix(Context);
             if (badTerms != "")
             {
-                _logger.LogInformation($"id: {id} BLACKLISTED {badTerms}");
+                logStringPrefix += $"id: {id} BLACKLISTED {badTerms}";
+                _logger.LogInformation(logStringPrefix);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
             {
                 var result = await _booru.GetImageById(id);
-                _logger.LogInformation($"id: requested {id}, found {result}");
+                logStringPrefix += $"id: requested {id}, found {result}";
+                _logger.LogInformation(logStringPrefix);
                 if (result == -1)
                 {
                     await ReplyAsync("I could not find that image.");

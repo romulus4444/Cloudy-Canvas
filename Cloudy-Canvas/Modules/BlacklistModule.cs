@@ -1,7 +1,11 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
+    using System.Linq;
+    using System.Net.Http.Headers;
+    using System.Security.Cryptography.X509Certificates;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Blacklist;
+    using Cloudy_Canvas.Service;
     using Discord;
     using Discord.Commands;
     using Microsoft.Extensions.Logging;
@@ -10,11 +14,13 @@
     {
         private readonly Blacklist _blacklist;
         private readonly ILogger<Worker> _logger;
+        private readonly LoggingService _logparser;
 
-        public BlacklistModule(Blacklist blacklist, ILogger<Worker> logger)
+        public BlacklistModule(Blacklist blacklist, ILogger<Worker> logger, LoggingService logparser)
         {
             _blacklist = blacklist;
             _logger = logger;
+            _logparser = logparser;
         }
 
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -22,23 +28,28 @@
         [Summary("Blacklist base command")]
         public async Task Blacklist(string arg = null, [Remainder] string term = null)
         {
+            var logStringPrefix = _logparser.SetUpLogStringPrefix(Context);
+            logStringPrefix += "blacklist ";
             switch (arg)
             {
                 case null:
                     await ReplyAsync("You must specify a subcommand.");
-                    _logger.LogInformation($"blacklist - null");
+                    logStringPrefix += "null";
+                    _logger.LogInformation(logStringPrefix);
                     break;
                 case "add":
                     var added = _blacklist.AddTerm(term);
                     if (added)
                     {
                         await ReplyAsync($"Added {term} to the blacklist.");
-                        _logger.LogInformation($"blacklist - add: {term} - success");
+                        logStringPrefix += $"add (success): {term}";
+                        _logger.LogInformation(logStringPrefix);
                     }
                     else
                     {
                         await ReplyAsync($"{term} is already on the blacklist.");
-                        _logger.LogInformation($"blacklist - add: {term} - fail");
+                        logStringPrefix += $"add (fail): {term}";
+                        _logger.LogInformation(logStringPrefix);
                     }
 
                     break;
@@ -47,12 +58,14 @@
                     if (removed)
                     {
                         await ReplyAsync($"Removed {term} from the blacklist.");
-                        _logger.LogInformation($"blacklist - remove: {term} - success");
+                        logStringPrefix += $"remove (success): {term}";
+                        _logger.LogInformation(logStringPrefix);
                     }
                     else
                     {
                         await ReplyAsync($"{term} was not on the blacklist.");
-                        _logger.LogInformation($"blacklist - remove: {term} - fail");
+                        logStringPrefix += $"remove (fail): {term}";
+                        _logger.LogInformation(logStringPrefix);
                     }
 
                     break;
@@ -72,16 +85,19 @@
                     }
 
                     await ReplyAsync($"__Blacklist Terms:__\n{output}");
-                    _logger.LogInformation($"blacklist - get");
+                    logStringPrefix += "get";
+                    _logger.LogInformation(logStringPrefix);
                     break;
                 case "clear":
                     _blacklist.ClearList();
                     await ReplyAsync("Blacklist cleared");
-                    _logger.LogInformation($"blacklist - clear");
+                    logStringPrefix += "clear";
+                    _logger.LogInformation(logStringPrefix);
                     break;
                 default:
                     await ReplyAsync("Invalid subcommand");
-                    _logger.LogInformation($"blacklist - invalid: {arg}");
+                    logStringPrefix += $"invalid: {arg}";
+                    _logger.LogInformation(logStringPrefix);
                     break;
             }
         }
