@@ -92,9 +92,9 @@
         {
             var spoilerList = await _booru.GetSpoilerTagsAsync();
             var output = "__Spoilered tags:__\n";
-            foreach (var tag in spoilerList)
+            foreach (var (tagId, tagName) in spoilerList)
             {
-                output += $"{tag}\n";
+                output += $"{tagId}, {tagName}\n";
             }
 
             await ReplyAsync(output);

@@ -70,7 +70,7 @@
             return (returnResult);
         }
 
-        public async Task<List<string>> GetSpoilerTagsAsync()
+        public async Task<List<Tuple<long, string>>> GetSpoilerTagsAsync()
         {
             //GET	/api/v1/json/filters/user
             var results = await _settings.url
@@ -80,7 +80,14 @@
                 .ReceiveJson();
             var tagIds = results.filters[0].spoilered_tag_ids;
             var output = await GetTagNamesAsync(tagIds);
-            return output;
+            var combinedList = new List<Tuple<long, string>>();
+            for (var x = 0; x < tagIds.Count; x++)
+            {
+                var combinedTag = new Tuple<long, string>(tagIds[x], output[x]);
+                combinedList.Add(combinedTag);
+            }
+            FileHelper.WriteSpoilerListToFile(combinedList);
+            return combinedList;
         }
 
         public async Task<List<string>> GetTagNamesAsync(List<object> tagIdList)

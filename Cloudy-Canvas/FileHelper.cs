@@ -1,6 +1,7 @@
 ﻿namespace Cloudy_Canvas
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using Discord.Commands;
 
@@ -46,6 +47,18 @@
             if (!directory.Exists)
             {
                 directory.Create();
+            }
+        }
+
+        public static void WriteSpoilerListToFile(List<Tuple<long, string>> tagList)
+        {
+            var filepath = "Logs/";
+            CreateDirectoryIfNotExists(filepath);
+            filepath += "spoilers.txt";
+            File.WriteAllText(filepath, "Spoilered Tags:\n");
+            foreach (var (tagId, tagName) in tagList)
+            {
+                File.AppendAllText(filepath, $"{tagId}, {tagName}\n");
             }
         }
     }
