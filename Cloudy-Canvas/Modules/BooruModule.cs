@@ -32,7 +32,7 @@
             }
             else
             {
-                var (imageId, spoilered) = await _booru.GetRandomImageByQuery(query);
+                var (imageId, spoilered) = await _booru.GetRandomImageByQueryAsync(query);
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find any images with that query.");
@@ -66,7 +66,7 @@
             }
             else
             {
-                var (imageId, spoilered) = await _booru.GetImageById(id);
+                var (imageId, spoilered) = await _booru.GetImageByIdAsync(id);
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");
@@ -85,6 +85,19 @@
                     }
                 }
             }
+        }
+
+        [Command("getspoilers")]
+        public async Task GetSpoilersAsync()
+        {
+            var spoilerList = await _booru.GetSpoilerTagsAsync();
+            var output = "__Spoilered tags:__\n";
+            foreach (var tag in spoilerList)
+            {
+                output += $"{tag}\n";
+            }
+
+            await ReplyAsync(output);
         }
     }
 }

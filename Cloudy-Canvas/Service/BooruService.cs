@@ -1,9 +1,9 @@
 ﻿namespace Cloudy_Canvas.Service
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
-    using Discord.Commands;
     using Flurl;
     using Flurl.Http;
     using Microsoft.Extensions.Options;
@@ -17,7 +17,7 @@
             _settings = settings.Value;
         }
 
-        public async Task<Tuple<long, bool>> GetImageById(long imageid)
+        public async Task<Tuple<long, bool>> GetImageByIdAsync(long imageid)
         {
             //GET	/api/v1/json/images/:image_id
             var spoiler = false;
@@ -34,12 +34,13 @@
             {
                 return returnResult;
             }
+
             spoiler = results.images[0].spoilered;
             returnResult = new Tuple<long, bool>(results.images[0].id, spoiler);
             return (returnResult);
         }
 
-        public async Task<Tuple<long, bool>> GetRandomImageByQuery(string query)
+        public async Task<Tuple<long, bool>> GetRandomImageByQueryAsync(string query)
         {
             //GET	/api/v1/json/search/images?q=safe
             var spoiler = false;
@@ -69,5 +70,46 @@
             return (returnResult);
         }
 
+        public async Task<List<string>> GetSpoilerTagsAsync()
+        {
+            //GET	/api/v1/json/filters/user
+            var results = await _settings.url
+                .AppendPathSegments("/api/v1/json/filters/user")
+                .SetQueryParams(new { key = _settings.token })
+                .GetAsync()
+                .ReceiveJson();
+            var tagIds = results.filters[0].spoilered_tag_ids;
+            var output = await GetTagNamesAsync(tagIds);
+            return output;
+        }
+
+        public async Task<List<string>> GetTagNamesAsync(List<object> tagIdList)
+        {
+            var tagNameList = new List<string>();
+            foreach (var tagId in tagIdList)
+            {
+                var results = await _settings.url
+                    .AppendPathSegments("/api/v1/json/filters/user")
+                    .SetQueryParams(new { key = _settings.token })
+                    .GetAsync()
+                    .ReceiveJson();
+                var name = await GetTagNameByIdAsync((long)tagId);
+                tagNameList.Add(name);
+            }
+
+            return tagNameList;
+        }
+
+        public async Task<string> GetTagNameByIdAsync(long id)
+        {
+            //GET	/api/v1/json/search/tags
+            var results = await _settings.url
+                .AppendPathSegments("/api/v1/json/search/tags")
+                .SetQueryParams(new { q = $"id:{id}" })
+                .GetAsync()
+                .ReceiveJson();
+            var output = results.tags[0].name.ToString();
+            return output;
+        }
     }
 }
