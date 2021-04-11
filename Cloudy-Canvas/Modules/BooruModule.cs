@@ -22,6 +22,7 @@
         [Summary("Selects an image at random")]
         public async Task PickAsync([Remainder] [Summary("Query string")] string query = "*")
         {
+            _blacklistService.InitializeList(Context);
             var badTerms = _blacklistService.CheckList(query);
             if (badTerms != "")
             {
@@ -47,6 +48,7 @@
         [Summary("Selects an image by image id")]
         public async Task IdAsync([Summary("The image ID")] long id = 4010266)
         {
+            _blacklistService.InitializeList(Context);
             var badTerms = _blacklistService.CheckList(id.ToString());
             if (badTerms != "")
             {
