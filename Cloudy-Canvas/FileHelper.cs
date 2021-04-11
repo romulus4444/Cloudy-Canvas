@@ -1,14 +1,13 @@
 ﻿namespace Cloudy_Canvas
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
-    using Cloudy_Canvas.Settings;
     using Discord.Commands;
-    using Microsoft.Extensions.Options;
 
     public static class FileHelper
     {
-        public static string SetUpFilepath(SocketCommandContext context,  bool log = false)
+        public static string SetUpFilepath(SocketCommandContext context, bool log = false)
         {
             var filepath = "Logs/";
             CreateDirectoryIfNotExists(filepath);
@@ -49,6 +48,45 @@
             {
                 directory.Create();
             }
+        }
+
+        public static void WriteSpoilerListToFile(List<Tuple<long, string>> tagList)
+        {
+            var filepath = "Logs/";
+            CreateDirectoryIfNotExists(filepath);
+            filepath += "spoilers.txt";
+            File.WriteAllText(filepath, "Spoilered Tags:\n");
+            foreach (var (tagId, tagName) in tagList)
+            {
+                File.AppendAllText(filepath, $"{tagId}, {tagName}\n");
+            }
+        }
+
+        public static List<Tuple<long, string>> GetSpoilerTagIdListFromFile()
+        {
+            var filepath = "Logs/";
+            CreateDirectoryIfNotExists(filepath);
+            filepath += "spoilers.txt";
+            if (!File.Exists(filepath))
+            {
+                File.WriteAllText(filepath, "Spoilered Tags:\n");
+            }
+
+            var fileContents = File.ReadAllLines(filepath);
+            var spoilerList = new List<Tuple<long, string>>();
+            foreach (var line in fileContents)
+            {
+                if (line == "Spoilered Tags:")
+                {
+                    continue;
+                }
+
+                var splitLine = line.Split(',',2);
+                var parts = new Tuple<long, string>(long.Parse(splitLine[0]), splitLine[1].Trim());
+                spoilerList.Add(parts);
+            }
+
+            return spoilerList;
         }
     }
 }

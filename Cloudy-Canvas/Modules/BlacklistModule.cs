@@ -34,12 +34,12 @@
                     var added = _blacklistService.AddTerm(term);
                     if (added)
                     {
-                        await ReplyAsync($"Added {term} to the blacklist.");
+                        await ReplyAsync($"Added `{term}` to the blacklist.");
                         await _logger.Log($"blacklist add (success): {term}", Context);
                     }
                     else
                     {
-                        await ReplyAsync($"{term} is already on the blacklist.");
+                        await ReplyAsync($"`{term}` is already on the blacklist.");
                         await _logger.Log($"blacklist add (fail): {term}", Context);
                     }
 
@@ -48,12 +48,12 @@
                     var removed = _blacklistService.RemoveTerm(term);
                     if (removed)
                     {
-                        await ReplyAsync($"Removed {term} from the blacklist.");
+                        await ReplyAsync($"Removed `{term}` from the blacklist.");
                         await _logger.Log($"blacklist remove (success): {term}", Context);
                     }
                     else
                     {
-                        await ReplyAsync($"{term} was not on the blacklist.");
+                        await ReplyAsync($"`{term}` was not on the blacklist.");
                         await _logger.Log($"blacklist remove (fail): {term}", Context);
                     }
 
@@ -65,11 +65,11 @@
                     {
                         if (output == "The blacklist is currently empty.")
                         {
-                            output = item;
+                            output = $"`{item}`";
                         }
                         else
                         {
-                            output += $", {item}";
+                            output += $", `{item}`";
                         }
                     }
 

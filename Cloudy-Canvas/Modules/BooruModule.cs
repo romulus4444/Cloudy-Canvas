@@ -1,5 +1,7 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
+    using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
@@ -31,15 +33,25 @@
             }
             else
             {
-                var id = await _booru.GetRandomFirstPageImageByQuery(query);
-                await _logger.Log($"query: {query}, result: {id}", Context);
-                if (id == -1)
+                var (imageId, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query);
+                if (imageId == -1)
                 {
                     await ReplyAsync("I could not find any images with that query.");
                 }
                 else
                 {
-                    await ReplyAsync($"https://manebooru.art/images/{id}");
+                    if (spoilered)
+                    {
+                        var spoilerStrings = SetupSpoilerOutput(spoilerList);
+                        var output = $"Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                        await _logger.Log($"query: {query}, result: {imageId} SPOILERED {spoilerStrings}", Context);
+                        await ReplyAsync(output);
+                    }
+                    else
+                    {
+                        await _logger.Log($"query: {query}, result: {imageId}", Context);
+                        await ReplyAsync($"https://manebooru.art/images/{imageId}");
+                    }
                 }
             }
         }
@@ -57,17 +69,57 @@
             }
             else
             {
-                var result = await _booru.GetImageById(id);
-                await _logger.Log($"id: requested {id}, found {result}", Context);
-                if (result == -1)
+                var (imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id);
+                if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");
                 }
                 else
                 {
-                    await ReplyAsync($"https://manebooru.art/images/{id}");
+                    if (spoilered)
+                    {
+                        
+                        var spoilerStrings = SetupSpoilerOutput(spoilerList);
+                        var output = $"Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                        await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
+                        await ReplyAsync(output);
+                    }
+                    else
+                    {
+                        await _logger.Log($"id: requested {id}, found {imageId}", Context);
+                        await ReplyAsync($"https://manebooru.art/images/{imageId}");
+                    }
                 }
             }
+        }
+
+        [Command("getspoilers")]
+        public async Task GetSpoilersAsync()
+        {
+            var spoilerList = await _booru.GetSpoilerTagsAsync();
+            var output = "__Spoilered tags:__\n";
+            foreach (var (tagId, tagName) in spoilerList)
+            {
+                output += $"{tagId}, `{tagName}`\n";
+            }
+
+            await ReplyAsync(output);
+        }
+
+        private static string SetupSpoilerOutput(List<string> spoilerList)
+        {
+            var output = "";
+            for (var x = 0; x < spoilerList.Count; x++)
+            {
+                var spoilerTerm = spoilerList[x];
+                output += $"`{spoilerTerm}`";
+                if (x < spoilerList.Count - 1)
+                {
+                    output += ", ";
+                }
+            }
+
+            return output;
         }
     }
 }
