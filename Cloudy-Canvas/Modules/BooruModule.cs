@@ -23,18 +23,15 @@
         public async Task PickAsync([Remainder] [Summary("Query string")] string query = "*")
         {
             var badTerms = _blacklist.CheckList(query);
-            var logStringPrefix = _logger.SetUpLogStringPrefix(Context);
             if (badTerms != "")
             {
-                logStringPrefix += $"query: {query}, BLACKLISTED {badTerms}";
-                await _logger.Log(logStringPrefix, Context);
+                await _logger.Log($"query: {query}, BLACKLISTED {badTerms}", Context);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
             {
                 var id = await _booru.GetRandomFirstPageImageByQuery(query);
-                logStringPrefix += $"query: {query}, result: {id}";
-                await _logger.Log(logStringPrefix, Context);
+                await _logger.Log($"query: {query}, result: {id}", Context);
                 if (id == -1)
                 {
                     await ReplyAsync("I could not find any images with that query.");
@@ -51,18 +48,15 @@
         public async Task IdAsync([Summary("The image ID")] long id = 4010266)
         {
             var badTerms = _blacklist.CheckList(id.ToString());
-            var logStringPrefix = _logger.SetUpLogStringPrefix(Context);
             if (badTerms != "")
             {
-                logStringPrefix += $"id: {id} BLACKLISTED {badTerms}";
-                await _logger.Log(logStringPrefix, Context);
+                await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
             {
                 var result = await _booru.GetImageById(id);
-                logStringPrefix += $"id: requested {id}, found {result}";
-                await _logger.Log(logStringPrefix, Context);
+                await _logger.Log($"id: requested {id}, found {result}", Context);
                 if (result == -1)
                 {
                     await ReplyAsync("I could not find that image.");

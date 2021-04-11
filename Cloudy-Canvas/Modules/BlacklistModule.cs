@@ -23,28 +23,23 @@
         [Summary("Blacklist base command")]
         public async Task Blacklist(string arg = null, [Remainder] string term = null)
         {
-            var logStringPrefix = _logger.SetUpLogStringPrefix(Context);
-            logStringPrefix += "blacklist ";
             switch (arg)
             {
                 case null:
                     await ReplyAsync("You must specify a subcommand.");
-                    logStringPrefix += "null";
-                    await _logger.Log(logStringPrefix, Context);
+                    await _logger.Log("blacklist null", Context);
                     break;
                 case "add":
                     var added = _blacklist.AddTerm(term);
                     if (added)
                     {
                         await ReplyAsync($"Added {term} to the blacklist.");
-                        logStringPrefix += $"add (success): {term}";
-                        await _logger.Log(logStringPrefix, Context);
+                        await _logger.Log($"blacklist add (success): {term}", Context);
                     }
                     else
                     {
                         await ReplyAsync($"{term} is already on the blacklist.");
-                        logStringPrefix += $"add (fail): {term}";
-                        await _logger.Log(logStringPrefix, Context);
+                        await _logger.Log($"blacklist add (fail): {term}", Context);
                     }
 
                     break;
@@ -53,14 +48,12 @@
                     if (removed)
                     {
                         await ReplyAsync($"Removed {term} from the blacklist.");
-                        logStringPrefix += $"remove (success): {term}";
-                        await _logger.Log(logStringPrefix, Context);
+                        await _logger.Log($"blacklist remove (success): {term}", Context);
                     }
                     else
                     {
                         await ReplyAsync($"{term} was not on the blacklist.");
-                        logStringPrefix += $"remove (fail): {term}";
-                        await _logger.Log(logStringPrefix, Context);
+                        await _logger.Log($"blacklist remove (fail): {term}", Context);
                     }
 
                     break;
@@ -80,19 +73,16 @@
                     }
 
                     await ReplyAsync($"__Blacklist Terms:__\n{output}");
-                    logStringPrefix += "get";
-                    await _logger.Log(logStringPrefix, Context);
+                    await _logger.Log("blacklist get", Context);
                     break;
                 case "clear":
                     _blacklist.ClearList();
                     await ReplyAsync("Blacklist cleared");
-                    logStringPrefix += "clear";
-                    await _logger.Log(logStringPrefix, Context);
+                    await _logger.Log("blacklist clear", Context);
                     break;
                 default:
                     await ReplyAsync("Invalid subcommand");
-                    logStringPrefix += $"invalid: {arg}";
-                    await _logger.Log(logStringPrefix, Context);
+                    await _logger.Log($"blacklist invalid: {arg}", Context);
                     break;
             }
         }

@@ -24,9 +24,7 @@
         [Summary("Lists all commands")]
         public async Task HelpAsync(string command = "", [Remainder] string subcommands = "")
         {
-            var logStringPrefix = _logger.SetUpLogStringPrefix(Context);
-            logStringPrefix += $"help {command}";
-            await _logger.Log(logStringPrefix, Context);
+            await _logger.Log($"help {command}", Context);
 
             switch (command)
             {
@@ -65,11 +63,9 @@
 
         [Command("origin")]
         [Summary("Displays the origin url of Cloudy Canvas")]
-        public async Task BirthdayAsync()
+        public async Task OriginAsync()
         {
-            var logStringPrefix = _logger.SetUpLogStringPrefix(Context);
-            logStringPrefix += "origin";
-            await _logger.Log(logStringPrefix, Context);
+            await _logger.Log("origin", Context);
             await ReplyAsync("Here is where I came from, thanks to RavenSunArt! https://imgur.com/a/RB16usb");
         }
     }

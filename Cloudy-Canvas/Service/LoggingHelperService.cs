@@ -1,5 +1,7 @@
 ﻿namespace Cloudy_Canvas.Service
 {
+    using System;
+    using System.Globalization;
     using System.IO;
     using System.Threading.Tasks;
     using Discord.Commands;
@@ -14,52 +16,87 @@
             _logger = logger;
         }
 
-        public string SetUpLogStringPrefix(SocketCommandContext context)
+        private static string PrepareMessageForLogging(string message, SocketCommandContext context, bool fileEntry = false, bool header = false)
         {
-            var prefixString = "";
+            var logMessage = "";
+            if (!header)
+            {
+                logMessage += $"[{DateTime.UtcNow.ToString(CultureInfo.CurrentCulture)}] ";
+            }
 
             if (context.IsPrivate)
             {
-                prefixString += "DM with ";
+                if (!fileEntry)
+                {
+                    logMessage += $"DM with @{context.User.Username}#{context.User.Discriminator} ({context.User.Id})";
+                }
+
+                if (!fileEntry && !header)
+                {
+                    logMessage += ", ";
+                }
+
+                if (!header)
+                {
+                    logMessage += message;
+                }
             }
             else
             {
-                if (context.Guild != null)
+                if (!fileEntry)
                 {
-                    prefixString += $"server: {context.Guild.Name} ({context.Guild.Id}), ";
+                    logMessage += $"server: {context.Guild.Name} ({context.Guild.Id}) #{context.Channel.Name} ({context.Channel.Id})";
                 }
 
-                if (context.Channel != null)
+                if (!fileEntry && !header)
                 {
-                    prefixString += $"channel: #{context.Channel.Name} ({context.Channel.Id}), ";
+                    logMessage += " ";
+                }
+
+                if (!header)
+                {
+                    logMessage += $"@{context.User.Username}#{context.User.Discriminator} ({context.User.Id}), ";
+                    logMessage += message;
                 }
             }
 
-            if (context.User != null)
+            if (fileEntry || header)
             {
-                prefixString += $"user: @{context.User.Username}#{context.User.Discriminator} ({context.User.Id}), ";
+                logMessage += "\n";
             }
 
-            return prefixString;
+            return logMessage;
         }
 
         public Task Log(string message, SocketCommandContext context)
         {
             AppendToFile(message, context);
-            _logger.LogInformation(message);
+            var logMessage = PrepareMessageForLogging(message, context);
+            _logger.LogInformation(logMessage);
             return Task.CompletedTask;
         }
 
-        public void AppendToFile(string message, SocketCommandContext context)
+        private static void AppendToFile(string message, SocketCommandContext context)
         {
             var filepath = SetUpFilepath(context);
-            message += "\n";
-            File.AppendAllText(filepath, message);
+            if (!File.Exists(filepath))
+            {
+                File.WriteAllText(filepath, PrepareMessageForLogging(message, context, false, true));
+            }
+
+            var logMessage = PrepareMessageForLogging(message, context, true);
+            File.AppendAllText(filepath, logMessage);
         }
 
-        private string SetUpFilepath(SocketCommandContext context)
+        private static string SetUpFilepath(SocketCommandContext context)
         {
-            var filepath = "Log/";
+            var directory = new DirectoryInfo("Logs/");
+            if (!directory.Exists)
+            {
+                directory.Create();
+            }
+
+            var filepath = "Logs/";
             if (context.IsPrivate)
             {
                 var user = context.User;
