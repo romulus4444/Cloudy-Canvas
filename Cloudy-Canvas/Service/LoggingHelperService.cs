@@ -16,6 +16,14 @@
             _logger = logger;
         }
 
+        public Task Log(string message, SocketCommandContext context)
+        {
+            AppendToFile(message, context);
+            var logMessage = PrepareMessageForLogging(message, context);
+            _logger.LogInformation(logMessage);
+            return Task.CompletedTask;
+        }
+
         private static string PrepareMessageForLogging(string message, SocketCommandContext context, bool fileEntry = false, bool header = false)
         {
             var logMessage = "";
@@ -68,14 +76,6 @@
             return logMessage;
         }
 
-        public Task Log(string message, SocketCommandContext context)
-        {
-            AppendToFile(message, context);
-            var logMessage = PrepareMessageForLogging(message, context);
-            _logger.LogInformation(logMessage);
-            return Task.CompletedTask;
-        }
-
         private static void AppendToFile(string message, SocketCommandContext context)
         {
             var filepath = SetUpFilepath(context);
@@ -90,28 +90,34 @@
 
         private static string SetUpFilepath(SocketCommandContext context)
         {
-            var directory = new DirectoryInfo("Logs/");
+            var filepath = "Logs/";
+            CreateDirectoryIfNotExists(filepath);
+            if (context.IsPrivate)
+            {
+                filepath += "_UserDMs/";
+                CreateDirectoryIfNotExists(filepath);
+                filepath += $"@{context.User.Username}/";
+                CreateDirectoryIfNotExists(filepath);
+            }
+            else
+            {
+                filepath += $"{context.Guild.Name}/";
+                CreateDirectoryIfNotExists(filepath);
+                filepath += $"#{context.Channel.Name}/";
+                CreateDirectoryIfNotExists(filepath);
+            }
+
+            filepath += $"{DateTime.Today.ToShortDateString()}.txt";
+            return filepath;
+        }
+
+        private static void CreateDirectoryIfNotExists(string path)
+        {
+            var directory = new DirectoryInfo(path);
             if (!directory.Exists)
             {
                 directory.Create();
             }
-
-            var filepath = "Logs/";
-            if (context.IsPrivate)
-            {
-                var user = context.User;
-                filepath += $"@{user.Username}.";
-            }
-            else
-            {
-                var server = context.Guild;
-                var channel = context.Channel;
-                filepath += $"{server.Name}.";
-                filepath += $"#{channel.Name}.";
-            }
-
-            filepath += "txt";
-            return filepath;
         }
     }
 }
