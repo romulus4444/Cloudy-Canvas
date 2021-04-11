@@ -4,35 +4,34 @@
     using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
     using Discord.Commands;
-    using Microsoft.Extensions.Logging;
 
     public class BooruModule : ModuleBase<SocketCommandContext>
     {
         private readonly BooruService _booru;
-        private readonly ILogger<Worker> _logger;
-        private readonly Blacklist _blacklist;
+        private readonly BlacklistService _blacklistService;
+        private readonly LoggingHelperService _logger;
 
-        public BooruModule(ILogger<Worker> logger, BooruService booru, Blacklist blacklist)
+        public BooruModule(BooruService booru, BlacklistService blacklistService, LoggingHelperService logger)
         {
-            _logger = logger;
             _booru = booru;
-            _blacklist = blacklist;
+            _blacklistService = blacklistService;
+            _logger = logger;
         }
 
         [Command("pick")]
         [Summary("Selects an image at random")]
         public async Task PickAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            var badTerms = _blacklist.CheckList(query);
+            var badTerms = _blacklistService.CheckList(query);
             if (badTerms != "")
             {
-                _logger.LogInformation($"query: {query}, BLACKLISTED {badTerms}");
+                await _logger.Log($"query: {query}, BLACKLISTED {badTerms}", Context);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
             {
                 var id = await _booru.GetRandomFirstPageImageByQuery(query);
-                _logger.LogInformation($"query: {query}, result: {id}");
+                await _logger.Log($"query: {query}, result: {id}", Context);
                 if (id == -1)
                 {
                     await ReplyAsync("I could not find any images with that query.");
@@ -48,16 +47,16 @@
         [Summary("Selects an image by image id")]
         public async Task IdAsync([Summary("The image ID")] long id = 4010266)
         {
-            var badTerms = _blacklist.CheckList(id.ToString());
+            var badTerms = _blacklistService.CheckList(id.ToString());
             if (badTerms != "")
             {
-                _logger.LogInformation($"id: {id} BLACKLISTED {badTerms}");
+                await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
             {
                 var result = await _booru.GetImageById(id);
-                _logger.LogInformation($"id: requested {id}, found {result}");
+                await _logger.Log($"id: requested {id}, found {result}", Context);
                 if (result == -1)
                 {
                     await ReplyAsync("I could not find that image.");

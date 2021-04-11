@@ -1,16 +1,16 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Service;
     using Discord.Commands;
-    using Microsoft.Extensions.Logging;
 
     // Keep in mind your module **must** be public and inherit ModuleBase.
     // If it isn't, it will not be discovered by AddModulesAsync!
     public class InfoModule : ModuleBase<SocketCommandContext>
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly LoggingHelperService _logger;
 
-        public InfoModule(ILogger<Worker> logger)
+        public InfoModule(LoggingHelperService logger)
         {
             _logger = logger;
         }
@@ -22,19 +22,51 @@
 
         [Command("help")]
         [Summary("Lists all commands")]
-        public async Task HelpAsync([Remainder] string help = "")
+        public async Task HelpAsync(string command = "", [Remainder] string subcommands = "")
         {
-            _logger.LogInformation("help");
-            await ReplyAsync(
-                "All commands:\nAll searches use manechat-compliant filters.\n\n**;pick <query>**\nPosts random image from a Manebooru <query>.\n\n**;id <imageid>**\nPosts Manebooru image#<imageid>\n\n**;help**\nDisplays this help message.");
+            await _logger.Log($"help {command}", Context);
+
+            switch (command)
+            {
+                case "":
+                    await ReplyAsync(
+                        "__All commands:__\nAll searches use manechat-compliant filters.\n\n`;pick <query>` Posts random image from a Manebooru <query>.\n\n`;id <imageid>` Posts Manebooru image#<imageid>\n\n`;blacklist` Manages the search term blacklist.\n\nUse `;help <command>` for more details on a particular command.");
+                    break;
+                case "pick":
+                    await ReplyAsync(
+                        "__;pick <query>__\nPosts random image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma.");
+                    break;
+                case "id":
+                    await ReplyAsync("__;id <imageid>__\nPosts Manebooru image# <imageid>, if it is available.");
+                    break;
+                case "help":
+                    await ReplyAsync("<:sweetiegrump:642466824696627200>");
+                    break;
+                case "blacklist":
+                    switch (subcommands)
+                    {
+                        case "":
+                            await ReplyAsync(
+                                "__;blacklist__\nManages the search term blacklist.\n\n`;blacklist add <term>` Adds <term> to the blacklist.\n\n`;blacklist remove <term>` Removes <term> from the blacklist.\n\n`;blacklist get` Displays the blacklist.\n\n`;blacklist clear` Empties the blacklist. Be very careful with this command.");
+                            break;
+                        default:
+                            await ReplyAsync("No subcommand help available.");
+                            break;
+                    }
+
+                    break;
+                default:
+                    await ReplyAsync("Invalid command. Use `;help` for a list of available commands.");
+                    break;
+            }
         }
 
         [Command("origin")]
         [Summary("Displays the origin url of Cloudy Canvas")]
-        public async Task BirthdayAsync()
+        public async Task OriginAsync()
         {
-            _logger.LogInformation("origin");
-            await ReplyAsync("Here is where I came from, thanks to RavenSunArt! https://discord.com/channels/729726993632985139/729727666063671332/732670355902038068");
+            await _logger.Log("origin", Context);
+            await ReplyAsync("Here is where I came from, thanks to RavenSunArt! https://imgur.com/a/RB16usb");
         }
     }
 }
