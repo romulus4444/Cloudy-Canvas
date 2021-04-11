@@ -24,7 +24,9 @@
         [Summary("Lists all commands")]
         public async Task HelpAsync(string command = "", [Remainder] string subcommands = "")
         {
-            await _logger.Log($"help: {command}", Context);
+            var logStringPrefix = _logger.SetUpLogStringPrefix(Context);
+            logStringPrefix += $"help {command}";
+            await _logger.Log(logStringPrefix, Context);
 
             switch (command)
             {
@@ -37,12 +39,10 @@
                         "__;pick <query>__\nPosts random image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma.");
                     break;
                 case "id":
-                    await ReplyAsync(
-                        "__;id <imageid>__\nPosts Manebooru image# <imageid>, if it is available.");
+                    await ReplyAsync("__;id <imageid>__\nPosts Manebooru image# <imageid>, if it is available.");
                     break;
                 case "help":
-                    await ReplyAsync(
-                        "<:sweetiegrump:642466824696627200>");
+                    await ReplyAsync("<:sweetiegrump:642466824696627200>");
                     break;
                 case "blacklist":
                     switch (subcommands)
@@ -55,7 +55,7 @@
                             await ReplyAsync("No subcommand help available.");
                             break;
                     }
-                    
+
                     break;
                 default:
                     await ReplyAsync("Invalid command. Use `;help` for a list of available commands.");
@@ -67,7 +67,9 @@
         [Summary("Displays the origin url of Cloudy Canvas")]
         public async Task BirthdayAsync()
         {
-            await _logger.Log("origin", Context);
+            var logStringPrefix = _logger.SetUpLogStringPrefix(Context);
+            logStringPrefix += "origin";
+            await _logger.Log(logStringPrefix, Context);
             await ReplyAsync("Here is where I came from, thanks to RavenSunArt! https://imgur.com/a/RB16usb");
         }
     }
