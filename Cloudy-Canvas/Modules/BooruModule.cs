@@ -42,8 +42,9 @@
                 {
                     if (spoilered)
                     {
-                        var output = SetupSpoilerOutput(spoilerList, imageId);
-                        await _logger.Log($"query: {query}, result: {imageId} SPOILERED", Context);
+                        var spoilerStrings = SetupSpoilerOutput(spoilerList);
+                        var output = $"Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                        await _logger.Log($"query: {query}, result: {imageId} SPOILERED {spoilerStrings}", Context);
                         await ReplyAsync(output);
                     }
                     else
@@ -77,8 +78,10 @@
                 {
                     if (spoilered)
                     {
-                        var output = SetupSpoilerOutput(spoilerList, imageId);
-                        await _logger.Log($"id: requested {id}, found {imageId} SPOILERED", Context);
+                        
+                        var spoilerStrings = SetupSpoilerOutput(spoilerList);
+                        var output = $"Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                        await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
                         await ReplyAsync(output);
                     }
                     else
@@ -97,15 +100,15 @@
             var output = "__Spoilered tags:__\n";
             foreach (var (tagId, tagName) in spoilerList)
             {
-                output += $"{tagId}, {tagName}\n";
+                output += $"{tagId}, `{tagName}`\n";
             }
 
             await ReplyAsync(output);
         }
 
-        private static string SetupSpoilerOutput(List<string> spoilerList, long imageId)
+        private static string SetupSpoilerOutput(List<string> spoilerList)
         {
-            var output = "Result is a spoiler for ";
+            var output = "";
             for (var x = 0; x < spoilerList.Count; x++)
             {
                 var spoilerTerm = spoilerList[x];
@@ -114,13 +117,8 @@
                 {
                     output += ", ";
                 }
-                else
-                {
-                    output += ":\n";
-                }
             }
 
-            output += $"|| https://manebooru.art/images/{imageId} ||";
             return output;
         }
     }
