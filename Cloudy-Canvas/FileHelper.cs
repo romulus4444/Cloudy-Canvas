@@ -2,13 +2,11 @@
 {
     using System;
     using System.IO;
-    using Cloudy_Canvas.Settings;
     using Discord.Commands;
-    using Microsoft.Extensions.Options;
 
     public static class FileHelper
     {
-        public static string SetUpFilepath(SocketCommandContext context,  bool log = false)
+        public static string SetUpFilepath(SocketCommandContext context, bool log = false)
         {
             var filepath = "Logs/";
             CreateDirectoryIfNotExists(filepath);

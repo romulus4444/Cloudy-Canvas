@@ -1,5 +1,6 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
+    using System;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
@@ -31,15 +32,23 @@
             }
             else
             {
-                var id = await _booru.GetRandomFirstPageImageByQuery(query);
-                await _logger.Log($"query: {query}, result: {id}", Context);
-                if (id == -1)
+                var (imageId, spoilered) = await _booru.GetRandomImageByQuery(query);
+                if (imageId == -1)
                 {
                     await ReplyAsync("I could not find any images with that query.");
                 }
                 else
                 {
-                    await ReplyAsync($"https://manebooru.art/images/{id}");
+                    if (spoilered)
+                    {
+                        await _logger.Log($"query: {query}, result: {imageId} SPOILERED", Context);
+                        await ReplyAsync($"Result is a spoiler for <term>:\n|| https://manebooru.art/images/{imageId} ||");
+                    }
+                    else
+                    {
+                        await _logger.Log($"query: {query}, result: {imageId}", Context);
+                        await ReplyAsync($"https://manebooru.art/images/{imageId}");
+                    }
                 }
             }
         }
@@ -57,15 +66,23 @@
             }
             else
             {
-                var result = await _booru.GetImageById(id);
-                await _logger.Log($"id: requested {id}, found {result}", Context);
-                if (result == -1)
+                var (imageId, spoilered) = await _booru.GetImageById(id);
+                if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");
                 }
                 else
                 {
-                    await ReplyAsync($"https://manebooru.art/images/{id}");
+                    if (spoilered)
+                    {
+                        await _logger.Log($"id: requested {id}, found {imageId} SPOILERED", Context);
+                        await ReplyAsync($"Result is a spoiler for <term>:\n|| https://manebooru.art/images/{imageId} ||");
+                    }
+                    else
+                    {
+                        await _logger.Log($"id: requested {id}, found {imageId}", Context);
+                        await ReplyAsync($"https://manebooru.art/images/{imageId}");
+                    }
                 }
             }
         }
