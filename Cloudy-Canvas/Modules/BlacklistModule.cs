@@ -8,13 +8,13 @@
 
     public class BlacklistModule : ModuleBase<SocketCommandContext>
     {
-        private readonly Blacklist _blacklist;
+        private readonly BlacklistService _blacklistService;
 
         private readonly LoggingHelperService _logger;
 
-        public BlacklistModule(Blacklist blacklist, LoggingHelperService logger)
+        public BlacklistModule(BlacklistService blacklistService, LoggingHelperService logger)
         {
-            _blacklist = blacklist;
+            _blacklistService = blacklistService;
             _logger = logger;
         }
 
@@ -23,6 +23,7 @@
         [Summary("Blacklist base command")]
         public async Task Blacklist(string arg = null, [Remainder] string term = null)
         {
+            _blacklistService.InitializeList(Context);
             switch (arg)
             {
                 case null:
@@ -30,7 +31,7 @@
                     await _logger.Log("blacklist null", Context);
                     break;
                 case "add":
-                    var added = _blacklist.AddTerm(term);
+                    var added = _blacklistService.AddTerm(term);
                     if (added)
                     {
                         await ReplyAsync($"Added {term} to the blacklist.");
@@ -44,7 +45,7 @@
 
                     break;
                 case "remove":
-                    var removed = _blacklist.RemoveTerm(term);
+                    var removed = _blacklistService.RemoveTerm(term);
                     if (removed)
                     {
                         await ReplyAsync($"Removed {term} from the blacklist.");
@@ -59,7 +60,7 @@
                     break;
                 case "get":
                     var output = "The blacklist is currently empty.";
-                    var blacklist = _blacklist.GetList();
+                    var blacklist = _blacklistService.GetList();
                     foreach (var item in blacklist)
                     {
                         if (output == "The blacklist is currently empty.")
@@ -76,7 +77,7 @@
                     await _logger.Log("blacklist get", Context);
                     break;
                 case "clear":
-                    _blacklist.ClearList();
+                    _blacklistService.ClearList();
                     await ReplyAsync("Blacklist cleared");
                     await _logger.Log("blacklist clear", Context);
                     break;

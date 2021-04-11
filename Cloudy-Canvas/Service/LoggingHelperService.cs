@@ -78,7 +78,7 @@
 
         private static void AppendToFile(string message, SocketCommandContext context)
         {
-            var filepath = SetUpFilepath(context);
+            var filepath = FileHelper.SetUpFilepath(context, true);
             if (!File.Exists(filepath))
             {
                 File.WriteAllText(filepath, PrepareMessageForLogging(message, context, false, true));
@@ -86,38 +86,6 @@
 
             var logMessage = PrepareMessageForLogging(message, context, true);
             File.AppendAllText(filepath, logMessage);
-        }
-
-        private static string SetUpFilepath(SocketCommandContext context)
-        {
-            var filepath = "Logs/";
-            CreateDirectoryIfNotExists(filepath);
-            if (context.IsPrivate)
-            {
-                filepath += "_UserDMs/";
-                CreateDirectoryIfNotExists(filepath);
-                filepath += $"@{context.User.Username}/";
-                CreateDirectoryIfNotExists(filepath);
-            }
-            else
-            {
-                filepath += $"{context.Guild.Name}/";
-                CreateDirectoryIfNotExists(filepath);
-                filepath += $"#{context.Channel.Name}/";
-                CreateDirectoryIfNotExists(filepath);
-            }
-
-            filepath += $"{DateTime.Today.ToShortDateString()}.txt";
-            return filepath;
-        }
-
-        private static void CreateDirectoryIfNotExists(string path)
-        {
-            var directory = new DirectoryInfo(path);
-            if (!directory.Exists)
-            {
-                directory.Create();
-            }
         }
     }
 }

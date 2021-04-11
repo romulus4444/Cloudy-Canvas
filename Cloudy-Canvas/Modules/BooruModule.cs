@@ -8,13 +8,13 @@
     public class BooruModule : ModuleBase<SocketCommandContext>
     {
         private readonly BooruService _booru;
-        private readonly Blacklist _blacklist;
+        private readonly BlacklistService _blacklistService;
         private readonly LoggingHelperService _logger;
 
-        public BooruModule(BooruService booru, Blacklist blacklist, LoggingHelperService logger)
+        public BooruModule(BooruService booru, BlacklistService blacklistService, LoggingHelperService logger)
         {
             _booru = booru;
-            _blacklist = blacklist;
+            _blacklistService = blacklistService;
             _logger = logger;
         }
 
@@ -22,7 +22,7 @@
         [Summary("Selects an image at random")]
         public async Task PickAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            var badTerms = _blacklist.CheckList(query);
+            var badTerms = _blacklistService.CheckList(query);
             if (badTerms != "")
             {
                 await _logger.Log($"query: {query}, BLACKLISTED {badTerms}", Context);
@@ -47,7 +47,7 @@
         [Summary("Selects an image by image id")]
         public async Task IdAsync([Summary("The image ID")] long id = 4010266)
         {
-            var badTerms = _blacklist.CheckList(id.ToString());
+            var badTerms = _blacklistService.CheckList(id.ToString());
             if (badTerms != "")
             {
                 await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context);

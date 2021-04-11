@@ -3,18 +3,19 @@
     using System.Collections.Generic;
     using System.IO;
     using Cloudy_Canvas.Settings;
+    using Discord.Commands;
     using Microsoft.Extensions.Options;
 
-    public class Blacklist
+    public class BlacklistService
     {
         private readonly DiscordSettings _settings;
         private List<string> BlackList;
+        private string Filepath;
 
-        public Blacklist(IOptions<DiscordSettings> settings)
+        public BlacklistService(IOptions<DiscordSettings> settings)
         {
             _settings = settings.Value;
             BlackList = new List<string>();
-            InitializeList();
         }
 
         public bool AddTerm(string term)
@@ -51,12 +52,12 @@
 
         public void ClearList()
         {
-            if (File.Exists(_settings.blacklistpath))
+            if (File.Exists(Filepath))
             {
-                File.Delete(_settings.blacklistpath);
+                File.Delete(Filepath);
             }
 
-            File.WriteAllText(_settings.blacklistpath, "");
+            File.WriteAllText(Filepath, "");
         }
 
         public string CheckList(string query)
@@ -84,26 +85,30 @@
             return matchedTerms;
         }
 
-        private void InitializeList()
+        public void InitializeList(SocketCommandContext context)
         {
-            if (File.Exists(_settings.blacklistpath))
+            var path = FileHelper.SetUpFilepath(context);
+            Filepath = path;
+            if (File.Exists(Filepath))
             {
                 LoadList();
             }
             else
             {
-                File.WriteAllText(_settings.blacklistpath, "");
+                File.WriteAllText(path, "");
             }
+
+            
         }
 
         private void LoadList()
         {
-            BlackList = new List<string>(File.ReadAllLines(_settings.blacklistpath));
+            BlackList = new List<string>(File.ReadAllLines(Filepath));
         }
 
         private void SaveList()
         {
-            File.WriteAllLines(_settings.blacklistpath, BlackList);
+            File.WriteAllLines(Filepath, BlackList);
         }
     }
 }
