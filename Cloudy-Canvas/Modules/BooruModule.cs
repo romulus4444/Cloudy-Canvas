@@ -1,6 +1,7 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
     using System;
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
@@ -32,7 +33,7 @@
             }
             else
             {
-                var (imageId, spoilered) = await _booru.GetRandomImageByQueryAsync(query);
+                var (imageId, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query);
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find any images with that query.");
@@ -41,8 +42,9 @@
                 {
                     if (spoilered)
                     {
+                        var output = SetupSpoilerOutput(spoilerList, imageId);
                         await _logger.Log($"query: {query}, result: {imageId} SPOILERED", Context);
-                        await ReplyAsync($"Result is a spoiler for <term>:\n|| https://manebooru.art/images/{imageId} ||");
+                        await ReplyAsync(output);
                     }
                     else
                     {
@@ -66,7 +68,7 @@
             }
             else
             {
-                var (imageId, spoilered) = await _booru.GetImageByIdAsync(id);
+                var (imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id);
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");
@@ -75,8 +77,9 @@
                 {
                     if (spoilered)
                     {
+                        var output = SetupSpoilerOutput(spoilerList, imageId);
                         await _logger.Log($"id: requested {id}, found {imageId} SPOILERED", Context);
-                        await ReplyAsync($"Result is a spoiler for <term>:\n|| https://manebooru.art/images/{imageId} ||");
+                        await ReplyAsync(output);
                     }
                     else
                     {
@@ -98,6 +101,27 @@
             }
 
             await ReplyAsync(output);
+        }
+
+        private static string SetupSpoilerOutput(List<string> spoilerList, long imageId)
+        {
+            var output = "Result is a spoiler for ";
+            for (var x = 0; x < spoilerList.Count; x++)
+            {
+                var spoilerTerm = spoilerList[x];
+                output += $"`{spoilerTerm}`";
+                if (x < spoilerList.Count - 1)
+                {
+                    output += ", ";
+                }
+                else
+                {
+                    output += ":\n";
+                }
+            }
+
+            output += $"|| https://manebooru.art/images/{imageId} ||";
+            return output;
         }
     }
 }

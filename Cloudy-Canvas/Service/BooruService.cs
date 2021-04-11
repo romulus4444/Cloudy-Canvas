@@ -17,12 +17,13 @@
             _settings = settings.Value;
         }
 
-        public async Task<Tuple<long, bool>> GetImageByIdAsync(long imageid)
+        public async Task<Tuple<long, bool, List<string>>> GetImageByIdAsync(long imageid)
         {
             //GET	/api/v1/json/images/:image_id
             var spoiler = false;
             long searchResult = -1;
-            var returnResult = new Tuple<long, bool>(searchResult, spoiler);
+            var emptyList = new List<string>();
+            var returnResult = new Tuple<long, bool, List<string>>(searchResult, spoiler, emptyList);
             var safequery = "id:" + imageid + ", safe";
             var results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
@@ -36,16 +37,36 @@
             }
 
             spoiler = results.images[0].spoilered;
-            returnResult = new Tuple<long, bool>(results.images[0].id, spoiler);
+            var spoilerList = GetSpoilerList(results.images[0].tag_ids);
+            returnResult = new Tuple<long, bool, List<string>>(results.images[0].id, spoiler, spoilerList);
             return (returnResult);
         }
 
-        public async Task<Tuple<long, bool>> GetRandomImageByQueryAsync(string query)
+        private List<string> GetSpoilerList(List<object> tagIds)
+        {
+            var tagList = new List<string>();
+            var spoilerTagIdList = FileHelper.GetSpoilerTagIdListFromFile();
+            foreach (var tagId in tagIds)
+            {
+                foreach (var spoilerTag in spoilerTagIdList)
+                {
+                    if (spoilerTag.Item1 == (long)tagId)
+                    {
+                        tagList.Add(spoilerTag.Item2);
+                    }
+                }
+            }
+
+            return tagList;
+        }
+
+        public async Task<Tuple<long, bool, List<string>>> GetRandomImageByQueryAsync(string query)
         {
             //GET	/api/v1/json/search/images?q=safe
             var spoiler = false;
             long searchResult = -1;
-            var returnResult = new Tuple<long, bool>(searchResult, spoiler);
+            var emptyList = new List<string>();
+            var returnResult = new Tuple<long, bool, List<string>>(searchResult, spoiler, emptyList);
             var safequery = query + ", safe";
             var results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
@@ -66,7 +87,8 @@
                 .ReceiveJson();
 
             spoiler = results.images[0].spoilered;
-            returnResult = new Tuple<long, bool>(results.images[0].id, spoiler);
+            var spoilerList = GetSpoilerList(results.images[0].tag_ids);
+            returnResult = new Tuple<long, bool, List<string>>(results.images[0].id, spoiler, spoilerList);
             return (returnResult);
         }
 

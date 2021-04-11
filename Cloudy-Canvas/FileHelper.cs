@@ -61,5 +61,32 @@
                 File.AppendAllText(filepath, $"{tagId}, {tagName}\n");
             }
         }
+
+        public static List<Tuple<long, string>> GetSpoilerTagIdListFromFile()
+        {
+            var filepath = "Logs/";
+            CreateDirectoryIfNotExists(filepath);
+            filepath += "spoilers.txt";
+            if (!File.Exists(filepath))
+            {
+                File.WriteAllText(filepath, "Spoilered Tags:\n");
+            }
+
+            var fileContents = File.ReadAllLines(filepath);
+            var spoilerList = new List<Tuple<long, string>>();
+            foreach (var line in fileContents)
+            {
+                if (line == "Spoilered Tags:")
+                {
+                    continue;
+                }
+
+                var splitLine = line.Split(',',2);
+                var parts = new Tuple<long, string>(long.Parse(splitLine[0]), splitLine[1].Trim());
+                spoilerList.Add(parts);
+            }
+
+            return spoilerList;
+        }
     }
 }
