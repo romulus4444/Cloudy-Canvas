@@ -1,9 +1,18 @@
 ﻿namespace Cloudy_Canvas.Service
 {
+    using System.Threading.Tasks;
     using Discord.Commands;
+    using Microsoft.Extensions.Logging;
 
-    public class LoggingService
+    public class LoggingHelperService
     {
+        private readonly ILogger<Worker> _logger;
+
+        public LoggingHelperService(ILogger<Worker> logger)
+        {
+            _logger = logger;
+        }
+
         public string SetUpLogStringPrefix(SocketCommandContext context)
         {
             var prefixString = "";
@@ -31,6 +40,12 @@
             }
 
             return prefixString;
+        }
+
+        public Task Log(string message, SocketCommandContext context)
+        {
+            _logger.LogInformation(message);
+            return Task.CompletedTask;
         }
     }
 }

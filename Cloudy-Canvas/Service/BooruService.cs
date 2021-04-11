@@ -30,6 +30,7 @@
             {
                 return -1;
             }
+
             return results.images[0].id;
         }
 
