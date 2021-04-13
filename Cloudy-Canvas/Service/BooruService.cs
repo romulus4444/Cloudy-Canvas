@@ -37,27 +37,9 @@
             }
 
             spoiler = results.images[0].spoilered;
-            var spoilerList = GetSpoilerList(results.images[0].tag_ids);
+            var spoilerList = await GetSpoilerList(results.images[0].tag_ids);
             returnResult = new Tuple<long, bool, List<string>>(results.images[0].id, spoiler, spoilerList);
             return (returnResult);
-        }
-
-        private List<string> GetSpoilerList(List<object> tagIds)
-        {
-            var tagList = new List<string>();
-            var spoilerTagIdList = FileHelper.GetSpoilerTagIdListFromFile();
-            foreach (var tagId in tagIds)
-            {
-                foreach (var spoilerTag in spoilerTagIdList)
-                {
-                    if (spoilerTag.Item1 == (long)tagId)
-                    {
-                        tagList.Add(spoilerTag.Item2);
-                    }
-                }
-            }
-
-            return tagList;
         }
 
         public async Task<Tuple<long, bool, List<string>>> GetRandomImageByQueryAsync(string query)
@@ -87,7 +69,7 @@
                 .ReceiveJson();
 
             spoiler = results.images[0].spoilered;
-            var spoilerList = GetSpoilerList(results.images[0].tag_ids);
+            var spoilerList = await GetSpoilerList(results.images[0].tag_ids);
             returnResult = new Tuple<long, bool, List<string>>(results.images[0].id, spoiler, spoilerList);
             return (returnResult);
         }
@@ -108,7 +90,8 @@
                 var combinedTag = new Tuple<long, string>(tagIds[x], output[x]);
                 combinedList.Add(combinedTag);
             }
-            FileHelper.WriteSpoilerListToFile(combinedList);
+
+            FileHelper.WriteSpoilerListToFileAsync(combinedList);
             return combinedList;
         }
 
@@ -140,6 +123,7 @@
             var output = results.tags[0].name.ToString();
             return output;
         }
+
         public async Task<long> GetFeaturedImageIdAsync()
         {
             //GET	/api/v1/json/images/featured
@@ -149,6 +133,24 @@
                 .ReceiveJson();
             var output = results.image.id;
             return output;
+        }
+
+        private async Task<List<string>> GetSpoilerList(List<object> tagIds)
+        {
+            var tagList = new List<string>();
+            var spoilerTagIdList = await FileHelper.GetSpoilerTagIdListFromFileAsync();
+            foreach (var tagId in tagIds)
+            {
+                foreach (var spoilerTag in spoilerTagIdList)
+                {
+                    if (spoilerTag.Item1 == (long)tagId)
+                    {
+                        tagList.Add(spoilerTag.Item2);
+                    }
+                }
+            }
+
+            return tagList;
         }
     }
 }

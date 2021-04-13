@@ -349,5 +349,6 @@ MigrationBackup/
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
 
-blacklist.txt
-Logs\**
+# Locally stored settings and logs
+BotSettings\**
+/Cloudy-Canvas/BotSettings

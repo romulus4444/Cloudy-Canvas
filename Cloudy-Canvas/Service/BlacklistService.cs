@@ -87,7 +87,7 @@
 
         public void InitializeList(SocketCommandContext context)
         {
-            var path = FileHelper.SetUpFilepath(context);
+            var path = FileHelper.SetUpFilepath(FilePathType.Server, "Blacklist", "txt", context);
             Filepath = path;
             if (File.Exists(Filepath))
             {
