@@ -121,5 +121,12 @@
 
             return output;
         }
+
+        [Command("featured")]
+        public async Task FeaturedAsync()
+        {
+            var featured = await _booru.GetFeaturedImageIdAsync();
+            await ReplyAsync($"https://manebooru.art/images/{featured}");
+        }
     }
 }

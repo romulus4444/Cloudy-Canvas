@@ -140,5 +140,15 @@
             var output = results.tags[0].name.ToString();
             return output;
         }
+        public async Task<long> GetFeaturedImageIdAsync()
+        {
+            //GET	/api/v1/json/images/featured
+            var results = await _settings.url
+                .AppendPathSegments("/api/v1/json/images/featured")
+                .GetAsync()
+                .ReceiveJson();
+            var output = results.image.id;
+            return output;
+        }
     }
 }
