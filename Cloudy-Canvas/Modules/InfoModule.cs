@@ -68,5 +68,43 @@
             await _logger.Log("origin", Context);
             await ReplyAsync("Here is where I came from, thanks to RavenSunArt! https://imgur.com/a/RB16usb");
         }
+
+        [Command("echo")]
+        public async Task EchoAsync(string channelName = "", [Remainder] string message = "")
+        {
+            ulong channelId;
+            if (channelName == "")
+            {
+                await ReplyAsync("You must specify a channel name.");
+                return;
+            }
+
+            if (message == "")
+            {
+                await ReplyAsync(channelName);
+                return;
+            }
+
+            if (channelName.Contains("<#") && channelName.Contains(">"))
+            {
+                var frontTrim = channelName.Substring(2);
+                var trim = frontTrim.Split('>', 2);
+                channelId = ulong.Parse(trim[0]);
+            }
+            else
+            {
+                channelId = await DiscordHelper.CheckIfChannelExistsAsync(channelName, Context);
+            }
+
+            if (channelId > 0)
+            {
+                var channel = Context.Guild.GetTextChannel(channelId);
+                await channel.SendMessageAsync(message);
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}");
+            }
+        }
     }
 }

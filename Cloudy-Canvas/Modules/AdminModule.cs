@@ -32,7 +32,7 @@
                     }
                     else
                     {
-                        var exists = await CheckIfChannelExistsAsync(commandTwo, Context);
+                        var exists = await DiscordHelper.CheckIfChannelExistsAsync(commandTwo, Context);
                         if (exists > 0)
                         {
                             await SetAdminChannel(exists, commandTwo);
@@ -76,24 +76,10 @@
                 }
 
                 var split = setting.Split(" #", 2);
-                channelId = await CheckIfChannelExistsAsync(split[1], context);
+                channelId = await DiscordHelper.CheckIfChannelExistsAsync(split[1], context);
             }
 
             return channelId;
-        }
-
-        private async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
-        {
-            foreach (var channel in context.Guild.TextChannels)
-            {
-                if (channel.Name == channelName)
-                {
-                    return channel.Id;
-                }
-            }
-
-            await Task.CompletedTask;
-            return 0;
         }
 
         public class BlacklistModule : ModuleBase<SocketCommandContext>
