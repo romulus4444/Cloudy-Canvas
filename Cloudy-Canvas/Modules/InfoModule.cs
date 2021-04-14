@@ -68,5 +68,40 @@
             await _logger.Log("origin", Context);
             await ReplyAsync("Here is where I came from, thanks to RavenSunArt! https://imgur.com/a/RB16usb");
         }
+
+        [Command("echo")]
+        public async Task EchoAsync(string channelName = "", [Remainder] string message = "")
+        {
+            ulong channelId = 0;
+            if (channelName == "")
+            {
+                await ReplyAsync("You must specify a channel name or a message.");
+                return;
+            }
+
+            channelId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+
+            if (channelId > 0)
+            {
+                var channel = Context.Guild.GetTextChannel(channelId);
+                if (message == "")
+                {
+                    await ReplyAsync("There's no message to send there.");
+                    return;
+                }
+
+                if (channel != null)
+                {
+                    await channel.SendMessageAsync(message);
+                    return;
+                }
+
+
+                await ReplyAsync("I can't send a message there.");
+                return;
+            }
+
+            await ReplyAsync($"{channelName} {message}");
+        }
     }
 }

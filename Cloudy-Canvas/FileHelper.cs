@@ -3,73 +3,76 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Threading.Tasks;
     using Discord.Commands;
 
     public static class FileHelper
     {
-        public static string SetUpFilepath(SocketCommandContext context, bool log = false)
+        public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null)
         {
-            var filepath = "Logs/";
+            //Root
+            var filepath = "BotSettings/";
             CreateDirectoryIfNotExists(filepath);
-            if (context.IsPrivate)
+
+            //Server
+            if (type != FilePathType.Root && (type == FilePathType.Server || type == FilePathType.Channel))
             {
-                filepath += "_UserDMs/";
+                filepath += "Servers/";
                 CreateDirectoryIfNotExists(filepath);
-                filepath += $"@{context.User.Username}/";
-                CreateDirectoryIfNotExists(filepath);
-            }
-            else
-            {
-                filepath += $"{context.Guild.Name}/";
-                CreateDirectoryIfNotExists(filepath);
-                if (log)
+
+                if (context.IsPrivate)
                 {
-                    filepath += $"#{context.Channel.Name}/";
+                    filepath += "_UserDMs/";
                     CreateDirectoryIfNotExists(filepath);
+                    filepath += $"@{context.User.Username}/";
+                    CreateDirectoryIfNotExists(filepath);
+                }
+                else
+                {
+                    filepath += $"{context.Guild.Name}/";
+                    CreateDirectoryIfNotExists(filepath);
+
+                    //channel
+                    if (type == FilePathType.Channel)
+                    {
+                        filepath += $"#{context.Channel.Name}/";
+                        CreateDirectoryIfNotExists(filepath);
+                    }
                 }
             }
 
-            if (log)
+            switch (filename)
             {
-                filepath += $"{DateTime.Today.ToShortDateString()}.txt";
-            }
-            else
-            {
-                filepath += "blacklist.txt";
+                case "":
+                    filepath += $"Default.{extension}";
+                    break;
+                case "<date>":
+                    filepath += $"{DateTime.Today.ToShortDateString()}.{extension}";
+                    break;
+                default:
+                    filepath += $"{filename}.{extension}";
+                    break;
             }
 
             return filepath;
         }
 
-        private static void CreateDirectoryIfNotExists(string path)
+        public static async Task WriteSpoilerListToFileAsync(List<Tuple<long, string>> tagList)
         {
-            var directory = new DirectoryInfo(path);
-            if (!directory.Exists)
-            {
-                directory.Create();
-            }
-        }
-
-        public static void WriteSpoilerListToFile(List<Tuple<long, string>> tagList)
-        {
-            var filepath = "Logs/";
-            CreateDirectoryIfNotExists(filepath);
-            filepath += "spoilers.txt";
-            File.WriteAllText(filepath, "Spoilered Tags:\n");
+            var filepath = SetUpFilepath(FilePathType.Root, "Spoilers", "txt");
+            await File.WriteAllTextAsync(filepath, "Spoilered Tags:\n");
             foreach (var (tagId, tagName) in tagList)
             {
-                File.AppendAllText(filepath, $"{tagId}, {tagName}\n");
+                await File.AppendAllTextAsync(filepath, $"{tagId}, {tagName}\n");
             }
         }
 
-        public static List<Tuple<long, string>> GetSpoilerTagIdListFromFile()
+        public static async Task<List<Tuple<long, string>>> GetSpoilerTagIdListFromFileAsync()
         {
-            var filepath = "Logs/";
-            CreateDirectoryIfNotExists(filepath);
-            filepath += "spoilers.txt";
+            var filepath = SetUpFilepath(FilePathType.Root, "Spoilers", "txt");
             if (!File.Exists(filepath))
             {
-                File.WriteAllText(filepath, "Spoilered Tags:\n");
+                await File.WriteAllTextAsync(filepath, "Spoilered Tags:\n");
             }
 
             var fileContents = File.ReadAllLines(filepath);
@@ -81,12 +84,85 @@
                     continue;
                 }
 
-                var splitLine = line.Split(',',2);
+                var splitLine = line.Split(',', 2);
                 var parts = new Tuple<long, string>(long.Parse(splitLine[0]), splitLine[1].Trim());
                 spoilerList.Add(parts);
             }
 
             return spoilerList;
         }
+
+        public static async Task<string> GetSetting(string settingName, SocketCommandContext context)
+        {
+            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "txt", context);
+            if (!File.Exists(filepath))
+            {
+                return "<ERROR> File not found";
+            }
+
+            var settings = await File.ReadAllLinesAsync(filepath);
+            var retrievedSetting = "<ERROR> Setting not found";
+            foreach (var setting in settings)
+            {
+                if (!setting.Contains($"{settingName}:"))
+                {
+                    continue;
+                }
+
+                var split = setting.Split(": ", 2);
+                retrievedSetting = split[1];
+            }
+
+            return retrievedSetting;
+        }
+
+        public static async Task SetSetting(string settingName, string settingValue, SocketCommandContext context)
+        {
+            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "txt", context);
+            if (!File.Exists(filepath))
+            {
+                await File.WriteAllTextAsync(filepath, $"{settingName}: {settingValue}");
+            }
+            else
+            {
+                var settings = await File.ReadAllLinesAsync(filepath);
+                var changed = false;
+                for (var x = 0; x < settings.Length; x++)
+                {
+                    if (!settings[x].Contains($"{settingName}: "))
+                    {
+                        continue;
+                    }
+
+                    settings[x] = $"{settingName}: {settingValue}";
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    await File.WriteAllLinesAsync(filepath, settings);
+                }
+                else
+                {
+                    await File.AppendAllTextAsync(filepath, $"{settingName}: {settingValue}");
+                }
+            }
+        }
+
+        private static void CreateDirectoryIfNotExists(string path)
+        {
+            var directory = new DirectoryInfo(path);
+            if (!directory.Exists)
+            {
+                directory.Create();
+            }
+        }
+    }
+
+    public enum FilePathType
+    {
+        Root,
+        Server,
+        Channel,
     }
 }

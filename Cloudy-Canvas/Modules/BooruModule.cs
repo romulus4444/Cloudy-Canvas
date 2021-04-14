@@ -78,7 +78,6 @@
                 {
                     if (spoilered)
                     {
-                        
                         var spoilerStrings = SetupSpoilerOutput(spoilerList);
                         var output = $"Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
                         await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
@@ -106,6 +105,13 @@
             await ReplyAsync(output);
         }
 
+        [Command("featured")]
+        public async Task FeaturedAsync()
+        {
+            var featured = await _booru.GetFeaturedImageIdAsync();
+            await ReplyAsync($"https://manebooru.art/images/{featured}");
+        }
+
         private static string SetupSpoilerOutput(List<string> spoilerList)
         {
             var output = "";
@@ -120,13 +126,6 @@
             }
 
             return output;
-        }
-
-        [Command("featured")]
-        public async Task FeaturedAsync()
-        {
-            var featured = await _booru.GetFeaturedImageIdAsync();
-            await ReplyAsync($"https://manebooru.art/images/{featured}");
         }
     }
 }

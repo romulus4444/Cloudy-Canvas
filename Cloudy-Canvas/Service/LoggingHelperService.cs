@@ -16,12 +16,11 @@
             _logger = logger;
         }
 
-        public Task Log(string message, SocketCommandContext context)
+        public async Task Log(string message, SocketCommandContext context)
         {
-            AppendToFile(message, context);
+            await AppendToFile(message, context);
             var logMessage = PrepareMessageForLogging(message, context);
             _logger.LogInformation(logMessage);
-            return Task.CompletedTask;
         }
 
         private static string PrepareMessageForLogging(string message, SocketCommandContext context, bool fileEntry = false, bool header = false)
@@ -76,16 +75,16 @@
             return logMessage;
         }
 
-        private static void AppendToFile(string message, SocketCommandContext context)
+        private static async Task AppendToFile(string message, SocketCommandContext context)
         {
-            var filepath = FileHelper.SetUpFilepath(context, true);
+            var filepath = FileHelper.SetUpFilepath(FilePathType.Channel, "<date>", "txt", context);
             if (!File.Exists(filepath))
             {
-                File.WriteAllText(filepath, PrepareMessageForLogging(message, context, false, true));
+                await File.WriteAllTextAsync(filepath, PrepareMessageForLogging(message, context, false, true));
             }
 
             var logMessage = PrepareMessageForLogging(message, context, true);
-            File.AppendAllText(filepath, logMessage);
+            await File.AppendAllTextAsync(filepath, logMessage);
         }
     }
 }
