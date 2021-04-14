@@ -10,7 +10,7 @@
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
         [Command("admin")]
-        public async Task AdminAsync(string commandOne = "", [Remainder] string commandTwo = "")
+        public async Task AdminAsync(string commandOne = "", string commandTwo = "", [Remainder] string commandThree = "")
         {
             switch (commandOne)
             {
@@ -60,25 +60,15 @@
 
         private async Task<ulong> GetAdminChannel(SocketCommandContext context)
         {
-            var filepath = FileHelper.SetUpFilepath(FilePathType.Server, "Settings", "txt", Context);
-            if (!File.Exists(filepath))
-            {
-                return 0;
-            }
-
-            var settings = await File.ReadAllLinesAsync(filepath);
+            var setting = await FileHelper.GetSetting("adminchannel", context);
             ulong channelId = 0;
-            foreach (var setting in settings)
+            if (setting.Contains("<ERROR>"))
             {
-                if (!setting.Contains("adminchannel:"))
-                {
-                    continue;
-                }
-
-                var split = setting.Split(" #", 2);
-                channelId = await DiscordHelper.CheckIfChannelExistsAsync(split[1], context);
+                return channelId;
             }
 
+            var split = setting.Substring(2).Split('>', 2);
+            channelId = ulong.Parse(split[0]);
             return channelId;
         }
 

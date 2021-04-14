@@ -3,5 +3,6 @@
     public class DiscordSettings
     {
         public string token { get; set; }
+        public ulong me { get; set; }
     }
 }

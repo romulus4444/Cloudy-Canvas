@@ -57,15 +57,6 @@
             return filepath;
         }
 
-        private static void CreateDirectoryIfNotExists(string path)
-        {
-            var directory = new DirectoryInfo(path);
-            if (!directory.Exists)
-            {
-                directory.Create();
-            }
-        }
-
         public static async Task WriteSpoilerListToFileAsync(List<Tuple<long, string>> tagList)
         {
             var filepath = SetUpFilepath(FilePathType.Root, "Spoilers", "txt");
@@ -93,12 +84,45 @@
                     continue;
                 }
 
-                var splitLine = line.Split(',',2);
+                var splitLine = line.Split(',', 2);
                 var parts = new Tuple<long, string>(long.Parse(splitLine[0]), splitLine[1].Trim());
                 spoilerList.Add(parts);
             }
 
             return spoilerList;
+        }
+
+        public static async Task<string> GetSetting(string settingName, SocketCommandContext context)
+        {
+            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "txt", context);
+            if (!File.Exists(filepath))
+            {
+                return "<ERROR> File not found";
+            }
+
+            var settings = await File.ReadAllLinesAsync(filepath);
+            var retrievedSetting = "<ERROR> Setting not found";
+            foreach (var setting in settings)
+            {
+                if (!setting.Contains($"{settingName}:"))
+                {
+                    continue;
+                }
+
+                var split = setting.Split(": ", 2);
+                retrievedSetting = split[1];
+            }
+
+            return retrievedSetting;
+        }
+
+        private static void CreateDirectoryIfNotExists(string path)
+        {
+            var directory = new DirectoryInfo(path);
+            if (!directory.Exists)
+            {
+                directory.Create();
+            }
         }
     }
 
