@@ -31,10 +31,19 @@
                     }
                     else
                     {
-                        var exists = await DiscordHelper.CheckIfChannelExistsAsync(commandTwo, Context);
+                        var exists = await DiscordHelper.GetChannelIdIfAccessAsync(commandTwo, Context);
+                        var channelName = await DiscordHelper.ConvertChannelPingToNameAsync(commandTwo, Context);
                         if (exists > 0)
                         {
-                            await SetAdminChannel(exists, commandTwo);
+                            if (channelName.Contains("<ERROR>"))
+                            {
+                                await SetAdminChannel(exists, commandTwo);
+                            }
+                            else
+                            {
+                                await SetAdminChannel(exists, channelName);
+                            }
+
                             await ReplyAsync($"Admin channel set to <#{exists}>");
                         }
                         else

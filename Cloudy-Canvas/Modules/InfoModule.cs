@@ -79,19 +79,7 @@
                 return;
             }
 
-            if (channelName.Contains("<#") && channelName.Contains(">"))
-            {
-                var frontTrim = channelName.Substring(2);
-                var trim = frontTrim.Split('>', 2);
-                channelId = ulong.Parse(trim[0]);
-                channelId = await DiscordHelper.CheckIfChannelExistsAsync(channelId, Context);
-            } // channelId > 0 if the bot can send messages there
-
-            if (channelId == 0)
-            {
-                //try to get a channel name from the first part of the string
-                channelId = await DiscordHelper.CheckIfChannelExistsAsync(channelName, Context);
-            } // otherChannelId > 0 if the bot can send messages there
+            channelId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
 
             if (channelId > 0)
             {

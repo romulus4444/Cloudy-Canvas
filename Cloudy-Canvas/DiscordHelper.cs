@@ -37,5 +37,38 @@
             await Task.CompletedTask;
             return 0;
         }
+
+        public static async Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
+        {
+            var id = ConvertChannelPingToId(channelName);
+            if (id > 0)
+            {
+                return await CheckIfChannelExistsAsync(id, context);
+            }
+            return await CheckIfChannelExistsAsync(channelName, context);
+        }
+
+        public static async Task<string> ConvertChannelPingToNameAsync(string channelPing, SocketCommandContext context)
+        {
+            var id = ConvertChannelPingToId(channelPing);
+            if (id <= 0)
+            {
+                return "<ERROR> Invalid channel";
+            }
+            var channel = context.Guild.GetTextChannel(id);
+            return channel == null ? "<ERROR> Invalid channel" : channel.Name;
+        }
+
+        public static ulong ConvertChannelPingToId(string channelPing)
+        {
+            if (!channelPing.Contains("<#") || !channelPing.Contains(">"))
+            {
+                return 0;
+            }
+            var frontTrim = channelPing.Substring(2);
+            var trim = frontTrim.Split('>', 2)[0];
+            return ulong.Parse(trim);
+
+        }
     }
 }
