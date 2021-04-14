@@ -97,8 +97,6 @@
             {
                 File.WriteAllText(path, "");
             }
-
-            
         }
 
         private void LoadList()

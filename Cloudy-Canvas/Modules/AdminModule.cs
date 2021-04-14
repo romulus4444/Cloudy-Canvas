@@ -1,6 +1,5 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
-    using System.IO;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
@@ -51,14 +50,7 @@
             }
         }
 
-        private async Task SetAdminChannel(ulong channelId, string channelName)
-        {
-            var filepath = FileHelper.SetUpFilepath(FilePathType.Server, "Settings", "txt", Context);
-            await File.WriteAllTextAsync(filepath, $"adminchannel: <#{channelId}> #{channelName}");
-            await Task.CompletedTask;
-        }
-
-        private async Task<ulong> GetAdminChannel(SocketCommandContext context)
+        private static async Task<ulong> GetAdminChannel(SocketCommandContext context)
         {
             var setting = await FileHelper.GetSetting("adminchannel", context);
             ulong channelId = 0;
@@ -67,9 +59,14 @@
                 return channelId;
             }
 
-            var split = setting.Substring(2).Split('>', 2);
-            channelId = ulong.Parse(split[0]);
+            var split = setting.Split("<#", 2)[1].Split('>', 2)[0];
+            channelId = ulong.Parse(split);
             return channelId;
+        }
+
+        private async Task SetAdminChannel(ulong channelId, string channelName)
+        {
+            await FileHelper.SetSetting("adminchannel", $"<#{channelId}> #{channelName}", Context);
         }
 
         public class BlacklistModule : ModuleBase<SocketCommandContext>

@@ -116,6 +116,39 @@
             return retrievedSetting;
         }
 
+        public static async Task SetSetting(string settingName, string settingValue, SocketCommandContext context)
+        {
+            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "txt", context);
+            if (!File.Exists(filepath))
+            {
+                await File.WriteAllTextAsync(filepath, $"{settingName}: {settingValue}");
+            }
+            else
+            {
+                var settings = await File.ReadAllLinesAsync(filepath);
+                var changed = false;
+                for (var x = 0; x < settings.Length; x++)
+                {
+                    if (!settings[x].Contains($"{settingName}: "))
+                    {
+                        continue;
+                    }
+
+                    settings[x] = $"{settingName}: {settingValue}";
+                    changed = true;
+                }
+
+                if (changed)
+                {
+                    await File.WriteAllLinesAsync(filepath, settings);
+                }
+                else
+                {
+                    await File.AppendAllTextAsync(filepath, $"{settingName}: {settingValue}");
+                }
+            }
+        }
+
         private static void CreateDirectoryIfNotExists(string path)
         {
             var directory = new DirectoryInfo(path);

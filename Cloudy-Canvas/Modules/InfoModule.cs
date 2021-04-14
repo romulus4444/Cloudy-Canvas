@@ -88,7 +88,8 @@
             } // channelId > 0 if the bot can send messages there
 
             if (channelId == 0)
-            { //try to get a channel name from the first part of the string
+            {
+                //try to get a channel name from the first part of the string
                 channelId = await DiscordHelper.CheckIfChannelExistsAsync(channelName, Context);
             } // otherChannelId > 0 if the bot can send messages there
 

@@ -22,6 +22,7 @@
             await Task.CompletedTask;
             return 0;
         }
+
         public static async Task<ulong> CheckIfChannelExistsAsync(ulong channelId, SocketCommandContext context)
         {
             var me = context.Guild.GetUser(828682017868218445);
