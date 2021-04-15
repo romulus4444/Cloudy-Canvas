@@ -33,24 +33,35 @@
             }
             else
             {
-                var (imageId, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query);
-                if (imageId == -1)
+                var (imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query);
+                if (total == 0)
                 {
+                    await _logger.Log($"query: {query}, total: {total}", Context);
                     await ReplyAsync("I could not find any images with that query.");
                 }
                 else
                 {
+                    var totalString = $"[{total} result";
+                    if (total == 1)
+                    {
+                        totalString += "] ";
+                    }
+                    else
+                    {
+                        totalString += "s] ";
+                    }
                     if (spoilered)
                     {
                         var spoilerStrings = SetupSpoilerOutput(spoilerList);
-                        var output = $"Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
-                        await _logger.Log($"query: {query}, result: {imageId} SPOILERED {spoilerStrings}", Context);
+                        var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                        await _logger.Log($"query: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
                         await ReplyAsync(output);
                     }
                     else
                     {
-                        await _logger.Log($"query: {query}, result: {imageId}", Context);
-                        await ReplyAsync($"https://manebooru.art/images/{imageId}");
+                        var output = totalString + $"https://manebooru.art/images/{imageId}";
+                        await _logger.Log($"query: {query}, total: {total} result: {imageId}", Context);
+                        await ReplyAsync(output);
                     }
                 }
             }

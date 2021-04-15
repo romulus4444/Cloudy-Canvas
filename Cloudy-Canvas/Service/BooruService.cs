@@ -42,35 +42,36 @@
             return (returnResult);
         }
 
-        public async Task<Tuple<long, bool, List<string>>> GetRandomImageByQueryAsync(string query)
+        public async Task<Tuple<long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query)
         {
             //GET	/api/v1/json/search/images?q=safe
             var spoiler = false;
             long searchResult = -1;
+            long numberOfResults = 0;
             var emptyList = new List<string>();
-            var returnResult = new Tuple<long, bool, List<string>>(searchResult, spoiler, emptyList);
-            var safequery = query + ", safe";
+            var returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, emptyList);
+            var safeQuery = query + ", safe";
             var results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = safequery, per_page = 1 })
+                .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1 })
                 .GetAsync()
                 .ReceiveJson();
-            long total = results.total;
-            if (total <= 0)
+            numberOfResults = results.total;
+            if (numberOfResults <= 0)
             {
                 return returnResult;
             }
 
-            var page = new Random().Next((int)total) + 1;
+            var page = new Random().Next((int)numberOfResults) + 1;
             results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
                 .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page })
                 .GetAsync()
                 .ReceiveJson();
-
+            searchResult = results.images[0].id;
             spoiler = results.images[0].spoilered;
             var spoilerList = await GetSpoilerList(results.images[0].tag_ids);
-            returnResult = new Tuple<long, bool, List<string>>(results.images[0].id, spoiler, spoilerList);
+            returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, spoilerList);
             return (returnResult);
         }
 
