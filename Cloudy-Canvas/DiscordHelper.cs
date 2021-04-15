@@ -78,7 +78,6 @@
             var frontTrim = channelPing.Substring(2);
             var trim = frontTrim.Split('>', 2)[0];
             return ulong.Parse(trim);
-
         }
     }
 }
