@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
@@ -21,7 +22,7 @@
                 case "adminchannel":
                     if (commandTwo == "")
                     {
-                        var channelId = await GetAdminChannel(Context);
+                        var channelId = await GetAdminChannelAsync(Context);
                         if (channelId > 0)
                         {
                             await ReplyAsync($"Admin channel is <#{channelId}>");
@@ -39,11 +40,11 @@
                         {
                             if (channelName.Contains("<ERROR>"))
                             {
-                                await SetAdminChannel(channelId, commandTwo);
+                                await SetAdminChannelAsync(channelId, commandTwo);
                             }
                             else
                             {
-                                await SetAdminChannel(channelId, channelName);
+                                await SetAdminChannelAsync(channelId, channelName);
                             }
 
                             await ReplyAsync($"Admin channel set to <#{channelId}>");
@@ -56,53 +57,85 @@
 
                     break;
                 case "ignorechannel":
-                    if (commandTwo == "")
+                    switch (commandTwo)
                     {
-                        var channelList = await GetIgnoredChannels(Context);
-                        if (channelList.Count > 0)
-                        {
-                            var output = "__Channel Ignore List:__\n";
-                            foreach (var channel in channelList)
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            break;
+                        case "get":
+                            var channelList = await GetIgnoredChannelsAsync(Context);
+                            if (channelList.Count > 0)
                             {
-                                output += $"<#{channel}>\n";
-                            }
+                                var output = "__Channel Ignore List:__\n";
+                                foreach (var channel in channelList)
+                                {
+                                    output += $"<#{channel}>\n";
+                                }
 
-                            await ReplyAsync(output);
-                        }
-                        else
-                        {
-                            await ReplyAsync("No channels on ignore list.");
-                        }
-                    }
-                    else
-                    {
-                        var channelId = await DiscordHelper.GetChannelIdIfAccessAsync(commandTwo, Context);
-                        var channelName = await DiscordHelper.ConvertChannelPingToNameAsync(commandTwo, Context);
-                        if (channelId > 0)
-                        {
-                            bool added;
-                            if (channelName.Contains("<ERROR>"))
-                            {
-                                added = await AddIgnoreChannel(channelId, commandTwo, Context);
+                                await ReplyAsync(output);
                             }
                             else
                             {
-                                added = await AddIgnoreChannel(channelId, channelName, Context);
+                                await ReplyAsync("No channels on ignore list.");
                             }
 
-                            if (added)
+                            break;
+                        case "add":
+                            var channelAddId = await DiscordHelper.GetChannelIdIfAccessAsync(commandThree, Context);
+                            var channelAddName = await DiscordHelper.ConvertChannelPingToNameAsync(commandThree, Context);
+                            if (channelAddId > 0)
                             {
-                                await ReplyAsync($"Added <#{channelId}> to ignore list.");
+                                bool added;
+                                if (channelAddName.Contains("<ERROR>"))
+                                {
+                                    added = await AddIgnoreChannelAsync(channelAddId, commandThree, Context);
+                                }
+                                else
+                                {
+                                    added = await AddIgnoreChannelAsync(channelAddId, channelAddName, Context);
+                                }
+
+                                if (added)
+                                {
+                                    await ReplyAsync($"Added <#{channelAddId}> to ignore list.");
+                                }
+                                else
+                                {
+                                    await ReplyAsync($"<#{channelAddId}> is already on the list.");
+                                }
                             }
                             else
                             {
-                                await ReplyAsync($"<#{channelId}> is already on the list.");
+                                await ReplyAsync($"Invalid channel name #{commandThree}.");
                             }
-                        }
-                        else
-                        {
-                            await ReplyAsync($"Invalid channel name #{commandTwo}.");
-                        }
+
+                            break;
+                        case "remove":
+                            var channelRemoveId = await DiscordHelper.GetChannelIdIfAccessAsync(commandThree, Context);
+                            var channelRemoveName = await DiscordHelper.ConvertChannelPingToNameAsync(commandThree, Context);
+                            if (channelRemoveId > 0)
+                            {
+                                bool removed;
+                                removed = await RemoveIgnoreChannelAsync(channelRemoveId, Context);
+
+                                if (removed)
+                                {
+                                    await ReplyAsync($"Removed <#{channelRemoveId}> from ignore list.");
+                                }
+                                else
+                                {
+                                    await ReplyAsync($"<#{channelRemoveId}> was not on the list.");
+                                }
+                            }
+                            else
+                            {
+                                await ReplyAsync($"Invalid channel name #{commandThree}.");
+                            }
+
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            break;
                     }
 
                     break;
@@ -116,7 +149,7 @@
             }
         }
 
-        private static async Task<ulong> GetAdminChannel(SocketCommandContext context)
+        private static async Task<ulong> GetAdminChannelAsync(SocketCommandContext context)
         {
             var setting = await FileHelper.GetSetting("adminchannel", context);
             ulong channelId = 0;
@@ -130,7 +163,7 @@
             return channelId;
         }
 
-        private static async Task<List<ulong>> GetIgnoredChannels(SocketCommandContext context)
+        private static async Task<List<ulong>> GetIgnoredChannelsAsync(SocketCommandContext context)
         {
             var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
             if (!File.Exists(filename))
@@ -148,7 +181,7 @@
             return channelIdList;
         }
 
-        private static async Task<bool> AddIgnoreChannel(ulong channelId, string channelName, SocketCommandContext context)
+        private static async Task<bool> AddIgnoreChannelAsync(ulong channelId, string channelName, SocketCommandContext context)
         {
             var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
             if (!File.Exists(filename))
@@ -170,7 +203,36 @@
             return true;
         }
 
-        private async Task SetAdminChannel(ulong channelId, string channelName)
+        private async Task<bool> RemoveIgnoreChannelAsync(ulong channelId, SocketCommandContext context)
+        {
+            var removed = false;
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
+            if (!File.Exists(filename))
+            {
+                return false;
+            }
+
+            var channelList = (await File.ReadAllLinesAsync(filename)).ToList();
+            for (var x = channelList.Count - 1; x >= 0; x--)
+            {
+                if (!channelList[x].Contains(channelId.ToString()))
+                {
+                    continue;
+                }
+
+                channelList.Remove(channelList[x]);
+                removed = true;
+            }
+
+            if (removed)
+            {
+                await File.WriteAllLinesAsync(filename, channelList);
+            }
+
+            return removed;
+        }
+
+        private async Task SetAdminChannelAsync(ulong channelId, string channelName)
         {
             await FileHelper.SetSetting("adminchannel", $"<#{channelId}> #{channelName}", Context);
         }
