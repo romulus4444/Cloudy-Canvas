@@ -112,11 +112,9 @@
                             break;
                         case "remove":
                             var channelRemoveId = await DiscordHelper.GetChannelIdIfAccessAsync(commandThree, Context);
-                            var channelRemoveName = await DiscordHelper.ConvertChannelPingToNameAsync(commandThree, Context);
                             if (channelRemoveId > 0)
                             {
-                                bool removed;
-                                removed = await RemoveIgnoreChannelAsync(channelRemoveId, Context);
+                                var removed = await RemoveIgnoreChannelAsync(channelRemoveId, Context);
 
                                 if (removed)
                                 {
@@ -132,6 +130,10 @@
                                 await ReplyAsync($"Invalid channel name #{commandThree}.");
                             }
 
+                            break;
+                        case "clear":
+                            await ClearIgnoreChannelAsync(Context);
+                            await ReplyAsync("Ignore channel list cleared.");
                             break;
                         default:
                             await ReplyAsync($"Invalid command {commandTwo}");
@@ -203,7 +205,7 @@
             return true;
         }
 
-        private async Task<bool> RemoveIgnoreChannelAsync(ulong channelId, SocketCommandContext context)
+        private static async Task<bool> RemoveIgnoreChannelAsync(ulong channelId, SocketCommandContext context)
         {
             var removed = false;
             var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
@@ -230,6 +232,11 @@
             }
 
             return removed;
+        }
+        private static async Task ClearIgnoreChannelAsync( SocketCommandContext context)
+        {
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
+            await File.WriteAllTextAsync(filename, "");
         }
 
         private async Task SetAdminChannelAsync(ulong channelId, string channelName)
