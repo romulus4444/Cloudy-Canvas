@@ -10,7 +10,12 @@
 
         public static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
         {
-            var me = context.Guild.GetUser(Me);
+            var me = await context.Channel.GetUserAsync(Me);
+            if (context.IsPrivate)
+            {
+                return 0;
+            }
+
             foreach (var channel in context.Guild.TextChannels)
             {
                 if (channel.Name == channelName && channel.Users.Contains(me))
@@ -25,7 +30,12 @@
 
         public static async Task<ulong> CheckIfChannelExistsAsync(ulong channelId, SocketCommandContext context)
         {
-            var me = context.Guild.GetUser(828682017868218445);
+            var me = await context.Channel.GetUserAsync(Me);
+            if (context.IsPrivate)
+            {
+                return 0;
+            }
+
             foreach (var channel in context.Guild.TextChannels)
             {
                 if (channel.Id == channelId && channel.Users.Contains(me))
@@ -68,7 +78,6 @@
             var frontTrim = channelPing.Substring(2);
             var trim = frontTrim.Split('>', 2)[0];
             return ulong.Parse(trim);
-
         }
     }
 }
