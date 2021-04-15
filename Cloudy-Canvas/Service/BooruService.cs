@@ -52,7 +52,7 @@
             var safequery = query + ", safe";
             var results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = query, per_page = 1 })
+                .SetQueryParams(new { key = _settings.token, q = safequery, per_page = 1 })
                 .GetAsync()
                 .ReceiveJson();
             long total = results.total;
@@ -91,7 +91,7 @@
                 combinedList.Add(combinedTag);
             }
 
-            FileHelper.WriteSpoilerListToFileAsync(combinedList);
+            await FileHelper.WriteSpoilerListToFileAsync(combinedList);
             return combinedList;
         }
 
