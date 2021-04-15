@@ -6,11 +6,11 @@
 
     public static class DiscordHelper
     {
-        private const ulong Me = 828682017868218445;
+        private const ulong CloudyCanvasId = 828682017868218445; //Cloudy Canvas's Discord Id
 
         public static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
         {
-            var me = await context.Channel.GetUserAsync(Me);
+            var cloudyCanvas = await context.Channel.GetUserAsync(CloudyCanvasId);
             if (context.IsPrivate)
             {
                 return 0;
@@ -18,7 +18,7 @@
 
             foreach (var channel in context.Guild.TextChannels)
             {
-                if (channel.Name == channelName && channel.Users.Contains(me))
+                if (channel.Name == channelName && channel.Users.Contains(cloudyCanvas))
                 {
                     return channel.Id;
                 }
@@ -30,7 +30,7 @@
 
         public static async Task<ulong> CheckIfChannelExistsAsync(ulong channelId, SocketCommandContext context)
         {
-            var me = await context.Channel.GetUserAsync(Me);
+            var cloudyCanvas = await context.Channel.GetUserAsync(CloudyCanvasId);
             if (context.IsPrivate)
             {
                 return 0;
@@ -38,7 +38,7 @@
 
             foreach (var channel in context.Guild.TextChannels)
             {
-                if (channel.Id == channelId && channel.Users.Contains(me))
+                if (channel.Id == channelId && channel.Users.Contains(cloudyCanvas))
                 {
                     return channel.Id;
                 }
