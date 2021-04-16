@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
@@ -24,6 +25,11 @@
         [Summary("Selects an image at random")]
         public async Task PickAsync([Remainder] [Summary("Query string")] string query = "*")
         {
+            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            {
+                return;
+            }
+
             _blacklistService.InitializeList(Context);
             var badTerms = _blacklistService.CheckList(query);
             if (badTerms != "")
@@ -50,6 +56,7 @@
                     {
                         totalString += "s] ";
                     }
+
                     if (spoilered)
                     {
                         var spoilerStrings = SetupSpoilerOutput(spoilerList);
@@ -69,8 +76,13 @@
 
         [Command("pickrecent")]
         [Summary("Selects an image at random")]
-        public async Task PickFirstAsync([Remainder][Summary("Query string")] string query = "*")
+        public async Task PickFirstAsync([Remainder] [Summary("Query string")] string query = "*")
         {
+            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            {
+                return;
+            }
+
             _blacklistService.InitializeList(Context);
             var badTerms = _blacklistService.CheckList(query);
             if (badTerms != "")
@@ -97,6 +109,7 @@
                     {
                         totalString += "s] ";
                     }
+
                     if (spoilered)
                     {
                         var spoilerStrings = SetupSpoilerOutput(spoilerList);
@@ -113,10 +126,16 @@
                 }
             }
         }
+
         [Command("id")]
         [Summary("Selects an image by image id")]
         public async Task IdAsync([Summary("The image ID")] long id = 4010266)
         {
+            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            {
+                return;
+            }
+
             _blacklistService.InitializeList(Context);
             var badTerms = _blacklistService.CheckList(id.ToString());
             if (badTerms != "")
@@ -152,6 +171,11 @@
         [Command("getspoilers")]
         public async Task GetSpoilersAsync()
         {
+            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            {
+                return;
+            }
+
             var spoilerList = await _booru.GetSpoilerTagsAsync();
             var output = "__Spoilered tags:__\n";
             foreach (var (tagId, tagName) in spoilerList)
@@ -165,11 +189,16 @@
         [Command("featured")]
         public async Task FeaturedAsync()
         {
+            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            {
+                return;
+            }
+
             var featured = await _booru.GetFeaturedImageIdAsync();
             await ReplyAsync($"https://manebooru.art/images/{featured}");
         }
 
-        private static string SetupSpoilerOutput(List<string> spoilerList)
+        private static string SetupSpoilerOutput(IReadOnlyList<string> spoilerList)
         {
             var output = "";
             for (var x = 0; x < spoilerList.Count; x++)

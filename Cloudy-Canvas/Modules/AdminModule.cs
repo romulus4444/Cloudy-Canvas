@@ -21,7 +21,7 @@
             SocketRole adminRole;
             await ReplyAsync("Moving in to my new place...");
             var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(adminChannelName, Context);
-            var channelSetName = await DiscordHelper.ConvertChannelPingToNameAsync(adminChannelName, Context);
+            var channelSetName = DiscordHelper.ConvertChannelPingToName(adminChannelName, Context);
             if (channelSetId > 0)
             {
                 if (channelSetName.Contains("<ERROR>"))
@@ -229,26 +229,6 @@
             }
 
             return removed;
-        }
-
-        private static async Task<List<ulong>> GetIgnoredRolesAsync(SocketCommandContext context)
-        {
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
-            if (!File.Exists(filename))
-            {
-                return new List<ulong>();
-            }
-
-            var roleList = await File.ReadAllLinesAsync(filename);
-            var roleIdList = new List<ulong>();
-            foreach (var role in roleList)
-            {
-                var two = "";
-                var one = role.Split("> @", 2)[0].Substring(3);
-                roleIdList.Add(ulong.Parse(one));
-            }
-
-            return roleIdList;
         }
 
         private static async Task<ulong> GetAdminChannelAsync(SocketCommandContext context)
@@ -464,7 +444,7 @@
 
         private async Task IgnoreRoleGetAsync()
         {
-            var roleList = await GetIgnoredRolesAsync(Context);
+            var roleList = await DiscordHelper.GetIgnoredRolesAsync(Context);
             if (roleList.Count > 0)
             {
                 var output = "__Role Ignore List:__\n";
@@ -484,7 +464,7 @@
         private async Task AdminChannelSetAsync(string channelName)
         {
             var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
-            var channelSetName = await DiscordHelper.ConvertChannelPingToNameAsync(channelName, Context);
+            var channelSetName = DiscordHelper.ConvertChannelPingToName(channelName, Context);
             if (channelSetId > 0)
             {
                 if (channelSetName.Contains("<ERROR>"))
@@ -567,7 +547,7 @@
         private async Task IgnoreChannelAddAsync(string channeName)
         {
             var channelAddId = await DiscordHelper.GetChannelIdIfAccessAsync(channeName, Context);
-            var channelAddName = await DiscordHelper.ConvertChannelPingToNameAsync(channeName, Context);
+            var channelAddName = DiscordHelper.ConvertChannelPingToName(channeName, Context);
             if (channelAddId > 0)
             {
                 bool added;

@@ -1,5 +1,8 @@
 ﻿namespace Cloudy_Canvas
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using Discord.Commands;
@@ -19,7 +22,7 @@
             return await CheckIfChannelExistsAsync(channelName, context);
         }
 
-        public static async Task<string> ConvertChannelPingToNameAsync(string channelPing, SocketCommandContext context)
+        public static string ConvertChannelPingToName(string channelPing, SocketCommandContext context)
         {
             var id = ConvertChannelPingToId(channelPing);
             if (id <= 0)
@@ -52,6 +55,45 @@
 
             var role = context.Guild.GetRole(id);
             return role == null ? "<ERROR> Invalid role" : role.Name;
+        }
+
+        public static async Task<List<ulong>> GetIgnoredRolesAsync(SocketCommandContext context)
+        {
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
+            if (!File.Exists(filename))
+            {
+                return new List<ulong>();
+            }
+
+            var roleList = await File.ReadAllLinesAsync(filename);
+            var roleIdList = new List<ulong>();
+            foreach (var role in roleList)
+            {
+                var two = "";
+                var one = role.Split("> @", 2)[0].Substring(3);
+                roleIdList.Add(ulong.Parse(one));
+            }
+
+            return roleIdList;
+        }
+
+        public static async Task<bool> CanUserRunThisAsync(SocketCommandContext context)
+        {
+            if (context.IsPrivate)
+            {
+                return true;
+            }
+
+            var ignoredRoles = await GetIgnoredRolesAsync(context);
+            foreach (var ignoredRole in ignoredRoles)
+            {
+                if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == ignoredRole))
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
