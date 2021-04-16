@@ -74,6 +74,32 @@
             returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, spoilerList);
             return (returnResult);
         }
+        public async Task<Tuple<long, long, bool, List<string>>> GetFirstRecentImageByQueryAsync(string query)
+        {
+            //GET	/api/v1/json/search/images?q=safe
+            var spoiler = false;
+            long searchResult = -1;
+            long numberOfResults = 0;
+            var emptyList = new List<string>();
+            var returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, emptyList);
+            var safeQuery = query + ", safe";
+            var results = await _settings.url
+                .AppendPathSegments("/api/v1/json/search/images")
+                .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, sf = "first_seen_at", sd = "desc" })
+                .GetAsync()
+                .ReceiveJson();
+            numberOfResults = results.total;
+            if (numberOfResults <= 0)
+            {
+                return returnResult;
+            }
+
+            searchResult = results.images[0].id;
+            spoiler = results.images[0].spoilered;
+            var spoilerList = await GetSpoilerList(results.images[0].tag_ids);
+            returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, spoilerList);
+            return (returnResult);
+        }
 
         public async Task<List<Tuple<long, string>>> GetSpoilerTagsAsync()
         {
