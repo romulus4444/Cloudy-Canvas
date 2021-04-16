@@ -62,6 +62,28 @@
 
                     break;
                 case "ignorerole":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            break;
+                        case "get":
+                            await IgnoreRoleGetAsync();
+                            break;
+                        case "add":
+                            await IgnoreRoleAddAsync(commandThree);
+                            break;
+                        case "remove":
+                            await IgnoreRoleRemoveAsync(commandThree);
+                            break;
+                        case "clear":
+                            await IgnoreRoleClearAsync();
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            break;
+                    }
+
                     break;
                 case "adminrole":
                     break;
@@ -69,6 +91,61 @@
                     await ReplyAsync($"Invalid command `{commandOne}`");
                     break;
             }
+        }
+
+        private static async Task ClearIgnoreRoleAsync(SocketCommandContext context)
+        {
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
+            await File.WriteAllTextAsync(filename, "");
+        }
+
+        private static async Task<bool> RemoveIgnoreRoleAsync(ulong roleRemoveId, SocketCommandContext context)
+        {
+            var removed = false;
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
+            if (!File.Exists(filename))
+            {
+                return false;
+            }
+
+            var roleList = (await File.ReadAllLinesAsync(filename)).ToList();
+            for (var x = roleList.Count - 1; x >= 0; x--)
+            {
+                if (!roleList[x].Contains(roleRemoveId.ToString()))
+                {
+                    continue;
+                }
+
+                roleList.Remove(roleList[x]);
+                removed = true;
+            }
+
+            if (removed)
+            {
+                await File.WriteAllLinesAsync(filename, roleList);
+            }
+
+            return removed;
+        }
+
+        private static async Task<List<ulong>> GetIgnoredRolesAsync(SocketCommandContext context)
+        {
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
+            if (!File.Exists(filename))
+            {
+                return new List<ulong>();
+            }
+
+            var roleList = await File.ReadAllLinesAsync(filename);
+            var roleIdList = new List<ulong>();
+            foreach (var role in roleList)
+            {
+                var two = "";
+                var one = role.Split("> @", 2)[0].Substring(3);
+                roleIdList.Add(ulong.Parse(one));
+            }
+
+            return roleIdList;
         }
 
         private static async Task<ulong> GetAdminChannelAsync(SocketCommandContext context)
@@ -158,6 +235,106 @@
         {
             var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
             await File.WriteAllTextAsync(filename, "");
+        }
+
+        private async Task IgnoreRoleClearAsync()
+        {
+            await ClearIgnoreRoleAsync(Context);
+            await ReplyAsync("Ignore role list cleared.");
+        }
+
+        private async Task IgnoreRoleRemoveAsync(string commandThree)
+        {
+            var roleRemoveId = await DiscordHelper.GetRoleIdIfAccessAsync(commandThree, Context);
+            if (roleRemoveId > 0)
+            {
+                var removed = await RemoveIgnoreRoleAsync(roleRemoveId, Context);
+
+                if (removed)
+                {
+                    await ReplyAsync($"Removed <@&{roleRemoveId}> from ignore list.");
+                }
+                else
+                {
+                    await ReplyAsync($"<@&{roleRemoveId}> was not on the list.");
+                }
+            }
+            else
+            {
+                await ReplyAsync($"Invalid role name @{commandThree}.");
+            }
+        }
+
+        private async Task IgnoreRoleAddAsync(string commandThree)
+        {
+            var roleAddId = await DiscordHelper.GetRoleIdIfAccessAsync(commandThree, Context);
+            var roleAddName = await DiscordHelper.ConvertRolePingToNameAsync(commandThree, Context);
+            if (roleAddId > 0)
+            {
+                bool added;
+                if (roleAddName.Contains("<ERROR>"))
+                {
+                    added = await AddIgnoreRoleAsync(roleAddId, commandThree, Context);
+                }
+                else
+                {
+                    added = await AddIgnoreRoleAsync(roleAddId, roleAddName, Context);
+                }
+
+                if (added)
+                {
+                    await ReplyAsync($"Added <@&{roleAddId}> to ignore list.");
+                }
+                else
+                {
+                    await ReplyAsync($"<@&{roleAddId}> is already on the list.");
+                }
+            }
+            else
+            {
+                await ReplyAsync($"Invalid role name @{commandThree}.");
+            }
+        }
+
+        private async Task<bool> AddIgnoreRoleAsync(ulong roleId, string roleName, SocketCommandContext context)
+        {
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
+            if (!File.Exists(filename))
+            {
+                await File.WriteAllTextAsync(filename, $"<@&{roleId}> @{roleName}\n");
+                return true;
+            }
+
+            var roleList = await File.ReadAllLinesAsync(filename);
+            foreach (var role in roleList)
+            {
+                if (role.Contains(roleId.ToString()))
+                {
+                    return false;
+                }
+            }
+
+            await File.AppendAllTextAsync(filename, $"<@&{roleId}> @{roleName}\n");
+            return true;
+        }
+
+        private async Task IgnoreRoleGetAsync()
+        {
+            var roleList = await GetIgnoredRolesAsync(Context);
+            if (roleList.Count > 0)
+            {
+                var output = "__Role Ignore List:__\n";
+                foreach (var role in roleList)
+                {
+                    output += $"<@&{role}>\n";
+                }
+
+                await ReplyAsync(output);
+            }
+            else
+            {
+                await ReplyAsync("No roles on ignore list.");
+            }
         }
 
         private async Task AdminChannelSetAsync(string commandThree)
