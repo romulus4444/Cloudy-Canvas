@@ -1,6 +1,7 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -8,9 +9,81 @@
     using Cloudy_Canvas.Service;
     using Discord;
     using Discord.Commands;
+    using Discord.WebSocket;
 
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
+        [Command("setup")]
+        [RequireUserPermission(GuildPermission.Administrator)]
+        public async Task SetupAsync(string adminChannelName = "", [Remainder]string adminRoleName = "")
+        {
+            SocketTextChannel adminChannel;
+            SocketRole adminRole;
+            await ReplyAsync("Moving in to my new place...");
+            var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(adminChannelName, Context);
+            var channelSetName = await DiscordHelper.ConvertChannelPingToNameAsync(adminChannelName, Context);
+            if (channelSetId > 0)
+            {
+                if (channelSetName.Contains("<ERROR>"))
+                {
+                    await SetAdminChannelAsync(channelSetId, adminChannelName);
+                }
+                else
+                {
+                    await SetAdminChannelAsync(channelSetId, channelSetName);
+                }
+
+                await ReplyAsync("Choosing my room...");
+            }
+            else
+            {
+                await ReplyAsync($"I couldn't find a room called #{adminChannelName}.");
+                return;
+            }
+            var adminChannelId = await GetAdminChannelAsync(Context);
+            if (adminChannelId > 0)
+            {
+                adminChannel = Context.Guild.GetTextChannel(adminChannelId);
+                await adminChannel.SendMessageAsync($"Moved into <#{adminChannelId}>!");
+            }
+            else
+            {
+                await ReplyAsync("Admin channel unable to be set. Please try again.");
+                return;
+            }
+
+            await adminChannel.SendMessageAsync("Getting to know the neighbors...");
+            var roleSetId = await DiscordHelper.GetRoleIdIfAccessAsync(adminRoleName, Context);
+            var roleSetName = await DiscordHelper.ConvertRolePingToNameAsync(adminRoleName, Context);
+            if (roleSetId > 0)
+            {
+                if (roleSetName.Contains("<ERROR>"))
+                {
+                    await SetAdminRoleAsync(roleSetId, adminRoleName);
+                }
+                else
+                {
+                    await SetAdminRoleAsync(roleSetId, roleSetName);
+                }
+
+                await ReplyAsync("Finding the mayor...");
+            }
+            else
+            {
+                await ReplyAsync($"I couldn't find @{adminRoleName}.");
+            }
+            var adminRoleId = await GetAdminRoleAsync(Context);
+            if (adminRoleId > 0)
+            {
+                await adminChannel.SendMessageAsync($"<@&{adminRoleId}> is in charge now!");
+            }
+            else
+            {
+                await adminChannel.SendMessageAsync("Admin role Unable to be set. Please try again.");
+                return;
+            }
+            await adminChannel.SendMessageAsync("I'm all set! Type `;help admin` for a list of other admin setup commands.");
+        }
         [Command("admin")]
         public async Task AdminAsync(string commandOne = "", string commandTwo = "", [Remainder] string commandThree = "")
         {
