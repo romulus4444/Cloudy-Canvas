@@ -25,7 +25,7 @@
         [Summary("Selects an image at random")]
         public async Task PickAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
                 return;
             }
@@ -78,7 +78,7 @@
         [Summary("Selects an image at random")]
         public async Task PickFirstAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
                 return;
             }
@@ -131,7 +131,7 @@
         [Summary("Selects an image by image id")]
         public async Task IdAsync([Summary("The image ID")] long id = 4010266)
         {
-            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
                 return;
             }
@@ -171,7 +171,7 @@
         [Command("getspoilers")]
         public async Task GetSpoilersAsync()
         {
-            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
                 return;
             }
@@ -189,7 +189,7 @@
         [Command("featured")]
         public async Task FeaturedAsync()
         {
-            if (!await DiscordHelper.CanUserRunThisAsync(Context))
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
                 return;
             }

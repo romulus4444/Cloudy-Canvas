@@ -24,6 +24,11 @@
         [Summary("Lists all commands")]
         public async Task HelpAsync(string command = "", [Remainder] string subcommands = "")
         {
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            {
+                return;
+            }
+            
             await _logger.Log($"help {command}", Context);
 
             switch (command)
@@ -65,6 +70,11 @@
         [Summary("Displays the origin url of Cloudy Canvas")]
         public async Task OriginAsync()
         {
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            {
+                return;
+            }
+            
             await _logger.Log("origin", Context);
             await ReplyAsync("Here is where I came from, thanks to RavenSunArt! https://imgur.com/a/RB16usb");
         }
@@ -72,14 +82,18 @@
         [Command("echo")]
         public async Task EchoAsync(string channelName = "", [Remainder] string message = "")
         {
-            ulong channelId = 0;
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            {
+                return;
+            }
+            
             if (channelName == "")
             {
                 await ReplyAsync("You must specify a channel name or a message.");
                 return;
             }
 
-            channelId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            var channelId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
 
             if (channelId > 0)
             {

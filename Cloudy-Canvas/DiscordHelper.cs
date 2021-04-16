@@ -1,6 +1,5 @@
 ﻿namespace Cloudy_Canvas
 {
-    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -69,7 +68,6 @@
             var roleIdList = new List<ulong>();
             foreach (var role in roleList)
             {
-                var two = "";
                 var one = role.Split("> @", 2)[0].Substring(3);
                 roleIdList.Add(ulong.Parse(one));
             }
@@ -77,7 +75,32 @@
             return roleIdList;
         }
 
-        public static async Task<bool> CanUserRunThisAsync(SocketCommandContext context)
+        public static async Task<bool> DoesUserHaveAdminRoleAsync(SocketCommandContext context)
+        {
+            if (context.IsPrivate)
+            {
+                return true;
+            }
+
+            var adminRole = await GetAdminRoleAsync(context);
+            return context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == adminRole);
+        }
+
+        public static async Task<ulong> GetAdminRoleAsync(SocketCommandContext context)
+        {
+            var setting = await FileHelper.GetSetting("adminrole", context);
+            ulong roleId = 0;
+            if (setting.Contains("<ERROR>"))
+            {
+                return roleId;
+            }
+
+            var split = setting.Split("<@&", 2)[1].Split('>', 2)[0];
+            roleId = ulong.Parse(split);
+            return roleId;
+        }
+
+        public static async Task<bool> CanUserRunThisCommandAsync(SocketCommandContext context)
         {
             if (context.IsPrivate)
             {
@@ -85,6 +108,15 @@
             }
 
             var ignoredRoles = await GetIgnoredRolesAsync(context);
+            var ignoredChannels = await GetIgnoredChannelsAsync(context);
+            foreach (var ignoredChannel in ignoredChannels)
+            {
+                if (context.Channel.Id == ignoredChannel)
+                {
+                    return false;
+                }
+            }
+
             foreach (var ignoredRole in ignoredRoles)
             {
                 if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == ignoredRole))
@@ -94,6 +126,25 @@
             }
 
             return true;
+        }
+
+        public static async Task<List<ulong>> GetIgnoredChannelsAsync(SocketCommandContext context)
+        {
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
+            if (!File.Exists(filename))
+            {
+                return new List<ulong>();
+            }
+
+            var channelList = await File.ReadAllLinesAsync(filename);
+            var channelIdList = new List<ulong>();
+            foreach (var channel in channelList)
+            {
+                var one = channel.Split("> #", 2)[0].Substring(2);
+                channelIdList.Add(ulong.Parse(one));
+            }
+
+            return channelIdList;
         }
 
         private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
