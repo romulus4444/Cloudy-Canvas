@@ -4,8 +4,6 @@
     using Cloudy_Canvas.Service;
     using Discord.Commands;
 
-    // Keep in mind your module **must** be public and inherit ModuleBase.
-    // If it isn't, it will not be discovered by AddModulesAsync!
     public class InfoModule : ModuleBase<SocketCommandContext>
     {
         private readonly LoggingHelperService _logger;
@@ -14,11 +12,6 @@
         {
             _logger = logger;
         }
-        //// ~say hello world -> hello world
-        //[Command("echo")]
-        //[Summary("Echoes a message.")]
-        //public Task EchoAsync([Remainder] [Summary("The text to echo")] string echo) => ReplyAsync(echo);
-        //// ReplyAsync is a method on ModuleBase 
 
         [Command("help")]
         [Summary("Lists all commands")]
@@ -28,7 +21,7 @@
             {
                 return;
             }
-            
+
             await _logger.Log($"help {command}", Context);
 
             switch (command)
@@ -74,7 +67,7 @@
             {
                 return;
             }
-            
+
             await _logger.Log("origin", Context);
             await ReplyAsync("Here is where I came from, thanks to RavenSunArt! https://imgur.com/a/RB16usb");
         }
@@ -86,7 +79,7 @@
             {
                 return;
             }
-            
+
             if (channelName == "")
             {
                 await ReplyAsync("You must specify a channel name or a message.");

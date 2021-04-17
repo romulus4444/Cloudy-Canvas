@@ -11,32 +11,35 @@
         public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null)
         {
             //Root
-            var filepath = "BotSettings/";
+            var filepath = "BotSettings";
             CreateDirectoryIfNotExists(filepath);
 
             //Server
             if (type != FilePathType.Root && (type == FilePathType.Server || type == FilePathType.Channel))
             {
-                filepath += "Servers/";
+                filepath = Path.Join(filepath, "Servers");
                 CreateDirectoryIfNotExists(filepath);
 
-                if (context.IsPrivate)
+                if (context != null && context.IsPrivate)
                 {
-                    filepath += "_UserDMs/";
+                    filepath = Path.Join(filepath, "_UserDMs");
                     CreateDirectoryIfNotExists(filepath);
-                    filepath += $"@{context.User.Username}/";
+                    filepath = Path.Join(filepath, $"@{context.User.Username}");
                     CreateDirectoryIfNotExists(filepath);
                 }
                 else
                 {
-                    filepath += $"{context.Guild.Name}/";
-                    CreateDirectoryIfNotExists(filepath);
-
-                    //channel
-                    if (type == FilePathType.Channel)
+                    if (context != null)
                     {
-                        filepath += $"#{context.Channel.Name}/";
+                        filepath = Path.Join(filepath, $"{context.Guild.Name}");
                         CreateDirectoryIfNotExists(filepath);
+
+                        //channel
+                        if (type == FilePathType.Channel)
+                        {
+                            filepath = Path.Join(filepath, $"#{context.Channel.Name}");
+                            CreateDirectoryIfNotExists(filepath);
+                        }
                     }
                 }
             }
@@ -44,13 +47,13 @@
             switch (filename)
             {
                 case "":
-                    filepath += $"Default.{extension}";
+                    filepath = Path.Join(filepath, $"Default.{extension}");
                     break;
                 case "<date>":
-                    filepath += $"{DateTime.Today.ToShortDateString()}.{extension}";
+                    filepath = Path.Join(filepath, $"{DateTime.Today.ToShortDateString()}.{extension}");
                     break;
                 default:
-                    filepath += $"{filename}.{extension}";
+                    filepath = Path.Join(filepath, $"{filename}.{extension}");
                     break;
             }
 
