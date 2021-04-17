@@ -179,5 +179,43 @@
 
             return tagList;
         }
+
+        public async Task<Tuple<List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId)
+        {
+            //GET	/api/v1/json/images/:image_id
+            var spoiler = false;
+            var emptyTagList = new List<string>();
+            var emptySpoilerList = new List<string>();
+            var returnResult = new Tuple<List<string>, bool, List<string>>(emptyTagList, spoiler, emptySpoilerList);
+            var safequery = "id:" + imageId + ", safe";
+            var results = await _settings.url
+                .AppendPathSegments("/api/v1/json/search/images")
+                .SetQueryParams(new { key = _settings.token, q = safequery })
+                .SetQueryParams(new { key = _settings.token })
+                .GetAsync()
+                .ReceiveJson();
+            if (results.total <= 0)
+            {
+                return returnResult;
+            }
+
+            spoiler = results.images[0].spoilered;
+            List<object> tagIds = results.images[0].tag_ids;
+            List<object> tagNames = results.images[0].tags;
+            var tagStrings = new List<string>();
+            for (var x = 0; x < tagNames.Count; x++)
+            {
+                tagStrings.Add(tagNames[x].ToString());
+            }
+
+            var spoilerList = await GetSpoilerList(tagIds);
+            if (tagIds.Count != tagNames.Count)
+            {
+                return returnResult;
+            }
+
+            returnResult = new Tuple<List<string>, bool, List<string>>(tagStrings, spoiler, spoilerList);
+            return (returnResult);
+        }
     }
 }

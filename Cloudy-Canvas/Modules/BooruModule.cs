@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
@@ -59,7 +58,7 @@
 
                     if (spoilered)
                     {
-                        var spoilerStrings = SetupSpoilerOutput(spoilerList);
+                        var spoilerStrings = SetupTagListOutput(spoilerList);
                         var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
                         await _logger.Log($"query: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
                         await ReplyAsync(output);
@@ -112,7 +111,7 @@
 
                     if (spoilered)
                     {
-                        var spoilerStrings = SetupSpoilerOutput(spoilerList);
+                        var spoilerStrings = SetupTagListOutput(spoilerList);
                         var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
                         await _logger.Log($"query: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
                         await ReplyAsync(output);
@@ -149,12 +148,13 @@
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");
+                    await _logger.Log($"id: requested {id}, NOT FOUND", Context);
                 }
                 else
                 {
                     if (spoilered)
                     {
-                        var spoilerStrings = SetupSpoilerOutput(spoilerList);
+                        var spoilerStrings = SetupTagListOutput(spoilerList);
                         var output = $"Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
                         await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
                         await ReplyAsync(output);
@@ -164,6 +164,49 @@
                         await _logger.Log($"id: requested {id}, found {imageId}", Context);
                         await ReplyAsync($"https://manebooru.art/images/{imageId}");
                     }
+                }
+            }
+        }
+
+        [Command("tags")]
+        public async Task TagsAsync(long id = 4010266)
+        {
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            {
+                return;
+            }
+
+            _blacklistService.InitializeList(Context);
+            var badTerms = _blacklistService.CheckList(id.ToString());
+            if (badTerms != "")
+            {
+                await _logger.Log($"tags: {id} BLACKLISTED {badTerms}", Context);
+                await ReplyAsync("I'm not gonna go look for that.");
+            }
+            else
+            {
+                var (tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id);
+                if (tagList.Count == 0)
+                {
+                    await ReplyAsync("I could not find that image.");
+                    await _logger.Log($"tags: requested {id}, NOT FOUND", Context);
+                }
+                else
+                {
+                    var tagStrings = SetupTagListOutput(tagList);
+                    var output = $"Image {id} has the tags {tagStrings}";
+                    if (spoilered)
+                    {
+                        var spoilerStrings = SetupTagListOutput(spoilerList);
+                        output += $" plus the spoiler tags {spoilerStrings}";
+                        await _logger.Log($"tags: requested {id}, found {tagStrings} SPOILERED {spoilerStrings}", Context);
+                    }
+                    else
+                    {
+                        await _logger.Log($"tags: requested {id}, found {tagStrings}", Context);
+                    }
+
+                    await ReplyAsync(output);
                 }
             }
         }
@@ -198,14 +241,14 @@
             await ReplyAsync($"https://manebooru.art/images/{featured}");
         }
 
-        private static string SetupSpoilerOutput(IReadOnlyList<string> spoilerList)
+        private static string SetupTagListOutput(IReadOnlyList<string> tagList)
         {
             var output = "";
-            for (var x = 0; x < spoilerList.Count; x++)
+            for (var x = 0; x < tagList.Count; x++)
             {
-                var spoilerTerm = spoilerList[x];
+                var spoilerTerm = tagList[x];
                 output += $"`{spoilerTerm}`";
-                if (x < spoilerList.Count - 1)
+                if (x < tagList.Count - 1)
                 {
                     output += ", ";
                 }
