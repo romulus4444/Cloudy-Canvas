@@ -7,6 +7,7 @@
     using Cloudy_Canvas.Service;
     using Discord.Commands;
 
+    [Summary("Module for interfacing with Maneboorud")]
     public class BooruModule : ModuleBase<SocketCommandContext>
     {
         private readonly BooruService _booru;
@@ -74,7 +75,7 @@
         }
 
         [Command("pickrecent")]
-        [Summary("Selects an image at random")]
+        [Summary("Selects first image in a search")]
         public async Task PickFirstAsync([Remainder] [Summary("Query string")] string query = "*")
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
@@ -128,7 +129,7 @@
 
         [Command("id")]
         [Summary("Selects an image by image id")]
-        public async Task IdAsync([Summary("The image ID")] long id = 4010266)
+        public async Task IdAsync([Summary("The image Id")] long id = 4010266)
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
@@ -169,7 +170,8 @@
         }
 
         [Command("tags")]
-        public async Task TagsAsync(long id = 4010266)
+        [Summary("Selects a tag list by image Id")]
+        public async Task TagsAsync([Summary("The image Id")] long id = 4010266)
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
@@ -212,6 +214,7 @@
         }
 
         [Command("getspoilers")]
+        [Summary("Gets the list of spoiler tags")]
         public async Task GetSpoilersAsync()
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
@@ -234,6 +237,7 @@
         }
 
         [Command("featured")]
+        [Summary("Selects the current Featured Image on Manebooru")]
         public async Task FeaturedAsync()
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
