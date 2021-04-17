@@ -20,7 +20,7 @@
                 filepath = Path.Join(filepath, "Servers");
                 CreateDirectoryIfNotExists(filepath);
 
-                if (context.IsPrivate)
+                if (context != null && context.IsPrivate)
                 {
                     filepath = Path.Join(filepath, "_UserDMs");
                     CreateDirectoryIfNotExists(filepath);
@@ -29,14 +29,17 @@
                 }
                 else
                 {
-                    filepath = Path.Join(filepath, $"{context.Guild.Name}");
-                    CreateDirectoryIfNotExists(filepath);
-
-                    //channel
-                    if (type == FilePathType.Channel)
+                    if (context != null)
                     {
-                        filepath = Path.Join(filepath, $"#{context.Channel.Name}");
+                        filepath = Path.Join(filepath, $"{context.Guild.Name}");
                         CreateDirectoryIfNotExists(filepath);
+
+                        //channel
+                        if (type == FilePathType.Channel)
+                        {
+                            filepath = Path.Join(filepath, $"#{context.Channel.Name}");
+                            CreateDirectoryIfNotExists(filepath);
+                        }
                     }
                 }
             }

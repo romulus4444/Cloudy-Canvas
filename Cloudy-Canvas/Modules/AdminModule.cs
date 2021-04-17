@@ -53,7 +53,7 @@
 
             await adminChannel.SendMessageAsync("Getting to know the neighbors...");
             var roleSetId = await DiscordHelper.GetRoleIdIfAccessAsync(adminRoleName, Context);
-            var roleSetName = await DiscordHelper.ConvertRolePingToNameAsync(adminRoleName, Context);
+            var roleSetName = DiscordHelper.ConvertRolePingToNameAsync(adminRoleName, Context);
             if (roleSetId > 0)
             {
                 if (roleSetName.Contains("<ERROR>"))
@@ -320,7 +320,7 @@
         private async Task AdminRoleSetAsync(string roleName)
         {
             var roleSetId = await DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
-            var roleSetName = await DiscordHelper.ConvertRolePingToNameAsync(roleName, Context);
+            var roleSetName = DiscordHelper.ConvertRolePingToNameAsync(roleName, Context);
             if (roleSetId > 0)
             {
                 if (roleSetName.Contains("<ERROR>"))
@@ -389,7 +389,7 @@
         private async Task IgnoreRoleAddAsync(string roleName)
         {
             var roleAddId = await DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
-            var roleAddName = await DiscordHelper.ConvertRolePingToNameAsync(roleName, Context);
+            var roleAddName = DiscordHelper.ConvertRolePingToNameAsync(roleName, Context);
             if (roleAddId > 0)
             {
                 bool added;
@@ -519,16 +519,16 @@
             }
         }
 
-        private async Task IgnoreChannelAddAsync(string channeName)
+        private async Task IgnoreChannelAddAsync(string channelName)
         {
-            var channelAddId = await DiscordHelper.GetChannelIdIfAccessAsync(channeName, Context);
-            var channelAddName = DiscordHelper.ConvertChannelPingToName(channeName, Context);
+            var channelAddId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            var channelAddName = DiscordHelper.ConvertChannelPingToName(channelName, Context);
             if (channelAddId > 0)
             {
                 bool added;
                 if (channelAddName.Contains("<ERROR>"))
                 {
-                    added = await AddIgnoreChannelAsync(channelAddId, channeName, Context);
+                    added = await AddIgnoreChannelAsync(channelAddId, channelName, Context);
                 }
                 else
                 {
@@ -546,7 +546,7 @@
             }
             else
             {
-                await ReplyAsync($"Invalid channel name #{channeName}.");
+                await ReplyAsync($"Invalid channel name #{channelName}.");
             }
         }
 

@@ -44,7 +44,7 @@
             return await CheckIfRoleExistsAsync(roleName, context);
         }
 
-        public static async Task<string> ConvertRolePingToNameAsync(string rolePing, SocketCommandContext context)
+        public static string ConvertRolePingToNameAsync(string rolePing, SocketCommandContext context)
         {
             var id = ConvertRolePingToId(rolePing);
             if (id <= 0)
