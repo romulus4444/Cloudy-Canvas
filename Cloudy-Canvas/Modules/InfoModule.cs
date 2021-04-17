@@ -4,6 +4,7 @@
     using Cloudy_Canvas.Service;
     using Discord.Commands;
 
+    [Summary("Module for providing information")]
     public class InfoModule : ModuleBase<SocketCommandContext>
     {
         private readonly LoggingHelperService _logger;
@@ -15,7 +16,7 @@
 
         [Command("help")]
         [Summary("Lists all commands")]
-        public async Task HelpAsync(string command = "", [Remainder] string subCommand = "")
+        public async Task HelpAsync([Summary("First subcommand")] string command = "", [Remainder] [Summary("Second subcommand")] string subCommand = "")
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
@@ -94,8 +95,7 @@
                         "`;echo <channel> <message>`\n*Only users with the specified admin role may use this command.*\nPosts <message> to a valid <channel>. If <channel> is invalid, posts to the current channel instead. Accepts a channel ping or plain text.");
                     break;
                 case "origin":
-                    await ReplyAsync(
-                        "`;origin`\nPosts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.");
+                    await ReplyAsync("`;origin`\nPosts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.");
                     break;
                 default:
                     await ReplyAsync("Invalid command. Use `;help` for a list of available commands.");
@@ -104,7 +104,7 @@
         }
 
         [Command("origin")]
-        [Summary("Displays the origin url of Cloudy Canvas")]
+        [Summary("Displays the origin of Cloudy Canvas")]
         public async Task OriginAsync()
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))

@@ -9,11 +9,13 @@
     using Discord.Commands;
     using Discord.WebSocket;
 
+    [Summary("Module for managing admin functions")]
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
         [Command("setup")]
+        [Summary("Bot setup command")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task SetupAsync(string adminChannelName = "", [Remainder] string adminRoleName = "")
+        public async Task SetupAsync([Summary("Admin channel name")] string adminChannelName = "", [Remainder] [Summary("Admin role name")] string adminRoleName = "")
         {
             SocketTextChannel adminChannel;
             SocketRole adminRole;
@@ -87,7 +89,11 @@
         }
 
         [Command("admin")]
-        public async Task AdminAsync(string commandOne = "", string commandTwo = "", [Remainder] string commandThree = "")
+        [Summary("Manages admin commands")]
+        public async Task AdminAsync(
+            [Summary("First subcommand")] string commandOne = "",
+            [Summary("Second subcommand")] string commandTwo = "",
+            [Remainder] [Summary("Third subcommand")] string commandThree = "")
         {
             if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
             {
@@ -190,7 +196,8 @@
         }
 
         [Command("echo")]
-        public async Task EchoAsync(string channelName = "", [Remainder] string message = "")
+        [Summary("Posts a message to a specified channel")]
+        public async Task EchoAsync([Summary("The channel to send to")] string channelName = "", [Remainder] [Summary("The message to send")] string message = "")
         {
             if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
             {
@@ -594,6 +601,7 @@
             await FileHelper.SetSetting("adminchannel", $"<#{channelId}> #{channelName}", Context);
         }
 
+        [Summary("Submodule for managing the blacklist")]
         public class BlacklistModule : ModuleBase<SocketCommandContext>
         {
             private readonly BlacklistService _blacklistService;
@@ -607,8 +615,8 @@
             }
 
             [Command("blacklist")]
-            [Summary("Blacklist base command")]
-            public async Task Blacklist(string arg = null, [Remainder] string term = null)
+            [Summary("Manages the search term blacklist")]
+            public async Task Blacklist([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
             {
                 if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
                 {
@@ -616,9 +624,9 @@
                 }
 
                 _blacklistService.InitializeList(Context);
-                switch (arg)
+                switch (command)
                 {
-                    case null:
+                    case "":
                         await ReplyAsync("You must specify a subcommand.");
                         await _logger.Log("blacklist null", Context);
                         break;
@@ -675,7 +683,7 @@
                         break;
                     default:
                         await ReplyAsync("Invalid subcommand");
-                        await _logger.Log($"blacklist invalid: {arg}", Context);
+                        await _logger.Log($"blacklist invalid: {command}", Context);
                         break;
                 }
             }
