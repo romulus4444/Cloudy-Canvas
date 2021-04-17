@@ -198,7 +198,7 @@
                     if (spoilered)
                     {
                         var spoilerStrings = SetupTagListOutput(spoilerList);
-                        output += $" plus the spoiler tags {spoilerStrings}";
+                        output += $" including the spoiler tags {spoilerStrings}";
                         await _logger.Log($"tags: requested {id}, found {tagStrings} SPOILERED {spoilerStrings}", Context);
                     }
                     else
@@ -221,9 +221,13 @@
 
             var spoilerList = await _booru.GetSpoilerTagsAsync();
             var output = "__Spoilered tags:__\n";
-            foreach (var (tagId, tagName) in spoilerList)
+            for (var x = 0; x < spoilerList.Count; x++)
             {
-                output += $"{tagId}, `{tagName}`\n";
+                output += $"`{spoilerList[x].Item2}`";
+                if (x < spoilerList.Count - 1)
+                {
+                    output += ", ";
+                }
             }
 
             await ReplyAsync(output);

@@ -202,13 +202,16 @@
             spoiler = results.images[0].spoilered;
             List<object> tagIds = results.images[0].tag_ids;
             List<object> tagNames = results.images[0].tags;
+            var spoilerList = await GetSpoilerList(tagIds);
             var tagStrings = new List<string>();
             for (var x = 0; x < tagNames.Count; x++)
             {
-                tagStrings.Add(tagNames[x].ToString());
+                if (!spoilerList.Contains(tagNames[x].ToString()))
+                {
+                    tagStrings.Add(tagNames[x].ToString());
+                }
             }
 
-            var spoilerList = await GetSpoilerList(tagIds);
             if (tagIds.Count != tagNames.Count)
             {
                 return returnResult;
