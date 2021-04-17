@@ -189,6 +189,45 @@
             }
         }
 
+        [Command("echo")]
+        public async Task EchoAsync(string channelName = "", [Remainder] string message = "")
+        {
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
+            {
+                return;
+            }
+
+            if (channelName == "")
+            {
+                await ReplyAsync("You must specify a channel name or a message.");
+                return;
+            }
+
+            var channelId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+
+            if (channelId > 0)
+            {
+                var channel = Context.Guild.GetTextChannel(channelId);
+                if (message == "")
+                {
+                    await ReplyAsync("There's no message to send there.");
+                    return;
+                }
+
+                if (channel != null)
+                {
+                    await channel.SendMessageAsync(message);
+                    return;
+                }
+
+
+                await ReplyAsync("I can't send a message there.");
+                return;
+            }
+
+            await ReplyAsync($"{channelName} {message}");
+        }
+
         private static async Task ClearIgnoreRoleAsync(SocketCommandContext context)
         {
             var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
@@ -567,7 +606,6 @@
                 _logger = logger;
             }
 
-            [RequireUserPermission(GuildPermission.Administrator)]
             [Command("blacklist")]
             [Summary("Blacklist base command")]
             public async Task Blacklist(string arg = null, [Remainder] string term = null)
