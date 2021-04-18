@@ -743,7 +743,10 @@
             }
 
             [Command("log")]
-            public async Task LogAsync(string channel = "", string date = "")
+            [Summary("Retrieves a log file")]
+            public async Task LogAsync(
+                [Summary("The channel to get the log from")] string channel = "",
+                [Summary("The date (in format (YYYY-MM-DD) to get the log from")] string date = "")
             {
                 if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
                 {
