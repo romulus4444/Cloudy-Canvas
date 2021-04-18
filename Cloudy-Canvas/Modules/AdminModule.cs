@@ -181,7 +181,7 @@
                             break;
                         case "get":
                             await IgnoreRoleGetAsync();
-                            await _logger.Log($"admin: {commandOne} {commandTwo}  <SUCCESS>", Context);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "add":
                             await IgnoreRoleAddAsync(commandThree);
@@ -655,19 +655,19 @@
                 {
                     case "":
                         await ReplyAsync("You must specify a subcommand.");
-                        await _logger.Log("blacklist null", Context);
+                        await _logger.Log("blacklist: <FAIL>", Context);
                         break;
                     case "add":
                         var added = _blacklistService.AddTerm(term);
                         if (added)
                         {
                             await ReplyAsync($"Added `{term}` to the blacklist.");
-                            await _logger.Log($"blacklist add <SUCCESS>: {term}", Context, true);
+                            await _logger.Log($"blacklist: add {term} <SUCCESS>", Context, true);
                         }
                         else
                         {
                             await ReplyAsync($"`{term}` is already on the blacklist.");
-                            await _logger.Log($"blacklist add <FAIL>: {term}", Context);
+                            await _logger.Log($"blacklist: add {term} <FAIL>", Context);
                         }
 
                         break;
@@ -676,12 +676,12 @@
                         if (removed)
                         {
                             await ReplyAsync($"Removed `{term}` from the blacklist.");
-                            await _logger.Log($"blacklist remove <SUCCESS>: {term}", Context, true);
+                            await _logger.Log($"blacklist: remove {term} <SUCCESS>", Context, true);
                         }
                         else
                         {
                             await ReplyAsync($"`{term}` was not on the blacklist.");
-                            await _logger.Log($"blacklist remove <FAIL>: {term}", Context);
+                            await _logger.Log($"blacklist: remove {term} <FAIL>", Context);
                         }
 
                         break;
@@ -701,16 +701,16 @@
                         }
 
                         await ReplyAsync($"__Blacklist Terms:__\n{output}");
-                        await _logger.Log("blacklist get", Context);
+                        await _logger.Log("blacklist: get", Context);
                         break;
                     case "clear":
                         _blacklistService.ClearList();
                         await ReplyAsync("Blacklist cleared");
-                        await _logger.Log("blacklist clear", Context, true);
+                        await _logger.Log("blacklist: clear", Context, true);
                         break;
                     default:
                         await ReplyAsync("Invalid subcommand");
-                        await _logger.Log($"blacklist invalid: {command}", Context);
+                        await _logger.Log($"blacklist: {command} <FAIL>", Context);
                         break;
                 }
             }

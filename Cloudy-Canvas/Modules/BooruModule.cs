@@ -58,6 +58,8 @@
                         totalString += "s] ";
                     }
 
+                    totalString += $"[Id# {imageId}] ";
+
                     if (spoilered)
                     {
                         var spoilerStrings = SetupTagListOutput(spoilerList);
@@ -77,7 +79,7 @@
 
         [Command("pickrecent")]
         [Summary("Selects first image in a search")]
-        public async Task PickFirstAsync([Remainder] [Summary("Query string")] string query = "*")
+        public async Task PickRecentAsync([Remainder] [Summary("Query string")] string query = "*")
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
@@ -112,6 +114,8 @@
                         totalString += "s] ";
                     }
 
+                    totalString += $"[Id# {imageId}] ";
+
                     if (spoilered)
                     {
                         var spoilerStrings = SetupTagListOutput(spoilerList);
@@ -144,7 +148,7 @@
             {
                 await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty image Id in <#{Context.Channel.Id}> Image# {badTerms}", Context);
             }
             else
             {
@@ -159,14 +163,14 @@
                     if (spoilered)
                     {
                         var spoilerStrings = SetupTagListOutput(spoilerList);
-                        var output = $"Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                        var output = $"[Id# {imageId}] Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
                         await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
                         await ReplyAsync(output);
                     }
                     else
                     {
                         await _logger.Log($"id: requested {id}, found {imageId}", Context);
-                        await ReplyAsync($"https://manebooru.art/images/{imageId}");
+                        await ReplyAsync($"[Id# {imageId}] https://manebooru.art/images/{imageId}");
                     }
                 }
             }
@@ -187,7 +191,7 @@
             {
                 await _logger.Log($"tags: {id} BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty image Id in <#{Context.Channel.Id}> Image# {badTerms}", Context);
             }
             else
             {
@@ -200,7 +204,7 @@
                 else
                 {
                     var tagStrings = SetupTagListOutput(tagList);
-                    var output = $"Image {id} has the tags {tagStrings}";
+                    var output = $"Image #{id} has the tags {tagStrings}";
                     if (spoilered)
                     {
                         var spoilerStrings = SetupTagListOutput(spoilerList);
@@ -252,7 +256,7 @@
 
             var featured = await _booru.GetFeaturedImageIdAsync();
             await _logger.Log("featured", Context);
-            await ReplyAsync($"https://manebooru.art/images/{featured}");
+            await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
         }
 
         private static string SetupTagListOutput(IReadOnlyList<string> tagList)
