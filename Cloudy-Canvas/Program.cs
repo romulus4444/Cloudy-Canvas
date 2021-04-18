@@ -44,7 +44,7 @@ namespace Cloudy_Canvas
                 services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
                 services.AddTransient<BooruService>();
                 services.AddTransient<Blacklist.BlacklistService>();
-                services.AddSingleton<LoggingHelperService>();
+                services.AddSingleton<LoggingService>();
                 services.AddSingleton(services);
 
                 services.AddHostedService<Worker>();

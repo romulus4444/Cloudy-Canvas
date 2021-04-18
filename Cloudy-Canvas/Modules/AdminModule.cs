@@ -12,6 +12,13 @@
     [Summary("Module for managing admin functions")]
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
+        private readonly LoggingService _logger;
+
+        public AdminModule(LoggingService logger)
+        {
+            _logger = logger;
+        }
+
         [Command("setup")]
         [Summary("Bot setup command")]
         [RequireUserPermission(GuildPermission.Administrator)]
@@ -38,22 +45,24 @@
             else
             {
                 await ReplyAsync($"I couldn't find a room called #{adminChannelName}.");
+                await _logger.Log($"setup: channel {adminChannelName} <FAIL> 1, role {adminRoleName} NOT CHECKED", Context);
                 return;
             }
 
-            var adminChannelId = await GetAdminChannelAsync(Context);
+            var adminChannelId = await DiscordHelper.GetAdminChannelAsync(Context);
             if (adminChannelId > 0)
             {
                 adminChannel = Context.Guild.GetTextChannel(adminChannelId);
-                await adminChannel.SendMessageAsync($"Moved into <#{adminChannelId}>!");
+                await ReplyAsync($"Moved into <#{adminChannelId}>!");
             }
             else
             {
                 await ReplyAsync("Admin channel unable to be set. Please try again.");
+                await _logger.Log($"setup: channel {adminChannelName} <FAIL> 2, role {adminRoleName} NOT CHECKED", Context);
                 return;
             }
 
-            await adminChannel.SendMessageAsync("Getting to know the neighbors...");
+            await ReplyAsync("Getting to know the neighbors...");
             var roleSetId = await DiscordHelper.GetRoleIdIfAccessAsync(adminRoleName, Context);
             var roleSetName = DiscordHelper.ConvertRolePingToNameAsync(adminRoleName, Context);
             if (roleSetId > 0)
@@ -72,20 +81,25 @@
             else
             {
                 await ReplyAsync($"I couldn't find @{adminRoleName}.");
+                await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL> 1", Context, true);
+                return;
             }
 
             var adminRoleId = await DiscordHelper.GetAdminRoleAsync(Context);
             if (adminRoleId > 0)
             {
-                await adminChannel.SendMessageAsync($"<@&{adminRoleId}> is in charge now!");
+                await ReplyAsync($"<@&{adminRoleId}> is in charge now!", allowedMentions:AllowedMentions.None);
             }
             else
             {
-                await adminChannel.SendMessageAsync("Admin role Unable to be set. Please try again.");
+                await ReplyAsync("Admin role Unable to be set. Please try again.");
+                await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL> 2", Context, true);
                 return;
             }
 
-            await adminChannel.SendMessageAsync("I'm all set! Type `;help admin` for a list of other admin setup commands.");
+            await ReplyAsync("I'm all set! Type `;help admin` for a list of other admin setup commands.");
+            await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
+            await adminChannel.SendMessageAsync("Howdy neighbors! I will send important message here now.");
         }
 
         [Command("admin")]
@@ -104,21 +118,26 @@
             {
                 case "":
                     await ReplyAsync("You need to specify an admin command.");
+                    await _logger.Log("admin: <FAIL>", Context);
                     break;
                 case "adminchannel":
                     switch (commandTwo)
                     {
                         case "":
                             await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
                             await AdminChannelGetAsync();
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "set":
                             await AdminChannelSetAsync(commandThree);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         default:
                             await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
                             break;
                     }
 
@@ -128,21 +147,27 @@
                     {
                         case "":
                             await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
                             await IgnoreChannelGetAsync();
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "add":
                             await IgnoreChannelAddAsync(commandThree);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "remove":
                             await IgnoreChannelRemoveAsync(commandThree);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
                             await IgnoreChannelClearAsync();
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context, true);
                             break;
                         default:
                             await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
                             break;
                     }
 
@@ -152,21 +177,27 @@
                     {
                         case "":
                             await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
                             await IgnoreRoleGetAsync();
+                            await _logger.Log($"admin: {commandOne} {commandTwo}  <SUCCESS>", Context);
                             break;
                         case "add":
                             await IgnoreRoleAddAsync(commandThree);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "remove":
                             await IgnoreRoleRemoveAsync(commandThree);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
                             await IgnoreRoleClearAsync();
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context, true);
                             break;
                         default:
                             await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
                             break;
                     }
 
@@ -176,21 +207,26 @@
                     {
                         case "":
                             await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
                             await AdminRoleGetAsync();
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "set":
                             await AdminRoleSetAsync(commandThree);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         default:
                             await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
                             break;
                     }
 
                     break;
                 default:
                     await ReplyAsync($"Invalid command `{commandOne}`");
+                    await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                     break;
             }
         }
@@ -207,6 +243,7 @@
             if (channelName == "")
             {
                 await ReplyAsync("You must specify a channel name or a message.");
+                await _logger.Log("echo: <FAIL>", Context);
                 return;
             }
 
@@ -218,21 +255,25 @@
                 if (message == "")
                 {
                     await ReplyAsync("There's no message to send there.");
+                    await _logger.Log($"echo: {channelName} <FAIL>", Context);
                     return;
                 }
 
                 if (channel != null)
                 {
                     await channel.SendMessageAsync(message);
+                    await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context, true);
                     return;
                 }
 
 
                 await ReplyAsync("I can't send a message there.");
+                await _logger.Log($"echo: {channelName} {message} <FAIL>", Context);
                 return;
             }
 
             await ReplyAsync($"{channelName} {message}");
+            await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context, true);
         }
 
         private static async Task ClearIgnoreRoleAsync(SocketCommandContext context)
@@ -268,20 +309,6 @@
             }
 
             return removed;
-        }
-
-        private static async Task<ulong> GetAdminChannelAsync(SocketCommandContext context)
-        {
-            var setting = await FileHelper.GetSetting("adminchannel", context);
-            ulong channelId = 0;
-            if (setting.Contains("<ERROR>"))
-            {
-                return channelId;
-            }
-
-            var split = setting.Split("<#", 2)[1].Split('>', 2)[0];
-            channelId = ulong.Parse(split);
-            return channelId;
         }
 
         private static async Task<bool> AddIgnoreChannelAsync(ulong channelId, string channelName, SocketCommandContext context)
@@ -507,7 +534,7 @@
 
         private async Task AdminChannelGetAsync()
         {
-            var channelGetId = await GetAdminChannelAsync(Context);
+            var channelGetId = await DiscordHelper.GetAdminChannelAsync(Context);
             if (channelGetId > 0)
             {
                 await ReplyAsync($"Admin channel is <#{channelGetId}>");
@@ -606,9 +633,9 @@
         {
             private readonly BlacklistService _blacklistService;
 
-            private readonly LoggingHelperService _logger;
+            private readonly LoggingService _logger;
 
-            public BlacklistModule(BlacklistService blacklistService, LoggingHelperService logger)
+            public BlacklistModule(BlacklistService blacklistService, LoggingService logger)
             {
                 _blacklistService = blacklistService;
                 _logger = logger;
@@ -635,12 +662,12 @@
                         if (added)
                         {
                             await ReplyAsync($"Added `{term}` to the blacklist.");
-                            await _logger.Log($"blacklist add (success): {term}", Context);
+                            await _logger.Log($"blacklist add <SUCCESS>: {term}", Context, true);
                         }
                         else
                         {
                             await ReplyAsync($"`{term}` is already on the blacklist.");
-                            await _logger.Log($"blacklist add (fail): {term}", Context);
+                            await _logger.Log($"blacklist add <FAIL>: {term}", Context);
                         }
 
                         break;
@@ -649,12 +676,12 @@
                         if (removed)
                         {
                             await ReplyAsync($"Removed `{term}` from the blacklist.");
-                            await _logger.Log($"blacklist remove (success): {term}", Context);
+                            await _logger.Log($"blacklist remove <SUCCESS>: {term}", Context, true);
                         }
                         else
                         {
                             await ReplyAsync($"`{term}` was not on the blacklist.");
-                            await _logger.Log($"blacklist remove (fail): {term}", Context);
+                            await _logger.Log($"blacklist remove <FAIL>: {term}", Context);
                         }
 
                         break;
@@ -679,13 +706,88 @@
                     case "clear":
                         _blacklistService.ClearList();
                         await ReplyAsync("Blacklist cleared");
-                        await _logger.Log("blacklist clear", Context);
+                        await _logger.Log("blacklist clear", Context, true);
                         break;
                     default:
                         await ReplyAsync("Invalid subcommand");
                         await _logger.Log($"blacklist invalid: {command}", Context);
                         break;
                 }
+            }
+        }
+
+        [Summary("Submodule for retreiving log files")]
+        public class LogModule : ModuleBase<SocketCommandContext>
+        {
+            private readonly BlacklistService _blacklistService;
+
+            private readonly LoggingService _logger;
+
+            public LogModule(BlacklistService blacklistService, LoggingService logger)
+            {
+                _blacklistService = blacklistService;
+                _logger = logger;
+            }
+
+            [Command("log")]
+            [Summary("Retrieves a log file")]
+            public async Task LogAsync(
+                [Summary("The channel to get the log from")] string channel = "",
+                [Summary("The date (in format (YYYY-MM-DD) to get the log from")] string date = "")
+            {
+                if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
+                {
+                    return;
+                }
+
+                if (channel == "")
+                {
+                    await ReplyAsync("You need to enter a channel and date.");
+                    await _logger.Log("log: <FAIL>", Context);
+                    return;
+                }
+
+                if (date == "")
+                {
+                    await ReplyAsync("You need to enter a date.");
+                    await _logger.Log($"log: {channel} <FAIL>", Context);
+                    return;
+                }
+
+                var errorMessage = await LogGetAsync(channel, date, Context);
+                if (errorMessage.Contains("<ERROR>"))
+                {
+                    await ReplyAsync(errorMessage);
+                    await _logger.Log($"log: {channel} {date} {errorMessage} <FAIL>", Context);
+                    return;
+                }
+                await _logger.Log($"log: {channel} {date} <SUCCESS>", Context);
+            }
+
+            private async Task<string> LogGetAsync(string channelName, string date, SocketCommandContext context)
+            {
+                await ReplyAsync($"Retrieving log from {channelName} on {date}...");
+                var confirmedName = DiscordHelper.ConvertChannelPingToName(channelName, context);
+                if (confirmedName.Contains("<ERROR>"))
+                {
+                    return confirmedName;
+                }
+
+                var adminChannelId = await DiscordHelper.GetAdminChannelAsync(context);
+                if (adminChannelId <= 0)
+                {
+                    return "<ERROR> Admin channel not set.";
+                }
+
+                var adminChannel = context.Guild.GetTextChannel(adminChannelId);
+                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "txt", context, confirmedName, date);
+                if (!File.Exists(filepath))
+                {
+                    return "<ERROR> File does not exist";
+                }
+
+                await adminChannel.SendFileAsync(filepath, $"{confirmedName}-{date}.txt");
+                return "SUCCESS";
             }
         }
     }

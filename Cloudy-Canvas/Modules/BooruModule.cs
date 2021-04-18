@@ -12,9 +12,9 @@
     {
         private readonly BooruService _booru;
         private readonly BlacklistService _blacklistService;
-        private readonly LoggingHelperService _logger;
+        private readonly LoggingService _logger;
 
-        public BooruModule(BooruService booru, BlacklistService blacklistService, LoggingHelperService logger)
+        public BooruModule(BooruService booru, BlacklistService blacklistService, LoggingService logger)
         {
             _booru = booru;
             _blacklistService = blacklistService;
@@ -34,15 +34,16 @@
             var badTerms = _blacklistService.CheckList(query);
             if (badTerms != "")
             {
-                await _logger.Log($"query: {query}, BLACKLISTED {badTerms}", Context);
+                await _logger.Log($"pick: {query}, BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
             }
             else
             {
                 var (imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query);
                 if (total == 0)
                 {
-                    await _logger.Log($"query: {query}, total: {total}", Context);
+                    await _logger.Log($"pick: {query}, total: {total}", Context);
                     await ReplyAsync("I could not find any images with that query.");
                 }
                 else
@@ -61,13 +62,13 @@
                     {
                         var spoilerStrings = SetupTagListOutput(spoilerList);
                         var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
-                        await _logger.Log($"query: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
+                        await _logger.Log($"pick: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
                         await ReplyAsync(output);
                     }
                     else
                     {
                         var output = totalString + $"https://manebooru.art/images/{imageId}";
-                        await _logger.Log($"query: {query}, total: {total} result: {imageId}", Context);
+                        await _logger.Log($"pick: {query}, total: {total} result: {imageId}", Context);
                         await ReplyAsync(output);
                     }
                 }
@@ -87,15 +88,16 @@
             var badTerms = _blacklistService.CheckList(query);
             if (badTerms != "")
             {
-                await _logger.Log($"query: {query}, BLACKLISTED {badTerms}", Context);
+                await _logger.Log($"pickrecent: {query}, BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
             }
             else
             {
                 var (imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query);
                 if (total == 0)
                 {
-                    await _logger.Log($"query: {query}, total: {total}", Context);
+                    await _logger.Log($"pickrecent: {query}, total: {total}", Context);
                     await ReplyAsync("I could not find any images with that query.");
                 }
                 else
@@ -114,13 +116,13 @@
                     {
                         var spoilerStrings = SetupTagListOutput(spoilerList);
                         var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
-                        await _logger.Log($"query: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
+                        await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
                         await ReplyAsync(output);
                     }
                     else
                     {
                         var output = totalString + $"https://manebooru.art/images/{imageId}";
-                        await _logger.Log($"query: {query}, total: {total} result: {imageId}", Context);
+                        await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId}", Context);
                         await ReplyAsync(output);
                     }
                 }
@@ -140,8 +142,9 @@
             var badTerms = _blacklistService.CheckList(id.ToString());
             if (badTerms != "")
             {
-                await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context);
+                await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
             }
             else
             {
@@ -182,8 +185,9 @@
             var badTerms = _blacklistService.CheckList(id.ToString());
             if (badTerms != "")
             {
-                await _logger.Log($"tags: {id} BLACKLISTED {badTerms}", Context);
+                await _logger.Log($"tags: {id} BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
             }
             else
             {
@@ -233,6 +237,7 @@
                 }
             }
 
+            await _logger.Log("getspoilers", Context);
             await ReplyAsync(output);
         }
 
@@ -246,6 +251,7 @@
             }
 
             var featured = await _booru.GetFeaturedImageIdAsync();
+            await _logger.Log("featured", Context);
             await ReplyAsync($"https://manebooru.art/images/{featured}");
         }
 
