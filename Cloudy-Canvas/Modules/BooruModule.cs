@@ -12,9 +12,9 @@
     {
         private readonly BooruService _booru;
         private readonly BlacklistService _blacklistService;
-        private readonly LoggingHelperService _logger;
+        private readonly LoggingService _logger;
 
-        public BooruModule(BooruService booru, BlacklistService blacklistService, LoggingHelperService logger)
+        public BooruModule(BooruService booru, BlacklistService blacklistService, LoggingService logger)
         {
             _booru = booru;
             _blacklistService = blacklistService;

@@ -12,9 +12,9 @@
     [Summary("Module for managing admin functions")]
     public class AdminModule : ModuleBase<SocketCommandContext>
     {
-        private readonly LoggingHelperService _logger;
+        private readonly LoggingService _logger;
 
-        public AdminModule(LoggingHelperService logger)
+        public AdminModule(LoggingService logger)
         {
             _logger = logger;
         }
@@ -646,9 +646,9 @@
         {
             private readonly BlacklistService _blacklistService;
 
-            private readonly LoggingHelperService _logger;
+            private readonly LoggingService _logger;
 
-            public BlacklistModule(BlacklistService blacklistService, LoggingHelperService logger)
+            public BlacklistModule(BlacklistService blacklistService, LoggingService logger)
             {
                 _blacklistService = blacklistService;
                 _logger = logger;
@@ -734,9 +734,9 @@
         {
             private readonly BlacklistService _blacklistService;
 
-            private readonly LoggingHelperService _logger;
+            private readonly LoggingService _logger;
 
-            public LogModule(BlacklistService blacklistService, LoggingHelperService logger)
+            public LogModule(BlacklistService blacklistService, LoggingService logger)
             {
                 _blacklistService = blacklistService;
                 _logger = logger;

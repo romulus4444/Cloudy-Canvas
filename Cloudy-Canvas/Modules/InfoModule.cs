@@ -7,9 +7,9 @@
     [Summary("Module for providing information")]
     public class InfoModule : ModuleBase<SocketCommandContext>
     {
-        private readonly LoggingHelperService _logger;
+        private readonly LoggingService _logger;
 
-        public InfoModule(LoggingHelperService logger)
+        public InfoModule(LoggingService logger)
         {
             _logger = logger;
         }

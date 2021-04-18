@@ -7,11 +7,11 @@
     using Discord.Commands;
     using Microsoft.Extensions.Logging;
 
-    public class LoggingHelperService
+    public class LoggingService
     {
         private readonly ILogger<Worker> _logger;
 
-        public LoggingHelperService(ILogger<Worker> logger)
+        public LoggingService(ILogger<Worker> logger)
         {
             _logger = logger;
         }
