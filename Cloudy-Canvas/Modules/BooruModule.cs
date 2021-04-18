@@ -259,6 +259,38 @@
             await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
         }
 
+        [Command("report")]
+        [Summary("Reports an image id to the admin channel")]
+        public async Task ReportAsync(long reportedImageId)
+        {
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            {
+                return;
+            }
+
+            _blacklistService.InitializeList(Context);
+            var badTerms = _blacklistService.CheckList(reportedImageId.ToString());
+            if (badTerms != "")
+            {
+                await ReplyAsync("That image is already blocked.");
+            }
+            else
+            {
+                var (imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(reportedImageId);
+                if (imageId == -1)
+                {
+                    await ReplyAsync("I could not find that image.");
+                }
+                else
+                {
+                    await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
+                    var adminRoleId = await DiscordHelper.GetAdminRoleAsync(Context);
+                    await DiscordHelper.PostToAdminChannelAsync($"<@&{adminRoleId}>: <@{Context.User.Id}> has reported Image#{reportedImageId} || <https://manebooru.art/images/{imageId}> ||", Context);
+                    await ReplyAsync("Admins have been notified. Thank you for your report.");
+                }
+            }
+        }
+
         private static string SetupTagListOutput(IReadOnlyList<string> tagList)
         {
             var output = "";
