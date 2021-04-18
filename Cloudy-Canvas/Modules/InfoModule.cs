@@ -23,7 +23,7 @@
                 return;
             }
 
-            await _logger.Log($"help {command}", Context);
+            await _logger.Log($"help {command} {subCommand}", Context);
 
             switch (command)
             {
