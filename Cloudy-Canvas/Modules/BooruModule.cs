@@ -36,6 +36,7 @@
             {
                 await _logger.Log($"pick: {query}, BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
             }
             else
             {
@@ -89,6 +90,7 @@
             {
                 await _logger.Log($"pickrecent: {query}, BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
             }
             else
             {
@@ -142,6 +144,7 @@
             {
                 await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
             }
             else
             {
@@ -184,6 +187,7 @@
             {
                 await _logger.Log($"tags: {id} BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
             }
             else
             {

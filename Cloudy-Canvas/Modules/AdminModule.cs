@@ -49,11 +49,11 @@
                 return;
             }
 
-            var adminChannelId = await GetAdminChannelAsync(Context);
+            var adminChannelId = await DiscordHelper.GetAdminChannelAsync(Context);
             if (adminChannelId > 0)
             {
                 adminChannel = Context.Guild.GetTextChannel(adminChannelId);
-                await adminChannel.SendMessageAsync($"Moved into <#{adminChannelId}>!");
+                await ReplyAsync($"Moved into <#{adminChannelId}>!");
             }
             else
             {
@@ -62,7 +62,7 @@
                 return;
             }
 
-            await adminChannel.SendMessageAsync("Getting to know the neighbors...");
+            await ReplyAsync("Getting to know the neighbors...");
             var roleSetId = await DiscordHelper.GetRoleIdIfAccessAsync(adminRoleName, Context);
             var roleSetName = DiscordHelper.ConvertRolePingToNameAsync(adminRoleName, Context);
             if (roleSetId > 0)
@@ -88,17 +88,18 @@
             var adminRoleId = await DiscordHelper.GetAdminRoleAsync(Context);
             if (adminRoleId > 0)
             {
-                await adminChannel.SendMessageAsync($"<@&{adminRoleId}> is in charge now!");
+                await ReplyAsync($"<@&{adminRoleId}> is in charge now!", allowedMentions:AllowedMentions.None);
             }
             else
             {
-                await adminChannel.SendMessageAsync("Admin role Unable to be set. Please try again.");
+                await ReplyAsync("Admin role Unable to be set. Please try again.");
                 await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL> 2", Context, true);
                 return;
             }
 
-            await adminChannel.SendMessageAsync("I'm all set! Type `;help admin` for a list of other admin setup commands.");
+            await ReplyAsync("I'm all set! Type `;help admin` for a list of other admin setup commands.");
             await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
+            await adminChannel.SendMessageAsync("Howdy neighbors! I will send important message here now.");
         }
 
         [Command("admin")]
@@ -308,20 +309,6 @@
             }
 
             return removed;
-        }
-
-        private static async Task<ulong> GetAdminChannelAsync(SocketCommandContext context)
-        {
-            var setting = await FileHelper.GetSetting("adminchannel", context);
-            ulong channelId = 0;
-            if (setting.Contains("<ERROR>") || !(setting.Contains("<#") && setting.Contains(">")))
-            {
-                return channelId;
-            }
-
-            var split = setting.Split("<#", 2)[1].Split('>', 2)[0];
-            channelId = ulong.Parse(split);
-            return channelId;
         }
 
         private static async Task<bool> AddIgnoreChannelAsync(ulong channelId, string channelName, SocketCommandContext context)
@@ -547,7 +534,7 @@
 
         private async Task AdminChannelGetAsync()
         {
-            var channelGetId = await GetAdminChannelAsync(Context);
+            var channelGetId = await DiscordHelper.GetAdminChannelAsync(Context);
             if (channelGetId > 0)
             {
                 await ReplyAsync($"Admin channel is <#{channelGetId}>");
@@ -786,19 +773,19 @@
                     return confirmedName;
                 }
 
-                var adminChannelId = await GetAdminChannelAsync(context);
+                var adminChannelId = await DiscordHelper.GetAdminChannelAsync(context);
                 if (adminChannelId <= 0)
                 {
                     return "<ERROR> Admin channel not set.";
                 }
 
+                var adminChannel = context.Guild.GetTextChannel(adminChannelId);
                 var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "txt", context, confirmedName, date);
                 if (!File.Exists(filepath))
                 {
                     return "<ERROR> File does not exist";
                 }
 
-                var adminChannel = context.Guild.GetTextChannel(adminChannelId);
                 await adminChannel.SendFileAsync(filepath, $"{confirmedName}-{date}.txt");
                 return "SUCCESS";
             }

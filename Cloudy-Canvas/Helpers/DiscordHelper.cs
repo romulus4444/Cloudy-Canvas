@@ -4,6 +4,7 @@
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using Discord;
     using Discord.Commands;
 
     public static class DiscordHelper
@@ -145,6 +146,39 @@
             }
 
             return channelIdList;
+        }
+
+        public static async Task PostToAdminChannelAsync(string message, SocketCommandContext context, bool ping = false)
+        {
+            var adminChannelId = await GetAdminChannelAsync(context);
+            if (adminChannelId <= 0)
+            {
+                return;
+            }
+
+            var adminChannel = context.Guild.GetTextChannel(adminChannelId);
+            if (ping)
+            {
+                await adminChannel.SendMessageAsync(message);
+            }
+            else
+            {
+                await adminChannel.SendMessageAsync(message, allowedMentions: AllowedMentions.None);
+            }
+        }
+
+        public static async Task<ulong> GetAdminChannelAsync(SocketCommandContext context)
+        {
+            var setting = await FileHelper.GetSetting("adminchannel", context);
+            ulong channelId = 0;
+            if (setting.Contains("<ERROR>") || !(setting.Contains("<#") && setting.Contains(">")))
+            {
+                return channelId;
+            }
+
+            var split = setting.Split("<#", 2)[1].Split('>', 2)[0];
+            channelId = ulong.Parse(split);
+            return channelId;
         }
 
         private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
