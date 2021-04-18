@@ -1,4 +1,4 @@
-﻿namespace Cloudy_Canvas.Blacklist
+﻿namespace Cloudy_Canvas.Service
 {
     using System.Collections.Generic;
     using System.IO;
@@ -6,27 +6,27 @@
     using Discord.Commands;
     using Microsoft.Extensions.Options;
 
-    public class BlacklistService
+    public class BadlistService
     {
         private readonly DiscordSettings _settings;
-        private List<string> BlackList;
+        private List<string> YellowList;
         private string Filepath;
 
-        public BlacklistService(IOptions<DiscordSettings> settings)
+        public BadlistService(IOptions<DiscordSettings> settings)
         {
             _settings = settings.Value;
-            BlackList = new List<string>();
+            YellowList = new List<string>();
         }
 
         public bool AddTerm(string term)
         {
             var lower = term.ToLower();
-            if (BlackList.Contains(lower))
+            if (YellowList.Contains(lower))
             {
                 return false;
             }
 
-            BlackList.Add(lower);
+            YellowList.Add(lower);
             SaveList();
             return true;
         }
@@ -34,12 +34,12 @@
         public bool RemoveTerm(string term)
         {
             var lower = term.ToLower();
-            if (!BlackList.Contains(lower))
+            if (!YellowList.Contains(lower))
             {
                 return false;
             }
 
-            BlackList.Remove(lower);
+            YellowList.Remove(lower);
             SaveList();
             return true;
         }
@@ -47,7 +47,7 @@
         public List<string> GetList()
         {
             LoadList();
-            return BlackList;
+            return YellowList;
         }
 
         public void ClearList()
@@ -65,7 +65,7 @@
             LoadList();
             var lower = query.ToLower();
             var matchedTerms = "";
-            foreach (var term in BlackList)
+            foreach (var term in YellowList)
             {
                 if (!lower.Contains(term))
                 {
@@ -87,7 +87,7 @@
 
         public void InitializeList(SocketCommandContext context)
         {
-            var path = FileHelper.SetUpFilepath(FilePathType.Server, "Blacklist", "txt", context);
+            var path = FileHelper.SetUpFilepath(FilePathType.Server, "YellowList", "txt", context);
             Filepath = path;
             if (File.Exists(Filepath))
             {
@@ -101,12 +101,12 @@
 
         private void LoadList()
         {
-            BlackList = new List<string>(File.ReadAllLines(Filepath));
+            YellowList = new List<string>(File.ReadAllLines(Filepath));
         }
 
         private void SaveList()
         {
-            File.WriteAllLines(Filepath, BlackList);
+            File.WriteAllLines(Filepath, YellowList);
         }
     }
 }

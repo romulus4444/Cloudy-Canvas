@@ -47,7 +47,7 @@ namespace Cloudy_Canvas
                 await _booru.GetSpoilerTagsAsync();
 
                 // Block this task until the program is closed.
-                await Task.Delay(-1, stoppingToken);
+                await Task.Delay(-1);
 
 
                 while (!stoppingToken.IsCancellationRequested)

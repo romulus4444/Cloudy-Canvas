@@ -3,7 +3,6 @@
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
     using Discord;
     using Discord.Commands;
@@ -628,69 +627,69 @@
             await FileHelper.SetSetting("adminchannel", $"<#{channelId}> #{channelName}", Context);
         }
 
-        [Summary("Submodule for managing the blacklist")]
+        [Summary("Submodule for managing the yellowlist")]
         public class BlacklistModule : ModuleBase<SocketCommandContext>
         {
-            private readonly BlacklistService _blacklistService;
+            private readonly BadlistService _badlistService;
 
             private readonly LoggingService _logger;
 
-            public BlacklistModule(BlacklistService blacklistService, LoggingService logger)
+            public BlacklistModule(BadlistService badlistService, LoggingService logger)
             {
-                _blacklistService = blacklistService;
+                _badlistService = badlistService;
                 _logger = logger;
             }
 
-            [Command("blacklist")]
-            [Summary("Manages the search term blacklist")]
-            public async Task Blacklist([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
+            [Command("yellowlist")]
+            [Summary("Manages the search term yellowlist")]
+            public async Task YellowListAsync([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
             {
                 if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
                 {
                     return;
                 }
 
-                _blacklistService.InitializeList(Context);
+                _badlistService.InitializeList(Context);
                 switch (command)
                 {
                     case "":
                         await ReplyAsync("You must specify a subcommand.");
-                        await _logger.Log("blacklist: <FAIL>", Context);
+                        await _logger.Log("yellowlist: <FAIL>", Context);
                         break;
                     case "add":
-                        var added = _blacklistService.AddTerm(term);
+                        var added = _badlistService.AddTerm(term);
                         if (added)
                         {
-                            await ReplyAsync($"Added `{term}` to the blacklist.");
-                            await _logger.Log($"blacklist: add {term} <SUCCESS>", Context, true);
+                            await ReplyAsync($"Added `{term}` to the yellowlist.");
+                            await _logger.Log($"yellowlist: add {term} <SUCCESS>", Context, true);
                         }
                         else
                         {
-                            await ReplyAsync($"`{term}` is already on the blacklist.");
-                            await _logger.Log($"blacklist: add {term} <FAIL>", Context);
+                            await ReplyAsync($"`{term}` is already on the yellowlist.");
+                            await _logger.Log($"yellowlist: add {term} <FAIL>", Context);
                         }
 
                         break;
                     case "remove":
-                        var removed = _blacklistService.RemoveTerm(term);
+                        var removed = _badlistService.RemoveTerm(term);
                         if (removed)
                         {
-                            await ReplyAsync($"Removed `{term}` from the blacklist.");
-                            await _logger.Log($"blacklist: remove {term} <SUCCESS>", Context, true);
+                            await ReplyAsync($"Removed `{term}` from the yellowlist.");
+                            await _logger.Log($"yellowlist: remove {term} <SUCCESS>", Context, true);
                         }
                         else
                         {
-                            await ReplyAsync($"`{term}` was not on the blacklist.");
-                            await _logger.Log($"blacklist: remove {term} <FAIL>", Context);
+                            await ReplyAsync($"`{term}` was not on the yellowlist.");
+                            await _logger.Log($"yellowlist: remove {term} <FAIL>", Context);
                         }
 
                         break;
                     case "get":
-                        var output = "The blacklist is currently empty.";
-                        var blacklist = _blacklistService.GetList();
-                        foreach (var item in blacklist)
+                        var output = "The yellowlist is currently empty.";
+                        var yellowlist = _badlistService.GetList();
+                        foreach (var item in yellowlist)
                         {
-                            if (output == "The blacklist is currently empty.")
+                            if (output == "The yellowlist is currently empty.")
                             {
                                 output = $"`{item}`";
                             }
@@ -700,17 +699,17 @@
                             }
                         }
 
-                        await ReplyAsync($"__Blacklist Terms:__\n{output}");
-                        await _logger.Log("blacklist: get", Context);
+                        await ReplyAsync($"__Yellowlist Terms:__\n{output}");
+                        await _logger.Log("yellowlist: get", Context);
                         break;
                     case "clear":
-                        _blacklistService.ClearList();
-                        await ReplyAsync("Blacklist cleared");
-                        await _logger.Log("blacklist: clear", Context, true);
+                        _badlistService.ClearList();
+                        await ReplyAsync("Yellowlist cleared");
+                        await _logger.Log("yellowlist: clear", Context, true);
                         break;
                     default:
                         await ReplyAsync("Invalid subcommand");
-                        await _logger.Log($"blacklist: {command} <FAIL>", Context);
+                        await _logger.Log($"yellowlist: {command} <FAIL>", Context);
                         break;
                 }
             }
@@ -719,13 +718,13 @@
         [Summary("Submodule for retreiving log files")]
         public class LogModule : ModuleBase<SocketCommandContext>
         {
-            private readonly BlacklistService _blacklistService;
+            private readonly BadlistService _badlistService;
 
             private readonly LoggingService _logger;
 
-            public LogModule(BlacklistService blacklistService, LoggingService logger)
+            public LogModule(BadlistService badlistService, LoggingService logger)
             {
-                _blacklistService = blacklistService;
+                _badlistService = badlistService;
                 _logger = logger;
             }
 

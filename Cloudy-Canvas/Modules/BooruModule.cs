@@ -3,7 +3,6 @@
     using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Cloudy_Canvas.Blacklist;
     using Cloudy_Canvas.Service;
     using Discord.Commands;
 
@@ -11,13 +10,13 @@
     public class BooruModule : ModuleBase<SocketCommandContext>
     {
         private readonly BooruService _booru;
-        private readonly BlacklistService _blacklistService;
+        private readonly BadlistService _badlistService;
         private readonly LoggingService _logger;
 
-        public BooruModule(BooruService booru, BlacklistService blacklistService, LoggingService logger)
+        public BooruModule(BooruService booru, BadlistService badlistService, LoggingService logger)
         {
             _booru = booru;
-            _blacklistService = blacklistService;
+            _badlistService = badlistService;
             _logger = logger;
         }
 
@@ -30,8 +29,8 @@
                 return;
             }
 
-            _blacklistService.InitializeList(Context);
-            var badTerms = _blacklistService.CheckList(query);
+            _badlistService.InitializeList(Context);
+            var badTerms = _badlistService.CheckList(query);
             if (badTerms != "")
             {
                 await _logger.Log($"pick: {query}, BLACKLISTED {badTerms}", Context, true);
@@ -86,8 +85,8 @@
                 return;
             }
 
-            _blacklistService.InitializeList(Context);
-            var badTerms = _blacklistService.CheckList(query);
+            _badlistService.InitializeList(Context);
+            var badTerms = _badlistService.CheckList(query);
             if (badTerms != "")
             {
                 await _logger.Log($"pickrecent: {query}, BLACKLISTED {badTerms}", Context, true);
@@ -142,8 +141,8 @@
                 return;
             }
 
-            _blacklistService.InitializeList(Context);
-            var badTerms = _blacklistService.CheckList(id.ToString());
+            _badlistService.InitializeList(Context);
+            var badTerms = _badlistService.CheckList(id.ToString());
             if (badTerms != "")
             {
                 await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context, true);
@@ -185,8 +184,8 @@
                 return;
             }
 
-            _blacklistService.InitializeList(Context);
-            var badTerms = _blacklistService.CheckList(id.ToString());
+            _badlistService.InitializeList(Context);
+            var badTerms = _badlistService.CheckList(id.ToString());
             if (badTerms != "")
             {
                 await _logger.Log($"tags: {id} BLACKLISTED {badTerms}", Context, true);
@@ -268,8 +267,8 @@
                 return;
             }
 
-            _blacklistService.InitializeList(Context);
-            var badTerms = _blacklistService.CheckList(reportedImageId.ToString());
+            _badlistService.InitializeList(Context);
+            var badTerms = _badlistService.CheckList(reportedImageId.ToString());
             if (badTerms != "")
             {
                 await ReplyAsync("That image is already blocked.");
