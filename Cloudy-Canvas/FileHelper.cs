@@ -8,14 +8,14 @@
 
     public static class FileHelper
     {
-        public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null)
+        public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null, string logchannel = "", string date = "")
         {
             //Root
             var filepath = "BotSettings";
             CreateDirectoryIfNotExists(filepath);
 
             //Server
-            if (type != FilePathType.Root && (type == FilePathType.Server || type == FilePathType.Channel))
+            if (type != FilePathType.Root)
             {
                 filepath = Path.Join(filepath, "Servers");
                 CreateDirectoryIfNotExists(filepath);
@@ -35,10 +35,21 @@
                         CreateDirectoryIfNotExists(filepath);
 
                         //channel
-                        if (type == FilePathType.Channel)
+                        if (type != FilePathType.Server)
                         {
-                            filepath = Path.Join(filepath, $"#{context.Channel.Name}");
-                            CreateDirectoryIfNotExists(filepath);
+                            if (type == FilePathType.Channel)
+                            {
+                                filepath = Path.Join(filepath, $"#{context.Channel.Name}");
+                                CreateDirectoryIfNotExists(filepath);
+                            }
+                            else
+                            {
+
+                                filepath = Path.Join(filepath, $"#{logchannel}");
+                                CreateDirectoryIfNotExists(filepath);
+                                filepath = Path.Join(filepath, $"{date}.{extension}");
+                                return filepath;
+                            }
                         }
                     }
                 }
@@ -50,7 +61,7 @@
                     filepath = Path.Join(filepath, $"Default.{extension}");
                     break;
                 case "<date>":
-                    filepath = Path.Join(filepath, $"{DateTime.Today.ToShortDateString()}.{extension}");
+                    filepath = Path.Join(filepath, $"{DateTime.UtcNow.ToShortDateString()}.{extension}");
                     break;
                 default:
                     filepath = Path.Join(filepath, $"{filename}.{extension}");
@@ -167,5 +178,6 @@
         Root,
         Server,
         Channel,
+        LogRetrieval,
     }
 }

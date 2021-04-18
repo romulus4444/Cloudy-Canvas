@@ -90,7 +90,7 @@
         {
             var setting = await FileHelper.GetSetting("adminrole", context);
             ulong roleId = 0;
-            if (setting.Contains("<ERROR>"))
+            if (setting.Contains("<ERROR>") || !(setting.Contains("<@&") && setting.Contains(">")))
             {
                 return roleId;
             }

@@ -117,7 +117,7 @@
             {
                 case "":
                     await ReplyAsync("You need to specify an admin command.");
-                    await _logger.Log($"admin: <FAIL>", Context);
+                    await _logger.Log("admin: <FAIL>", Context);
                     break;
                 case "adminchannel":
                     switch (commandTwo)
@@ -314,7 +314,7 @@
         {
             var setting = await FileHelper.GetSetting("adminchannel", context);
             ulong channelId = 0;
-            if (setting.Contains("<ERROR>"))
+            if (setting.Contains("<ERROR>") || !(setting.Contains("<#") && setting.Contains(">")))
             {
                 return channelId;
             }
@@ -726,6 +726,73 @@
                         await _logger.Log($"blacklist invalid: {command}", Context);
                         break;
                 }
+            }
+        }
+
+        [Summary("Submodule for retreiving log files")]
+        public class LogModule : ModuleBase<SocketCommandContext>
+        {
+            private readonly BlacklistService _blacklistService;
+
+            private readonly LoggingHelperService _logger;
+
+            public LogModule(BlacklistService blacklistService, LoggingHelperService logger)
+            {
+                _blacklistService = blacklistService;
+                _logger = logger;
+            }
+
+            [Command("log")]
+            public async Task LogAsync(string channel = "", string date = "")
+            {
+                if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
+                {
+                    return;
+                }
+
+                if (channel == "")
+                {
+                    await ReplyAsync("You need to enter a channel and date.");
+                    return;
+                }
+
+                if (date == "")
+                {
+                    await ReplyAsync("You need to enter a date.");
+                    return;
+                }
+
+                var errorMessage = await LogGetAsync(channel, date, Context);
+                if (errorMessage.Contains("<ERROR>"))
+                {
+                    await ReplyAsync(errorMessage);
+                }
+            }
+
+            private async Task<string> LogGetAsync(string channelName, string date, SocketCommandContext context)
+            {
+                await ReplyAsync($"Retrieving log from {channelName} on {date}...");
+                var confirmedName = DiscordHelper.ConvertChannelPingToName(channelName, context);
+                if (confirmedName.Contains("<ERROR>"))
+                {
+                    return confirmedName;
+                }
+
+                var adminChannelId = await GetAdminChannelAsync(context);
+                if (adminChannelId <= 0)
+                {
+                    return "<ERROR> Admin channel not set.";
+                }
+
+                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "txt", context, confirmedName, date);
+                if (!File.Exists(filepath))
+                {
+                    return "<ERROR> File does not exist";
+                }
+
+                var adminChannel = context.Guild.GetTextChannel(adminChannelId);
+                await adminChannel.SendFileAsync(filepath, $"{confirmedName}-{date}.txt");
+                return "SUCCESS";
             }
         }
     }
