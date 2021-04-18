@@ -81,7 +81,7 @@
             else
             {
                 await ReplyAsync($"I couldn't find @{adminRoleName}.");
-                await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL> 1", Context);
+                await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL> 1", Context, true);
                 return;
             }
 
@@ -93,12 +93,12 @@
             else
             {
                 await adminChannel.SendMessageAsync("Admin role Unable to be set. Please try again.");
-                await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL> 2", Context);
+                await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL> 2", Context, true);
                 return;
             }
 
             await adminChannel.SendMessageAsync("I'm all set! Type `;help admin` for a list of other admin setup commands.");
-            await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context);
+            await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
         }
 
         [Command("admin")]
@@ -132,7 +132,7 @@
                             break;
                         case "set":
                             await AdminChannelSetAsync(commandThree);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         default:
                             await ReplyAsync($"Invalid command {commandTwo}");
@@ -154,15 +154,15 @@
                             break;
                         case "add":
                             await IgnoreChannelAddAsync(commandThree);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "remove":
                             await IgnoreChannelRemoveAsync(commandThree);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
                             await IgnoreChannelClearAsync();
-                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context, true);
                             break;
                         default:
                             await ReplyAsync($"Invalid command {commandTwo}");
@@ -184,15 +184,15 @@
                             break;
                         case "add":
                             await IgnoreRoleAddAsync(commandThree);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "remove":
                             await IgnoreRoleRemoveAsync(commandThree);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
                             await IgnoreRoleClearAsync();
-                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context, true);
                             break;
                         default:
                             await ReplyAsync($"Invalid command {commandTwo}");
@@ -214,7 +214,7 @@
                             break;
                         case "set":
                             await AdminRoleSetAsync(commandThree);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         default:
                             await ReplyAsync($"Invalid command {commandTwo}");
@@ -261,7 +261,7 @@
                 if (channel != null)
                 {
                     await channel.SendMessageAsync(message);
-                    await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context);
+                    await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context, true);
                     return;
                 }
 
@@ -272,7 +272,7 @@
             }
 
             await ReplyAsync($"{channelName} {message}");
-            await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context);
+            await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context, true);
         }
 
         private static async Task ClearIgnoreRoleAsync(SocketCommandContext context)
@@ -675,12 +675,12 @@
                         if (added)
                         {
                             await ReplyAsync($"Added `{term}` to the blacklist.");
-                            await _logger.Log($"blacklist add (success): {term}", Context);
+                            await _logger.Log($"blacklist add <SUCCESS>: {term}", Context, true);
                         }
                         else
                         {
                             await ReplyAsync($"`{term}` is already on the blacklist.");
-                            await _logger.Log($"blacklist add (fail): {term}", Context);
+                            await _logger.Log($"blacklist add <FAIL>: {term}", Context);
                         }
 
                         break;
@@ -689,12 +689,12 @@
                         if (removed)
                         {
                             await ReplyAsync($"Removed `{term}` from the blacklist.");
-                            await _logger.Log($"blacklist remove (success): {term}", Context);
+                            await _logger.Log($"blacklist remove <SUCCESS>: {term}", Context, true);
                         }
                         else
                         {
                             await ReplyAsync($"`{term}` was not on the blacklist.");
-                            await _logger.Log($"blacklist remove (fail): {term}", Context);
+                            await _logger.Log($"blacklist remove <FAIL>: {term}", Context);
                         }
 
                         break;
@@ -719,7 +719,7 @@
                     case "clear":
                         _blacklistService.ClearList();
                         await ReplyAsync("Blacklist cleared");
-                        await _logger.Log("blacklist clear", Context);
+                        await _logger.Log("blacklist clear", Context, true);
                         break;
                     default:
                         await ReplyAsync("Invalid subcommand");
@@ -756,12 +756,14 @@
                 if (channel == "")
                 {
                     await ReplyAsync("You need to enter a channel and date.");
+                    await _logger.Log("log: <FAIL>", Context);
                     return;
                 }
 
                 if (date == "")
                 {
                     await ReplyAsync("You need to enter a date.");
+                    await _logger.Log($"log: {channel} <FAIL>", Context);
                     return;
                 }
 
@@ -769,7 +771,10 @@
                 if (errorMessage.Contains("<ERROR>"))
                 {
                     await ReplyAsync(errorMessage);
+                    await _logger.Log($"log: {channel} {date} {errorMessage} <FAIL>", Context);
+                    return;
                 }
+                await _logger.Log($"log: {channel} {date} <SUCCESS>", Context);
             }
 
             private async Task<string> LogGetAsync(string channelName, string date, SocketCommandContext context)

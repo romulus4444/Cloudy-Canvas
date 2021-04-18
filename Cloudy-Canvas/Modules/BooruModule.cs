@@ -34,7 +34,7 @@
             var badTerms = _blacklistService.CheckList(query);
             if (badTerms != "")
             {
-                await _logger.Log($"pick: {query}, BLACKLISTED {badTerms}", Context);
+                await _logger.Log($"pick: {query}, BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
@@ -87,7 +87,7 @@
             var badTerms = _blacklistService.CheckList(query);
             if (badTerms != "")
             {
-                await _logger.Log($"pickrecent: {query}, BLACKLISTED {badTerms}", Context);
+                await _logger.Log($"pickrecent: {query}, BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
@@ -140,7 +140,7 @@
             var badTerms = _blacklistService.CheckList(id.ToString());
             if (badTerms != "")
             {
-                await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context);
+                await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else
@@ -182,7 +182,7 @@
             var badTerms = _blacklistService.CheckList(id.ToString());
             if (badTerms != "")
             {
-                await _logger.Log($"tags: {id} BLACKLISTED {badTerms}", Context);
+                await _logger.Log($"tags: {id} BLACKLISTED {badTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
             }
             else

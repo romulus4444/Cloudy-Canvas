@@ -16,9 +16,12 @@
             _logger = logger;
         }
 
-        public async Task Log(string message, SocketCommandContext context)
+        public async Task Log(string message, SocketCommandContext context, bool file = false)
         {
-            await AppendToFile(message, context);
+            if (file)
+            {
+                await AppendToFile(message, context);
+            }
             var logMessage = PrepareMessageForLogging(message, context);
             _logger.LogInformation(logMessage);
         }
