@@ -85,7 +85,7 @@
             }
 
             var adminRole = await GetAdminRoleAsync(context);
-            return context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == adminRole);
+            return adminRole == 0 || context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == adminRole);
         }
 
         public static async Task<ulong> GetAdminRoleAsync(SocketCommandContext context)
