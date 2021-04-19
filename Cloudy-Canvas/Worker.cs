@@ -45,6 +45,7 @@ namespace Cloudy_Canvas
                 await _client.SetGameAsync("with my paintbrush");
                 await InstallCommandsAsync();
                 await _booru.GetSpoilerTagsAsync();
+                await _booru.GetHiddenTagsAsync();
 
                 // Block this task until the program is closed.
                 await Task.Delay(-1);
