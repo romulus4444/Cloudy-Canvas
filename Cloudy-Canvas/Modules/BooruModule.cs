@@ -29,13 +29,21 @@
                 return;
             }
 
-            _badlistService.InitializeList(Context);
-            var badTerms = _badlistService.CheckList(query);
-            if (badTerms != "")
+            _badlistService.InitializeYellowList(Context);
+            var yellowTerms = _badlistService.CheckYellowList(query);
+            var redTerms = _badlistService.CheckRedList(query, Context);
+            if (redTerms != "")
             {
-                await _logger.Log($"pick: {query}, BLACKLISTED {badTerms}", Context, true);
+                await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
+                await ReplyAsync("You're kidding me, right?");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context);
+                await Context.Message.DeleteAsync();
+            }
+            else if (yellowTerms != "")
+            {
+                await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context);
             }
             else
             {
@@ -85,13 +93,21 @@
                 return;
             }
 
-            _badlistService.InitializeList(Context);
-            var badTerms = _badlistService.CheckList(query);
-            if (badTerms != "")
+            _badlistService.InitializeYellowList(Context);
+            var yellowTerms = _badlistService.CheckYellowList(query);
+            var redTerms = _badlistService.CheckRedList(query, Context);
+            if (redTerms != "")
             {
-                await _logger.Log($"pickrecent: {query}, BLACKLISTED {badTerms}", Context, true);
+                await _logger.Log($"pickrecent: {query}, REDLISTED {redTerms}", Context, true);
+                await ReplyAsync("You're kidding me, right?");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context);
+                await Context.Message.DeleteAsync();
+            }
+            else if (yellowTerms != "")
+            {
+                await _logger.Log($"pickrecent: {query}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> TERMS: {badTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context);
             }
             else
             {
@@ -141,13 +157,21 @@
                 return;
             }
 
-            _badlistService.InitializeList(Context);
-            var badTerms = _badlistService.CheckList(id.ToString());
-            if (badTerms != "")
+            _badlistService.InitializeYellowList(Context);
+            var yellowTerms = _badlistService.CheckYellowList(id.ToString());
+            var redTerms = _badlistService.CheckRedList(id.ToString(), Context);
+            if (redTerms != "")
             {
-                await _logger.Log($"id: {id} BLACKLISTED {badTerms}", Context, true);
+                await _logger.Log($"id: {id}, REDLISTED {redTerms}", Context, true);
+                await ReplyAsync("You're kidding me, right?");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context);
+                await Context.Message.DeleteAsync();
+            }
+            else if (yellowTerms != "")
+            {
+                await _logger.Log($"id: {id}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty image Id in <#{Context.Channel.Id}> Image# {badTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context);
             }
             else
             {
@@ -184,13 +208,21 @@
                 return;
             }
 
-            _badlistService.InitializeList(Context);
-            var badTerms = _badlistService.CheckList(id.ToString());
-            if (badTerms != "")
+            _badlistService.InitializeYellowList(Context);
+            var yellowTerms = _badlistService.CheckYellowList(id.ToString());
+            var redTerms = _badlistService.CheckRedList(id.ToString(), Context);
+            if (redTerms != "")
             {
-                await _logger.Log($"tags: {id} BLACKLISTED {badTerms}", Context, true);
+                await _logger.Log($"tags: {id}, REDLISTED {redTerms}", Context, true);
+                await ReplyAsync("You're kidding me, right?");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context);
+                await Context.Message.DeleteAsync();
+            }
+            else if (yellowTerms != "")
+            {
+                await _logger.Log($"tags: {id}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty image Id in <#{Context.Channel.Id}> Image# {badTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context);
             }
             else
             {
@@ -267,8 +299,8 @@
                 return;
             }
 
-            _badlistService.InitializeList(Context);
-            var badTerms = _badlistService.CheckList(reportedImageId.ToString());
+            _badlistService.InitializeYellowList(Context);
+            var badTerms = _badlistService.CheckYellowList(reportedImageId.ToString());
             if (badTerms != "")
             {
                 await ReplyAsync("That image is already blocked.");
@@ -284,10 +316,25 @@
                 {
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
                     var adminRoleId = await DiscordHelper.GetAdminRoleAsync(Context);
-                    await DiscordHelper.PostToAdminChannelAsync($"<@&{adminRoleId}>: <@{Context.User.Id}> has reported Image#{reportedImageId} || <https://manebooru.art/images/{imageId}> ||", Context);
+                    await DiscordHelper.PostToAdminChannelAsync(
+                        $"<@&{adminRoleId}>: <@{Context.User.Id}> has reported Image#{reportedImageId} || <https://manebooru.art/images/{imageId}> ||", Context);
                     await ReplyAsync("Admins have been notified. Thank you for your report.");
                 }
             }
+        }
+
+        [Command("refreshlists")]
+        [Summary("Refreshes the spoiler list and redlist")]
+        public async Task RefreshListsAsync()
+        {
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
+            {
+                return;
+            }
+
+            await ReplyAsync("Refreshing spoiler list and redlist. This may take a few minutes.");
+            await _booru.RefreshListsAsync();
+            await ReplyAsync("Spoiler list and redlist refreshed!");
         }
 
         private static string SetupTagListOutput(IReadOnlyList<string> tagList)

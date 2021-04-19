@@ -2,23 +2,22 @@
 {
     using System.Collections.Generic;
     using System.IO;
-    using Cloudy_Canvas.Settings;
     using Discord.Commands;
-    using Microsoft.Extensions.Options;
 
     public class BadlistService
     {
-        private readonly DiscordSettings _settings;
         private List<string> YellowList;
-        private string Filepath;
+        private List<string> RedList;
+        private string YellowFilepath;
+        private string RedFilepath;
 
-        public BadlistService(IOptions<DiscordSettings> settings)
+        public BadlistService()
         {
-            _settings = settings.Value;
             YellowList = new List<string>();
+            RedList = new List<string>();
         }
 
-        public bool AddTerm(string term)
+        public bool AddYellowTerm(string term)
         {
             var lower = term.ToLower();
             if (YellowList.Contains(lower))
@@ -27,11 +26,11 @@
             }
 
             YellowList.Add(lower);
-            SaveList();
+            SaveYellowList();
             return true;
         }
 
-        public bool RemoveTerm(string term)
+        public bool RemoveYellowTerm(string term)
         {
             var lower = term.ToLower();
             if (!YellowList.Contains(lower))
@@ -40,29 +39,35 @@
             }
 
             YellowList.Remove(lower);
-            SaveList();
+            SaveYellowList();
             return true;
         }
 
-        public List<string> GetList()
+        public List<string> GetYellowList()
         {
-            LoadList();
+            LoadYellowList();
             return YellowList;
         }
 
-        public void ClearList()
+        public List<string> GetRedList(SocketCommandContext context)
         {
-            if (File.Exists(Filepath))
-            {
-                File.Delete(Filepath);
-            }
-
-            File.WriteAllText(Filepath, "");
+            LoadRedList(context);
+            return YellowList;
         }
 
-        public string CheckList(string query)
+        public void ClearYellowList()
         {
-            LoadList();
+            if (File.Exists(YellowFilepath))
+            {
+                File.Delete(YellowFilepath);
+            }
+
+            File.WriteAllText(YellowFilepath, "");
+        }
+
+        public string CheckYellowList(string query)
+        {
+            LoadYellowList();
             var lower = query.ToLower();
             var matchedTerms = "";
             foreach (var term in YellowList)
@@ -85,13 +90,44 @@
             return matchedTerms;
         }
 
-        public void InitializeList(SocketCommandContext context)
+        public string CheckRedList(string query, SocketCommandContext context)
+        {
+            LoadRedList(context);
+            var lower = query.ToLower();
+            var matchedTerms = "";
+            foreach (var term in RedList)
+            {
+                var split = "";
+                if (term == "Redlisted Tags:")
+                {
+                    continue;
+                }
+                split = term.Split(", ", 2)[1];
+                if (!lower.Contains(split))
+                {
+                    continue;
+                }
+
+                if (matchedTerms == "")
+                {
+                    matchedTerms += split;
+                }
+                else
+                {
+                    matchedTerms += $", {split}";
+                }
+            }
+
+            return matchedTerms;
+        }
+
+        public void InitializeYellowList(SocketCommandContext context)
         {
             var path = FileHelper.SetUpFilepath(FilePathType.Server, "YellowList", "txt", context);
-            Filepath = path;
-            if (File.Exists(Filepath))
+            YellowFilepath = path;
+            if (File.Exists(YellowFilepath))
             {
-                LoadList();
+                LoadYellowList();
             }
             else
             {
@@ -99,14 +135,20 @@
             }
         }
 
-        private void LoadList()
+        private void LoadYellowList()
         {
-            YellowList = new List<string>(File.ReadAllLines(Filepath));
+            YellowList = new List<string>(File.ReadAllLines(YellowFilepath));
         }
 
-        private void SaveList()
+        private void LoadRedList(SocketCommandContext context)
         {
-            File.WriteAllLines(Filepath, YellowList);
+            RedFilepath = FileHelper.SetUpFilepath(FilePathType.Root, "RedList", "txt", context);
+            RedList = new List<string>(File.ReadAllLines(RedFilepath));
+        }
+
+        private void SaveYellowList()
+        {
+            File.WriteAllLines(YellowFilepath, YellowList);
         }
     }
 }

@@ -649,7 +649,7 @@
                     return;
                 }
 
-                _badlistService.InitializeList(Context);
+                _badlistService.InitializeYellowList(Context);
                 switch (command)
                 {
                     case "":
@@ -657,7 +657,7 @@
                         await _logger.Log("yellowlist: <FAIL>", Context);
                         break;
                     case "add":
-                        var added = _badlistService.AddTerm(term);
+                        var added = _badlistService.AddYellowTerm(term);
                         if (added)
                         {
                             await ReplyAsync($"Added `{term}` to the yellowlist.");
@@ -671,7 +671,7 @@
 
                         break;
                     case "remove":
-                        var removed = _badlistService.RemoveTerm(term);
+                        var removed = _badlistService.RemoveYellowTerm(term);
                         if (removed)
                         {
                             await ReplyAsync($"Removed `{term}` from the yellowlist.");
@@ -686,7 +686,7 @@
                         break;
                     case "get":
                         var output = "The yellowlist is currently empty.";
-                        var yellowlist = _badlistService.GetList();
+                        var yellowlist = _badlistService.GetYellowList();
                         foreach (var item in yellowlist)
                         {
                             if (output == "The yellowlist is currently empty.")
@@ -703,7 +703,7 @@
                         await _logger.Log("yellowlist: get", Context);
                         break;
                     case "clear":
-                        _badlistService.ClearList();
+                        _badlistService.ClearYellowList();
                         await ReplyAsync("Yellowlist cleared");
                         await _logger.Log("yellowlist: clear", Context, true);
                         break;

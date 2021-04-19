@@ -163,7 +163,8 @@
                     if (total > 0)
                     {
                         combinedTagId = aliasedTagNameResultsName.tags[0].id;
-                        
+                        var combinedTag = new Tuple<long, string>((long)combinedTagId, decodedString.ToString());
+                        aliasedTagList.Add(combinedTag);
                     }
                     else
                     {
@@ -173,9 +174,9 @@
                             .GetAsync()
                             .ReceiveJson();
                         combinedTagId = aliasedTagNameResultsSlug.tags[0].id;
+                        var combinedTag = new Tuple<long, string>((long)combinedTagId, aliasedTagNameResultsSlug.tags[0].name.ToString());
+                        aliasedTagList.Add(combinedTag);
                     }
-                    var combinedTag = new Tuple<long, string>((long)combinedTagId, decodedString.ToString());
-                    aliasedTagList.Add(combinedTag);
                 }
             }
 
@@ -327,6 +328,11 @@
                 .ReceiveJson();
             var output = results.tags[0].name.ToString();
             return output;
+        }
+        public async Task RefreshListsAsync()
+        {
+            await GetSpoilerTagsAsync();
+            await GetHiddenTagsAsync();
         }
     }
 }
