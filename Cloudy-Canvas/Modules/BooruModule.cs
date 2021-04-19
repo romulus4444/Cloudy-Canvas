@@ -36,14 +36,14 @@
             {
                 await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
                 await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
                 await Context.Message.DeleteAsync();
             }
             else if (yellowTerms != "")
             {
                 await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context, true);
             }
             else
             {
@@ -100,14 +100,14 @@
             {
                 await _logger.Log($"pickrecent: {query}, REDLISTED {redTerms}", Context, true);
                 await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
                 await Context.Message.DeleteAsync();
             }
             else if (yellowTerms != "")
             {
                 await _logger.Log($"pickrecent: {query}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context, true);
             }
             else
             {
@@ -164,14 +164,14 @@
             {
                 await _logger.Log($"id: {id}, REDLISTED {redTerms}", Context, true);
                 await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
                 await Context.Message.DeleteAsync();
             }
             else if (yellowTerms != "")
             {
                 await _logger.Log($"id: {id}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context, true);
             }
             else
             {
@@ -215,14 +215,14 @@
             {
                 await _logger.Log($"tags: {id}, REDLISTED {redTerms}", Context, true);
                 await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
                 await Context.Message.DeleteAsync();
             }
             else if (yellowTerms != "")
             {
                 await _logger.Log($"tags: {id}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context, true);
             }
             else
             {

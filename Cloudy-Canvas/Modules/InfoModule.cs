@@ -29,7 +29,7 @@
             {
                 case "":
                     await ReplyAsync(
-                        "**__All Commands:__**\n\n**Booru Module:**\n*All searches use manechat-compliant filters*\n`;pick ...`\n`;pickrecent ...`\n`;id ...`\n`;tags ...`\n`;featured`\n`;getspoilers`\n\n**Admin Module:**\n`;setup ...`\n`;admin ...`\n`;yellowlist ...`\n`;log ...`\n`;echo ...`\n\n**Info Module:**\n`;origin`\n\nUse `;help <command>` for more details on a particular command.");
+                        "**__All Commands:__**\n\n**Booru Module:**\n*All searches use manechat-compliant filters*\n`;pick ...`\n`;pickrecent ...`\n`;id ...`\n`;tags ...`\n`;featured`\n`;getspoilers`\n`;report ...`\n\n**Admin Module:**\n`;setup ...`\n`;admin ...`\n`;yellowlist ...`\n`;log ...`\n`;echo ...`\n\n**Info Module:**\n`;origin`\n\nUse `;help <command>` for more details on a particular command.");
                     break;
                 case "pick":
                     await ReplyAsync(
@@ -52,6 +52,9 @@
                     break;
                 case "getspoilers":
                     await ReplyAsync("`;getspoilers`\nPosts a list of currently spoilered tags.");
+                    break;
+                case "report":
+                    await ReplyAsync("`;report <id>`\nAlerts the admins about image#<id>. Only use this for images that violate the server rules!");
                     break;
                 case "setup":
                     await ReplyAsync(
