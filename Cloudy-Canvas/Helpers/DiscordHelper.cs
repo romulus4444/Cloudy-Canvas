@@ -9,7 +9,8 @@
 
     public static class DiscordHelper
     {
-        private const ulong CloudyCanvasId = 828682017868218445; //Cloudy Canvas's Discord Id
+        private const ulong CloudyCanvasId = 828682017868218445; //Cloudy Canvas's Production Id
+        //private const ulong CloudyCanvasId = 833556029521657856; //Cloudy Canvas's Development Id
 
         public static async Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
         {
@@ -84,7 +85,7 @@
             }
 
             var adminRole = await GetAdminRoleAsync(context);
-            return context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == adminRole);
+            return adminRole == 0 || context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == adminRole);
         }
 
         public static async Task<ulong> GetAdminRoleAsync(SocketCommandContext context)

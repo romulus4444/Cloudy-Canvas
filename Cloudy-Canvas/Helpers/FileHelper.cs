@@ -11,7 +11,7 @@
         public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null, string logchannel = "", string date = "")
         {
             //Root
-            var filepath = "BotSettings";
+            var filepath = "DevSettings";
             CreateDirectoryIfNotExists(filepath);
 
             //Server
@@ -24,7 +24,7 @@
                 {
                     filepath = Path.Join(filepath, "_UserDMs");
                     CreateDirectoryIfNotExists(filepath);
-                    filepath = Path.Join(filepath, $"@{context.User.Username}");
+                    filepath = Path.Join(filepath, $"{context.User.Username}");
                     CreateDirectoryIfNotExists(filepath);
                 }
                 else
@@ -39,13 +39,13 @@
                         {
                             if (type == FilePathType.Channel)
                             {
-                                filepath = Path.Join(filepath, $"#{context.Channel.Name}");
+                                filepath = Path.Join(filepath, $"{context.Channel.Name}");
                                 CreateDirectoryIfNotExists(filepath);
                             }
                             else
                             {
 
-                                filepath = Path.Join(filepath, $"#{logchannel}");
+                                filepath = Path.Join(filepath, $"{logchannel}");
                                 CreateDirectoryIfNotExists(filepath);
                                 filepath = Path.Join(filepath, $"{date}.{extension}");
                                 return filepath;
@@ -125,6 +125,8 @@
             }
 
             var settings = await File.ReadAllLinesAsync(filepath);
+            //using var reader = new StreamReader(filepath);
+            //var settings = (await reader.ReadToEndAsync()).Split(Environment.NewLine);
             var retrievedSetting = "<ERROR> Setting not found";
             foreach (var setting in settings)
             {
