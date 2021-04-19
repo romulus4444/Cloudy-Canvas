@@ -1,6 +1,7 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
     using Discord.Commands;
 

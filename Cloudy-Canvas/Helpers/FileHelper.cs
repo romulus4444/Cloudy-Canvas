@@ -1,17 +1,18 @@
-﻿namespace Cloudy_Canvas
+﻿namespace Cloudy_Canvas.Helpers
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Settings;
     using Discord.Commands;
 
     public static class FileHelper
     {
-        public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null, string logchannel = "", string date = "")
+        public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null, string logChannel = "", string date = "")
         {
             //Root
-            var filepath = "DevSettings";
+            var filepath = DevSettings.RootPath;
             CreateDirectoryIfNotExists(filepath);
 
             //Server
@@ -44,8 +45,7 @@
                             }
                             else
                             {
-
-                                filepath = Path.Join(filepath, $"{logchannel}");
+                                filepath = Path.Join(filepath, $"{logChannel}");
                                 CreateDirectoryIfNotExists(filepath);
                                 filepath = Path.Join(filepath, $"{date}.{extension}");
                                 return filepath;

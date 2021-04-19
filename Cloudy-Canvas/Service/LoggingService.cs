@@ -4,6 +4,7 @@
     using System.Globalization;
     using System.IO;
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Helpers;
     using Discord.Commands;
     using Microsoft.Extensions.Logging;
 
@@ -22,6 +23,7 @@
             {
                 await AppendToFile(message, context);
             }
+
             var logMessage = PrepareMessageForLogging(message, context);
             _logger.LogInformation(logMessage);
         }

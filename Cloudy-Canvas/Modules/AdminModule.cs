@@ -3,6 +3,7 @@
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
     using Discord;
     using Discord.Commands;
@@ -87,7 +88,7 @@
             var adminRoleId = await DiscordHelper.GetAdminRoleAsync(Context);
             if (adminRoleId > 0)
             {
-                await ReplyAsync($"<@&{adminRoleId}> is in charge now!", allowedMentions:AllowedMentions.None);
+                await ReplyAsync($"<@&{adminRoleId}> is in charge now!", allowedMentions: AllowedMentions.None);
             }
             else
             {
@@ -422,7 +423,7 @@
             var roleGetId = await DiscordHelper.GetAdminRoleAsync(Context);
             if (roleGetId > 0)
             {
-                await ReplyAsync($"Admin role is <@&{roleGetId}>", allowedMentions:AllowedMentions.None);
+                await ReplyAsync($"Admin role is <@&{roleGetId}>", allowedMentions: AllowedMentions.None);
             }
             else
             {
@@ -760,6 +761,7 @@
                     await _logger.Log($"log: {channel} {date} {errorMessage} <FAIL>", Context);
                     return;
                 }
+
                 await _logger.Log($"log: {channel} {date} <SUCCESS>", Context);
             }
 

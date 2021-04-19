@@ -8,17 +8,13 @@
 
   <ItemGroup>
     <Compile Remove="BotSettings\**" />
-    <Compile Remove="Logs\**" />
+    <Compile Remove="DevSettings\**" />
     <Content Remove="BotSettings\**" />
-    <Content Remove="Logs\**" />
+    <Content Remove="DevSettings\**" />
     <EmbeddedResource Remove="BotSettings\**" />
-    <EmbeddedResource Remove="Logs\**" />
+    <EmbeddedResource Remove="DevSettings\**" />
     <None Remove="BotSettings\**" />
-    <None Remove="Logs\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="blacklist.txt" />
+    <None Remove="DevSettings\**" />
   </ItemGroup>
 
   <ItemGroup>

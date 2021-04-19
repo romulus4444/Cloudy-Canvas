@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.IO;
+    using Cloudy_Canvas.Helpers;
     using Discord.Commands;
 
     public class BadlistService
@@ -102,6 +103,7 @@
                 {
                     continue;
                 }
+
                 split = term.Split(", ", 2)[1];
                 if (!lower.Contains(split))
                 {
