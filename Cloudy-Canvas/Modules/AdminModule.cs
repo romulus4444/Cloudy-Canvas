@@ -404,7 +404,7 @@
                     await SetAdminRoleAsync(roleSetId, roleSetName);
                 }
 
-                await ReplyAsync($"Admin role set to <@&{roleSetId}>");
+                await ReplyAsync($"Admin role set to <@&{roleSetId}>", allowedMentions: AllowedMentions.None);
             }
             else
             {
@@ -422,7 +422,7 @@
             var roleGetId = await DiscordHelper.GetAdminRoleAsync(Context);
             if (roleGetId > 0)
             {
-                await ReplyAsync($"Admin role is <@&{roleGetId}>");
+                await ReplyAsync($"Admin role is <@&{roleGetId}>", allowedMentions:AllowedMentions.None);
             }
             else
             {
@@ -445,11 +445,11 @@
 
                 if (removed)
                 {
-                    await ReplyAsync($"Removed <@&{roleRemoveId}> from ignore list.");
+                    await ReplyAsync($"Removed <@&{roleRemoveId}> from ignore list.", allowedMentions: AllowedMentions.None);
                 }
                 else
                 {
-                    await ReplyAsync($"<@&{roleRemoveId}> was not on the list.");
+                    await ReplyAsync($"<@&{roleRemoveId}> was not on the list.", allowedMentions: AllowedMentions.None);
                 }
             }
             else
@@ -476,11 +476,11 @@
 
                 if (added)
                 {
-                    await ReplyAsync($"Added <@&{roleAddId}> to ignore list.");
+                    await ReplyAsync($"Added <@&{roleAddId}> to ignore list.", allowedMentions: AllowedMentions.None);
                 }
                 else
                 {
-                    await ReplyAsync($"<@&{roleAddId}> is already on the list.");
+                    await ReplyAsync($"<@&{roleAddId}> is already on the list.", allowedMentions: AllowedMentions.None);
                 }
             }
             else
@@ -500,7 +500,7 @@
                     output += $"<@&{role}>\n";
                 }
 
-                await ReplyAsync(output);
+                await ReplyAsync(output, allowedMentions: AllowedMentions.None);
             }
             else
             {
