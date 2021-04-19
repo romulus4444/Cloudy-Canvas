@@ -81,6 +81,16 @@
             }
         }
 
+        public static async Task WriteRedListToFileAsync(List<Tuple<long, string>> tagList)
+        {
+            var filepath = SetUpFilepath(FilePathType.Root, "RedList", "txt");
+            await File.WriteAllTextAsync(filepath, "Redlisted Tags:\n");
+            foreach (var (tagId, tagName) in tagList)
+            {
+                await File.AppendAllTextAsync(filepath, $"{tagId}, {tagName}\n");
+            }
+        }
+
         public static async Task<List<Tuple<long, string>>> GetSpoilerTagIdListFromFileAsync()
         {
             var filepath = SetUpFilepath(FilePathType.Root, "Spoilers", "txt");

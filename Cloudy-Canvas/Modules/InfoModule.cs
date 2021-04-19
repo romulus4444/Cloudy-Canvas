@@ -29,7 +29,7 @@
             {
                 case "":
                     await ReplyAsync(
-                        "**__All Commands:__**\n\n**Booru Module:**\n*All searches use manechat-compliant filters*\n`;pick ...`\n`;pickrecent ...`\n`;id ...`\n`;tags ...`\n`;featured`\n`;getspoilers`\n\n**Admin Module:**\n`;setup ...`\n`;admin ...`\n`;blacklist ...`\n`;log ...`\n`;echo ...`\n\n**Info Module:**\n`;origin`\n\nUse `;help <command>` for more details on a particular command.");
+                        "**__All Commands:__**\n\n**Booru Module:**\n*All searches use manechat-compliant filters*\n`;pick ...`\n`;pickrecent ...`\n`;id ...`\n`;tags ...`\n`;featured`\n`;getspoilers`\n`;report ...`\n\n**Admin Module:**\n`;setup ...`\n`;admin ...`\n`;yellowlist ...`\n`;log ...`\n`;echo ...`\n\n**Info Module:**\n`;origin`\n\nUse `;help <command>` for more details on a particular command.");
                     break;
                 case "pick":
                     await ReplyAsync(
@@ -52,6 +52,9 @@
                     break;
                 case "getspoilers":
                     await ReplyAsync("`;getspoilers`\nPosts a list of currently spoilered tags.");
+                    break;
+                case "report":
+                    await ReplyAsync("`;report <id>`\nAlerts the admins about image#<id>. Only use this for images that violate the server rules!");
                     break;
                 case "setup":
                     await ReplyAsync(
@@ -86,9 +89,9 @@
                     }
 
                     break;
-                case "blacklist":
+                case "yellowlist":
                     await ReplyAsync(
-                        "**__;blacklist Commands:__**\n*Only users with the specified admin role may use these commands.*\nManages the list of terms users are unable to search for.\n`;blacklist add <term>` Add <term> to the blacklist.\n`;blacklist remove <term>` Removes <term> from the blacklist.\n`;blacklist get` Gets the current list of blacklisted terms.\n`;blacklist clear` Clears the blacklist of all terms.");
+                        "**__;yellowlist Commands:__**\n*Only users with the specified admin role may use these commands.*\nManages the list of terms users are unable to search for.\n`;yellowlist add <term>` Add <term> to the yellowlist.\n`;yellowlist remove <term>` Removes <term> from the yellowlist.\n`;yellowlist get` Gets the current list of yellowlisted terms.\n`;yellowlist clear` Clears the yellowlist of all terms.");
                     break;
                 case "log":
                     await ReplyAsync(
