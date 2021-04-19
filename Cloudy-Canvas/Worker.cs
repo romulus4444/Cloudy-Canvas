@@ -78,7 +78,7 @@ namespace Cloudy_Canvas
         {
             var message = messageParam as SocketUserMessage;
             var argPos = 0;
-            if (!(message.HasCharPrefix('?', ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)) || message.Author.IsBot)
+            if (!(message.HasCharPrefix(';', ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)) || message.Author.IsBot)
             {
                 return;
             }
