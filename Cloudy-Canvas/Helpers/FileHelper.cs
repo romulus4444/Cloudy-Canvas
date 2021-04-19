@@ -11,7 +11,7 @@
         public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null, string logchannel = "", string date = "")
         {
             //Root
-            var filepath = "BotSettings";
+            var filepath = "DevSettings";
             CreateDirectoryIfNotExists(filepath);
 
             //Server
