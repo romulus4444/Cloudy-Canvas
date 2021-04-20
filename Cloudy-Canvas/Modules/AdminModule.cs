@@ -1,5 +1,6 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
+    using System;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -316,7 +317,7 @@
             var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
             if (!File.Exists(filename))
             {
-                await File.WriteAllTextAsync(filename, $"<#{channelId}> #{channelName}\n");
+                await File.WriteAllTextAsync(filename, $"<#{channelId}> #{channelName}{Environment.NewLine}");
                 return true;
             }
 
@@ -329,7 +330,7 @@
                 }
             }
 
-            await File.AppendAllTextAsync(filename, $"<#{channelId}> #{channelName}\n");
+            await File.AppendAllTextAsync(filename, $"<#{channelId}> #{channelName}{Environment.NewLine}");
             return true;
         }
 
@@ -373,7 +374,7 @@
             var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
             if (!File.Exists(filename))
             {
-                await File.WriteAllTextAsync(filename, $"<@&{roleId}> @{roleName}\n");
+                await File.WriteAllTextAsync(filename, $"<@&{roleId}> @{roleName}{Environment.NewLine}");
                 return true;
             }
 
@@ -386,7 +387,7 @@
                 }
             }
 
-            await File.AppendAllTextAsync(filename, $"<@&{roleId}> @{roleName}\n");
+            await File.AppendAllTextAsync(filename, $"<@&{roleId}> @{roleName}{Environment.NewLine}");
             return true;
         }
 
@@ -495,10 +496,10 @@
             var roleList = await DiscordHelper.GetIgnoredRolesAsync(Context);
             if (roleList.Count > 0)
             {
-                var output = "__Role Ignore List:__\n";
+                var output = $"__Role Ignore List:__{Environment.NewLine}";
                 foreach (var role in roleList)
                 {
-                    output += $"<@&{role}>\n";
+                    output += $"<@&{role}>{Environment.NewLine}";
                 }
 
                 await ReplyAsync(output, allowedMentions: AllowedMentions.None);
@@ -550,10 +551,10 @@
             var channelList = await DiscordHelper.GetIgnoredChannelsAsync(Context);
             if (channelList.Count > 0)
             {
-                var output = "__Channel Ignore List:__\n";
+                var output = $"__Channel Ignore List:__{Environment.NewLine}";
                 foreach (var channel in channelList)
                 {
-                    output += $"<#{channel}>\n";
+                    output += $"<#{channel}>{Environment.NewLine}";
                 }
 
                 await ReplyAsync(output);
@@ -629,15 +630,12 @@
         }
 
         [Summary("Submodule for managing the yellowlist")]
-        public class BlacklistModule : ModuleBase<SocketCommandContext>
+        public class BadlistModule : ModuleBase<SocketCommandContext>
         {
-            private readonly BadlistService _badlistService;
-
             private readonly LoggingService _logger;
 
-            public BlacklistModule(BadlistService badlistService, LoggingService logger)
+            public BadlistModule(LoggingService logger)
             {
-                _badlistService = badlistService;
                 _logger = logger;
             }
 
@@ -650,7 +648,7 @@
                     return;
                 }
 
-                _badlistService.InitializeYellowList(Context);
+                await BadlistHelper.InitializeYellowList(Context);
                 switch (command)
                 {
                     case "":
@@ -658,7 +656,7 @@
                         await _logger.Log("yellowlist: <FAIL>", Context);
                         break;
                     case "add":
-                        var added = _badlistService.AddYellowTerm(term);
+                        var added = await BadlistHelper.AddYellowTerm(term, Context);
                         if (added)
                         {
                             await ReplyAsync($"Added `{term}` to the yellowlist.");
@@ -672,7 +670,7 @@
 
                         break;
                     case "remove":
-                        var removed = _badlistService.RemoveYellowTerm(term);
+                        var removed = await BadlistHelper.RemoveYellowTerm(term, Context);
                         if (removed)
                         {
                             await ReplyAsync($"Removed `{term}` from the yellowlist.");
@@ -687,7 +685,7 @@
                         break;
                     case "get":
                         var output = "The yellowlist is currently empty.";
-                        var yellowlist = _badlistService.GetYellowList();
+                        var yellowlist = await BadlistHelper.GetYellowList(Context);
                         foreach (var item in yellowlist)
                         {
                             if (output == "The yellowlist is currently empty.")
@@ -700,11 +698,11 @@
                             }
                         }
 
-                        await ReplyAsync($"__Yellowlist Terms:__\n{output}");
+                        await ReplyAsync($"__Yellowlist Terms:__{Environment.NewLine}{output}");
                         await _logger.Log("yellowlist: get", Context);
                         break;
                     case "clear":
-                        _badlistService.ClearYellowList();
+                        await BadlistHelper.ClearYellowList(Context);
                         await ReplyAsync("Yellowlist cleared");
                         await _logger.Log("yellowlist: clear", Context, true);
                         break;
@@ -719,13 +717,10 @@
         [Summary("Submodule for retreiving log files")]
         public class LogModule : ModuleBase<SocketCommandContext>
         {
-            private readonly BadlistService _badlistService;
-
             private readonly LoggingService _logger;
 
-            public LogModule(BadlistService badlistService, LoggingService logger)
+            public LogModule(LoggingService logger)
             {
-                _badlistService = badlistService;
                 _logger = logger;
             }
 
