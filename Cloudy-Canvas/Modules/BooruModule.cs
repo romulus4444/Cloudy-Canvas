@@ -7,17 +7,15 @@
     using Cloudy_Canvas.Service;
     using Discord.Commands;
 
-    [Summary("Module for interfacing with Maneboorud")]
+    [Summary("Module for interfacing with Manebooru")]
     public class BooruModule : ModuleBase<SocketCommandContext>
     {
         private readonly BooruService _booru;
-        private readonly BadlistService _badlistService;
         private readonly LoggingService _logger;
 
-        public BooruModule(BooruService booru, BadlistService badlistService, LoggingService logger)
+        public BooruModule(BooruService booru, LoggingService logger)
         {
             _booru = booru;
-            _badlistService = badlistService;
             _logger = logger;
         }
 
@@ -30,58 +28,43 @@
                 return;
             }
 
-            _badlistService.InitializeYellowList(Context);
-            var yellowTerms = _badlistService.CheckYellowList(query);
-            var redTerms = _badlistService.CheckRedList(query, Context);
-            if (redTerms != "")
+            if (!await CheckBadlists(query))
             {
-                await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
-                await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
-                await Context.Message.DeleteAsync();
+                return;
             }
-            else if (yellowTerms != "")
+
+            var (imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query);
+            if (total == 0)
             {
-                await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
-                await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context,
-                    true);
+                await _logger.Log($"pick: {query}, total: {total}", Context);
+                await ReplyAsync("I could not find any images with that query.");
             }
             else
             {
-                var (imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query);
-                if (total == 0)
+                var totalString = $"[{total} result";
+                if (total == 1)
                 {
-                    await _logger.Log($"pick: {query}, total: {total}", Context);
-                    await ReplyAsync("I could not find any images with that query.");
+                    totalString += "] ";
                 }
                 else
                 {
-                    var totalString = $"[{total} result";
-                    if (total == 1)
-                    {
-                        totalString += "] ";
-                    }
-                    else
-                    {
-                        totalString += "s] ";
-                    }
+                    totalString += "s] ";
+                }
 
-                    totalString += $"[Id# {imageId}] ";
+                totalString += $"[Id# {imageId}] ";
 
-                    if (spoilered)
-                    {
-                        var spoilerStrings = SetupTagListOutput(spoilerList);
-                        var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
-                        await _logger.Log($"pick: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
-                        await ReplyAsync(output);
-                    }
-                    else
-                    {
-                        var output = totalString + $"https://manebooru.art/images/{imageId}";
-                        await _logger.Log($"pick: {query}, total: {total} result: {imageId}", Context);
-                        await ReplyAsync(output);
-                    }
+                if (spoilered)
+                {
+                    var spoilerStrings = SetupTagListOutput(spoilerList);
+                    var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                    await _logger.Log($"pick: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
+                    await ReplyAsync(output);
+                }
+                else
+                {
+                    var output = totalString + $"https://manebooru.art/images/{imageId}";
+                    await _logger.Log($"pick: {query}, total: {total} result: {imageId}", Context);
+                    await ReplyAsync(output);
                 }
             }
         }
@@ -95,58 +78,43 @@
                 return;
             }
 
-            _badlistService.InitializeYellowList(Context);
-            var yellowTerms = _badlistService.CheckYellowList(query);
-            var redTerms = _badlistService.CheckRedList(query, Context);
-            if (redTerms != "")
+            if (!await CheckBadlists(query))
             {
-                await _logger.Log($"pickrecent: {query}, REDLISTED {redTerms}", Context, true);
-                await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
-                await Context.Message.DeleteAsync();
+                return;
             }
-            else if (yellowTerms != "")
+
+            var (imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query);
+            if (total == 0)
             {
-                await _logger.Log($"pickrecent: {query}, YELLOWLISTED {yellowTerms}", Context, true);
-                await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context,
-                    true);
+                await _logger.Log($"pickrecent: {query}, total: {total}", Context);
+                await ReplyAsync("I could not find any images with that query.");
             }
             else
             {
-                var (imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query);
-                if (total == 0)
+                var totalString = $"[{total} result";
+                if (total == 1)
                 {
-                    await _logger.Log($"pickrecent: {query}, total: {total}", Context);
-                    await ReplyAsync("I could not find any images with that query.");
+                    totalString += "] ";
                 }
                 else
                 {
-                    var totalString = $"[{total} result";
-                    if (total == 1)
-                    {
-                        totalString += "] ";
-                    }
-                    else
-                    {
-                        totalString += "s] ";
-                    }
+                    totalString += "s] ";
+                }
 
-                    totalString += $"[Id# {imageId}] ";
+                totalString += $"[Id# {imageId}] ";
 
-                    if (spoilered)
-                    {
-                        var spoilerStrings = SetupTagListOutput(spoilerList);
-                        var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
-                        await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
-                        await ReplyAsync(output);
-                    }
-                    else
-                    {
-                        var output = totalString + $"https://manebooru.art/images/{imageId}";
-                        await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId}", Context);
-                        await ReplyAsync(output);
-                    }
+                if (spoilered)
+                {
+                    var spoilerStrings = SetupTagListOutput(spoilerList);
+                    var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                    await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
+                    await ReplyAsync(output);
+                }
+                else
+                {
+                    var output = totalString + $"https://manebooru.art/images/{imageId}";
+                    await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId}", Context);
+                    await ReplyAsync(output);
                 }
             }
         }
@@ -160,45 +128,30 @@
                 return;
             }
 
-            _badlistService.InitializeYellowList(Context);
-            var yellowTerms = _badlistService.CheckYellowList(id.ToString());
-            var redTerms = _badlistService.CheckRedList(id.ToString(), Context);
-            if (redTerms != "")
+            if (!await CheckBadlists(id.ToString()))
             {
-                await _logger.Log($"id: {id}, REDLISTED {redTerms}", Context, true);
-                await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
-                await Context.Message.DeleteAsync();
+                return;
             }
-            else if (yellowTerms != "")
+
+            var (imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id);
+            if (imageId == -1)
             {
-                await _logger.Log($"id: {id}, YELLOWLISTED {yellowTerms}", Context, true);
-                await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context,
-                    true);
+                await ReplyAsync("I could not find that image.");
+                await _logger.Log($"id: requested {id}, NOT FOUND", Context);
             }
             else
             {
-                var (imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id);
-                if (imageId == -1)
+                if (spoilered)
                 {
-                    await ReplyAsync("I could not find that image.");
-                    await _logger.Log($"id: requested {id}, NOT FOUND", Context);
+                    var spoilerStrings = SetupTagListOutput(spoilerList);
+                    var output = $"[Id# {imageId}] Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                    await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
+                    await ReplyAsync(output);
                 }
                 else
                 {
-                    if (spoilered)
-                    {
-                        var spoilerStrings = SetupTagListOutput(spoilerList);
-                        var output = $"[Id# {imageId}] Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
-                        await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
-                        await ReplyAsync(output);
-                    }
-                    else
-                    {
-                        await _logger.Log($"id: requested {id}, found {imageId}", Context);
-                        await ReplyAsync($"[Id# {imageId}] https://manebooru.art/images/{imageId}");
-                    }
+                    await _logger.Log($"id: requested {id}, found {imageId}", Context);
+                    await ReplyAsync($"[Id# {imageId}] https://manebooru.art/images/{imageId}");
                 }
             }
         }
@@ -212,48 +165,33 @@
                 return;
             }
 
-            _badlistService.InitializeYellowList(Context);
-            var yellowTerms = _badlistService.CheckYellowList(id.ToString());
-            var redTerms = _badlistService.CheckRedList(id.ToString(), Context);
-            if (redTerms != "")
+            if (!await CheckBadlists(id.ToString()))
             {
-                await _logger.Log($"tags: {id}, REDLISTED {redTerms}", Context, true);
-                await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
-                await Context.Message.DeleteAsync();
+                return;
             }
-            else if (yellowTerms != "")
+
+            var (tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id);
+            if (tagList.Count == 0)
             {
-                await _logger.Log($"tags: {id}, YELLOWLISTED {yellowTerms}", Context, true);
-                await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context,
-                    true);
+                await ReplyAsync("I could not find that image.");
+                await _logger.Log($"tags: requested {id}, NOT FOUND", Context);
             }
             else
             {
-                var (tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id);
-                if (tagList.Count == 0)
+                var tagStrings = SetupTagListOutput(tagList);
+                var output = $"Image #{id} has the tags {tagStrings}";
+                if (spoilered)
                 {
-                    await ReplyAsync("I could not find that image.");
-                    await _logger.Log($"tags: requested {id}, NOT FOUND", Context);
+                    var spoilerStrings = SetupTagListOutput(spoilerList);
+                    output += $" including the spoiler tags {spoilerStrings}";
+                    await _logger.Log($"tags: requested {id}, found {tagStrings} SPOILERED {spoilerStrings}", Context);
                 }
                 else
                 {
-                    var tagStrings = SetupTagListOutput(tagList);
-                    var output = $"Image #{id} has the tags {tagStrings}";
-                    if (spoilered)
-                    {
-                        var spoilerStrings = SetupTagListOutput(spoilerList);
-                        output += $" including the spoiler tags {spoilerStrings}";
-                        await _logger.Log($"tags: requested {id}, found {tagStrings} SPOILERED {spoilerStrings}", Context);
-                    }
-                    else
-                    {
-                        await _logger.Log($"tags: requested {id}, found {tagStrings}", Context);
-                    }
-
-                    await ReplyAsync(output);
+                    await _logger.Log($"tags: requested {id}, found {tagStrings}", Context);
                 }
+
+                await ReplyAsync(output);
             }
         }
 
@@ -304,15 +242,15 @@
                 return;
             }
 
-            _badlistService.InitializeYellowList(Context);
-            var badTerms = _badlistService.CheckYellowList(reportedImageId.ToString());
+            await BadlistHelper.InitializeYellowList(Context);
+            var badTerms = await BadlistHelper.CheckYellowList(reportedImageId.ToString(), Context);
             if (badTerms != "")
             {
                 await ReplyAsync("That image is already blocked.");
             }
             else
             {
-                var (imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(reportedImageId);
+                var (imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId);
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");
@@ -356,6 +294,32 @@
             }
 
             return output;
+        }
+
+        private async Task<bool> CheckBadlists(string query)
+        {
+            await BadlistHelper.InitializeYellowList(Context);
+            var yellowTerms = await BadlistHelper.CheckYellowList(query, Context);
+            var redTerms = await BadlistHelper.CheckRedList(query, Context);
+            if (redTerms != "")
+            {
+                await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
+                await ReplyAsync("You're kidding me, right?");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
+                await Context.Message.DeleteAsync();
+                return false;
+            }
+
+            if (yellowTerms == "")
+            {
+                return true;
+            }
+
+            await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
+            await ReplyAsync("I'm not gonna go look for that.");
+            await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context,
+                true);
+            return false;
         }
     }
 }

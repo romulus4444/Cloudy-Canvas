@@ -11,6 +11,7 @@
         //-------------------------Development------------------------
         public static char prefix { get; } = '?'; //development prefix
         public static ulong CloudyCanvasId { get; } = 833556029521657856; //Cloudy Canvas's Development Id
+
         public static string RootPath { get; } = "DevSettings"; //Development folders
         //------------------------------------------------------------
     }
