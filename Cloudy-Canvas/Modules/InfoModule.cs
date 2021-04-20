@@ -1,6 +1,8 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
+    using System;
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
     using Discord.Commands;
 
@@ -29,59 +31,59 @@
             {
                 case "":
                     await ReplyAsync(
-                        "**__All Commands:__**\n\n**Booru Module:**\n*All searches use manechat-compliant filters*\n`;pick ...`\n`;pickrecent ...`\n`;id ...`\n`;tags ...`\n`;featured`\n`;getspoilers`\n`;report ...`\n\n**Admin Module:**\n`;setup ...`\n`;admin ...`\n`;yellowlist ...`\n`;log ...`\n`;echo ...`\n\n**Info Module:**\n`;origin`\n\nUse `;help <command>` for more details on a particular command.");
+                        $"**__All Commands:__**{Environment.NewLine}{Environment.NewLine}**Booru Module:**{Environment.NewLine}*All searches use manechat-compliant filters*{Environment.NewLine}`;pick ...`{Environment.NewLine}`;pickrecent ...`{Environment.NewLine}`;id ...`{Environment.NewLine}`;tags ...`{Environment.NewLine}`;featured`{Environment.NewLine}`;getspoilers`{Environment.NewLine}`;report ...`{Environment.NewLine}{Environment.NewLine}**Admin Module:**{Environment.NewLine}`;setup ...`{Environment.NewLine}`;admin ...`{Environment.NewLine}`;yellowlist ...`{Environment.NewLine}`;log ...`{Environment.NewLine}`;echo ...`{Environment.NewLine}{Environment.NewLine}**Info Module:**{Environment.NewLine}`;origin`{Environment.NewLine}{Environment.NewLine}Use `;help <command>` for more details on a particular command.");
                     break;
                 case "pick":
                     await ReplyAsync(
-                        "`;pick <query>`\nPosts a random image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.");
+                        $"`;pick <query>`{Environment.NewLine}Posts a random image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.");
                     break;
                 case "pickrecent":
                     await ReplyAsync(
-                        "`;pick <query>`\nPosts the most recently posted image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.");
+                        $"`;pick <query>`{Environment.NewLine}Posts the most recently posted image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.");
                     break;
                 case "id":
                     await ReplyAsync(
-                        "`;id <number>`\nPosts Image #<number> from Manebooru, if it is available. If the image includes spoilered tags, the post is made in `||` spoiler bars.");
+                        $"`;id <number>`{Environment.NewLine}Posts Image #<number> from Manebooru, if it is available. If the image includes spoilered tags, the post is made in `||` spoiler bars.");
                     break;
                 case "tags":
                     await ReplyAsync(
-                        "`;tags <number>`\nPosts the list of tags on Image <number> from Manebooru, if it is available, including identifying any tags that are spoilered.");
+                        $"`;tags <number>`{Environment.NewLine}Posts the list of tags on Image <number> from Manebooru, if it is available, including identifying any tags that are spoilered.");
                     break;
                 case "featured":
-                    await ReplyAsync("`;featured`\nPosts the current Featured Image from Manebooru.");
+                    await ReplyAsync($"`;featured`{Environment.NewLine}Posts the current Featured Image from Manebooru.");
                     break;
                 case "getspoilers":
-                    await ReplyAsync("`;getspoilers`\nPosts a list of currently spoilered tags.");
+                    await ReplyAsync($"`;getspoilers`{Environment.NewLine}Posts a list of currently spoilered tags.");
                     break;
                 case "report":
-                    await ReplyAsync("`;report <id>`\nAlerts the admins about image#<id>. Only use this for images that violate the server rules!");
+                    await ReplyAsync($"`;report <id>`{Environment.NewLine}Alerts the admins about image#<id>. Only use this for images that violate the server rules!");
                     break;
                 case "setup":
                     await ReplyAsync(
-                        "`;setup <admin channel> <admin role>`\n*Only a server administrator may use this command.*\nInitial bot setup. Sets <admin channel> for important admin output messages and <admin role> as users who are allowed to use admin module commands.");
+                        $"`;setup <admin channel> <admin role>`{Environment.NewLine}*Only a server administrator may use this command.*{Environment.NewLine}Initial bot setup. Sets <admin channel> for important admin output messages and <admin role> as users who are allowed to use admin module commands.");
                     break;
                 case "admin":
                     switch (subCommand)
                     {
                         case "":
                             await ReplyAsync(
-                                "**__;admin Commands:__**\n*Only users with the specified admin role may use these commands*\n`;admin adminchannel ...`\n`;admin adminrole ...`\n`;admin ignorechannel ...`\n`;admin ignorerole ...`\n\nUse `;help admin <command>` for more details on a particular command.");
+                                $"**__;admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`;admin adminchannel ...`{Environment.NewLine}`;admin adminrole ...`{Environment.NewLine}`;admin ignorechannel ...`{Environment.NewLine}`;admin ignorerole ...`{Environment.NewLine}{Environment.NewLine}Use `;help admin <command>` for more details on a particular command.");
                             break;
                         case "adminchannel":
                             await ReplyAsync(
-                                "__;admin adminchannel Commands:__\n*Manages the admin channel.*\n`;admin adminchannel get` Gets the current admin channel.\n`;admin adminchannel set <channel>` Sets the admin channel to <channel>. Accepts a channel ping or plain text.");
+                                $"__;admin adminchannel Commands:__{Environment.NewLine}*Manages the admin channel.*{Environment.NewLine}`;admin adminchannel get` Gets the current admin channel.{Environment.NewLine}`;admin adminchannel set <channel>` Sets the admin channel to <channel>. Accepts a channel ping or plain text.");
                             break;
                         case "adminrole":
                             await ReplyAsync(
-                                "__;admin adminrole Commands:__\n*Manages the admin role.*\n`;admin adminrole get` Gets the current admin role.\n`;admin adminrole set <role>` Sets the admin role to <role>. Accepts a role ping or plain text.");
+                                $"__;admin adminrole Commands:__{Environment.NewLine}*Manages the admin role.*{Environment.NewLine}`;admin adminrole get` Gets the current admin role.{Environment.NewLine}`;admin adminrole set <role>` Sets the admin role to <role>. Accepts a role ping or plain text.");
                             break;
                         case "ignorechannel":
                             await ReplyAsync(
-                                "__;admin ignorechannel Commands:__\n*Manages the list of channels to ignore commands from.*\n`;admin ignorechannel get` Gets the current list of ignored channels.\n`;admin ignorechannel add <channel>` Adds <channel> to the list of ignored channels. Accepts a channel ping or plain text.\n`;admin ignorechannel remove <channel>` Removes <channel> from the list of ignored channels. Accepts a channel ping or plain text.\n`;admin ignorechannel clear` Clears the list of ignored channels.");
+                                $"__;admin ignorechannel Commands:__{Environment.NewLine}*Manages the list of channels to ignore commands from.*{Environment.NewLine}`;admin ignorechannel get` Gets the current list of ignored channels.{Environment.NewLine}`;admin ignorechannel add <channel>` Adds <channel> to the list of ignored channels. Accepts a channel ping or plain text.{Environment.NewLine}`;admin ignorechannel remove <channel>` Removes <channel> from the list of ignored channels. Accepts a channel ping or plain text.{Environment.NewLine}`;admin ignorechannel clear` Clears the list of ignored channels.");
                             break;
                         case "ignorerole":
                             await ReplyAsync(
-                                "__;admin ignorerole Commands:__\n*Manages the list of roles to ignore commands from.*\n`;admin ignorerole get` Gets the current list of ignored roles.\n`;admin ignorerole add <role>` Adds <role> to the list of ignored roles. Accepts a role ping or plain text.\n`;admin ignorerole remove <role>` Removes <role> from the list of ignored roles. Accepts a role ping or plain text.\n`;admin ignorerole clear` Clears the list of ignored roles.");
+                                $"__;admin ignorerole Commands:__{Environment.NewLine}*Manages the list of roles to ignore commands from.*{Environment.NewLine}`;admin ignorerole get` Gets the current list of ignored roles.{Environment.NewLine}`;admin ignorerole add <role>` Adds <role> to the list of ignored roles. Accepts a role ping or plain text.{Environment.NewLine}`;admin ignorerole remove <role>` Removes <role> from the list of ignored roles. Accepts a role ping or plain text.{Environment.NewLine}`;admin ignorerole clear` Clears the list of ignored roles.");
                             break;
                         default:
                             await ReplyAsync("Invalid subcommand. Use `;help admin` for a list of available subcommands.");
@@ -91,21 +93,21 @@
                     break;
                 case "yellowlist":
                     await ReplyAsync(
-                        "**__;yellowlist Commands:__**\n*Only users with the specified admin role may use these commands.*\nManages the list of terms users are unable to search for.\n`;yellowlist add <term>` Add <term> to the yellowlist.\n`;yellowlist remove <term>` Removes <term> from the yellowlist.\n`;yellowlist get` Gets the current list of yellowlisted terms.\n`;yellowlist clear` Clears the yellowlist of all terms.");
+                        $"**__;yellowlist Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands.*{Environment.NewLine}Manages the list of terms users are unable to search for.{Environment.NewLine}`;yellowlist add <term>` Add <term> to the yellowlist.{Environment.NewLine}`;yellowlist remove <term>` Removes <term> from the yellowlist.{Environment.NewLine}`;yellowlist get` Gets the current list of yellowlisted terms.{Environment.NewLine}`;yellowlist clear` Clears the yellowlist of all terms.");
                     break;
                 case "log":
                     await ReplyAsync(
-                        "`;log <channel> <date>`\n*Only users with the specified admin role may use this command.*\nPosts the log file from <channel> and <date> into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD.");
+                        $"`;log <channel> <date>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Posts the log file from <channel> and <date> into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD.");
                     break;
                 case "echo":
                     await ReplyAsync(
-                        "`;echo <channel> <message>`\n*Only users with the specified admin role may use this command.*\nPosts <message> to a valid <channel>. If <channel> is invalid, posts to the current channel instead. Accepts a channel ping or plain text.");
+                        $"`;echo <channel> <message>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Posts <message> to a valid <channel>. If <channel> is invalid, posts to the current channel instead. Accepts a channel ping or plain text.");
                     break;
                 case "origin":
-                    await ReplyAsync("`;origin`\nPosts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.");
+                    await ReplyAsync($"`;origin`{Environment.NewLine}Posts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.");
                     break;
                 default:
-                    await ReplyAsync("Invalid command. Use `;help` for a list of available commands.");
+                    await ReplyAsync($"Invalid command. Use `;help` for a list of available commands.");
                     break;
             }
         }
@@ -120,7 +122,7 @@
             }
 
             await _logger.Log("origin", Context);
-            await ReplyAsync("Here is where I came from, thanks to RavenSunArt! https://imgur.com/a/RB16usb");
+            await ReplyAsync("Here is where I came from, thanks to RavenSunArt! <https://www.deviantart.com/ravensunart> https://imgur.com/a/RB16usb");
         }
     }
 }

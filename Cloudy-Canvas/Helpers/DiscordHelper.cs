@@ -1,16 +1,16 @@
-﻿namespace Cloudy_Canvas
+﻿namespace Cloudy_Canvas.Helpers
 {
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Settings;
     using Discord;
     using Discord.Commands;
 
     public static class DiscordHelper
     {
-        private const ulong CloudyCanvasId = 828682017868218445; //Cloudy Canvas's Production Id
-        //private const ulong CloudyCanvasId = 833556029521657856; //Cloudy Canvas's Development Id
+        private static readonly ulong CloudyCanvasId = DevSettings.CloudyCanvasId;
 
         public static async Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
         {

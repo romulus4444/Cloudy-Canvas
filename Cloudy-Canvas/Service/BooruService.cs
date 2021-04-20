@@ -1,12 +1,10 @@
 ﻿namespace Cloudy_Canvas.Service
 {
     using System;
-    using System.Buffers.Text;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Net;
-    using System.Text;
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Settings;
     using Flurl;
     using Flurl.Http;
@@ -122,7 +120,7 @@
             await FileHelper.WriteSpoilerListToFileAsync(combinedList);
             return combinedList;
         }
-        
+
         public async Task<List<Tuple<long, string>>> GetHiddenTagsAsync()
         {
             //GET	/api/v1/json/filters/user
@@ -146,7 +144,7 @@
             {
                 var aliasedTagResults = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/tags")
-                    .SetQueryParams(new { q = $"id:{ HiddenTagId}" })
+                    .SetQueryParams(new { q = $"id:{HiddenTagId}" })
                     .GetAsync()
                     .ReceiveJson();
                 var combinedTagNames = aliasedTagResults.tags[0].aliases;
@@ -163,7 +161,7 @@
                     if (total > 0)
                     {
                         combinedTagId = aliasedTagNameResultsName.tags[0].id;
-                        var combinedTag = new Tuple<long, string>((long)combinedTagId, decodedString.ToString());
+                        var combinedTag = new Tuple<long, string>(combinedTagId, decodedString.ToString());
                         aliasedTagList.Add(combinedTag);
                     }
                     else
@@ -174,7 +172,7 @@
                             .GetAsync()
                             .ReceiveJson();
                         combinedTagId = aliasedTagNameResultsSlug.tags[0].id;
-                        var combinedTag = new Tuple<long, string>((long)combinedTagId, aliasedTagNameResultsSlug.tags[0].name.ToString());
+                        var combinedTag = new Tuple<long, string>(combinedTagId, aliasedTagNameResultsSlug.tags[0].name.ToString());
                         aliasedTagList.Add(combinedTag);
                     }
                 }
@@ -186,7 +184,7 @@
             {
                 var impliedTagResults = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/tags")
-                    .SetQueryParams(new { q = $"id:{ HiddenTagId}" })
+                    .SetQueryParams(new { q = $"id:{HiddenTagId}" })
                     .GetAsync()
                     .ReceiveJson();
                 var combinedTagNames = impliedTagResults.tags[0].implied_tags;
@@ -213,7 +211,8 @@
                             .ReceiveJson();
                         combinedTagId = impliedTagNameResultsSlug.tags[0].id;
                     }
-                    var combinedTag = new Tuple<long, string>((long)combinedTagId, decodedString.ToString());
+
+                    var combinedTag = new Tuple<long, string>(combinedTagId, decodedString.ToString());
                     impliedTagList.Add(combinedTag);
                 }
             }
@@ -283,6 +282,12 @@
             return (returnResult);
         }
 
+        public async Task RefreshListsAsync()
+        {
+            await GetSpoilerTagsAsync();
+            await GetHiddenTagsAsync();
+        }
+
         private static async Task<List<string>> GetSpoilerList(List<object> tagIds)
         {
             var tagList = new List<string>();
@@ -328,11 +333,6 @@
                 .ReceiveJson();
             var output = results.tags[0].name.ToString();
             return output;
-        }
-        public async Task RefreshListsAsync()
-        {
-            await GetSpoilerTagsAsync();
-            await GetHiddenTagsAsync();
         }
     }
 }
