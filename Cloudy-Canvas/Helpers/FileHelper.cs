@@ -74,20 +74,20 @@
         public static async Task WriteSpoilerListToFileAsync(List<Tuple<long, string>> tagList)
         {
             var filepath = SetUpFilepath(FilePathType.Root, "Spoilers", "txt");
-            await File.WriteAllTextAsync(filepath, "Spoilered Tags:\n");
+            await File.WriteAllTextAsync(filepath, $"Spoilered Tags:{Environment.NewLine}");
             foreach (var (tagId, tagName) in tagList)
             {
-                await File.AppendAllTextAsync(filepath, $"{tagId}, {tagName}\n");
+                await File.AppendAllTextAsync(filepath, $"{tagId}, {tagName}{Environment.NewLine}");
             }
         }
 
         public static async Task WriteRedListToFileAsync(List<Tuple<long, string>> tagList)
         {
             var filepath = SetUpFilepath(FilePathType.Root, "RedList", "txt");
-            await File.WriteAllTextAsync(filepath, "Redlisted Tags:\n");
+            await File.WriteAllTextAsync(filepath, $"Redlisted Tags:{Environment.NewLine}");
             foreach (var (tagId, tagName) in tagList)
             {
-                await File.AppendAllTextAsync(filepath, $"{tagId}, {tagName}\n");
+                await File.AppendAllTextAsync(filepath, $"{tagId}, {tagName}{Environment.NewLine}");
             }
         }
 
@@ -96,7 +96,7 @@
             var filepath = SetUpFilepath(FilePathType.Root, "Spoilers", "txt");
             if (!File.Exists(filepath))
             {
-                await File.WriteAllTextAsync(filepath, "Spoilered Tags:\n");
+                await File.WriteAllTextAsync(filepath, $"Spoilered Tags:{Environment.NewLine}");
             }
 
             var fileContents = File.ReadAllLines(filepath);

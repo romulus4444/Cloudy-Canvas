@@ -1,5 +1,6 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
+    using System;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -316,7 +317,7 @@
             var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
             if (!File.Exists(filename))
             {
-                await File.WriteAllTextAsync(filename, $"<#{channelId}> #{channelName}\n");
+                await File.WriteAllTextAsync(filename, $"<#{channelId}> #{channelName}{Environment.NewLine}");
                 return true;
             }
 
@@ -329,7 +330,7 @@
                 }
             }
 
-            await File.AppendAllTextAsync(filename, $"<#{channelId}> #{channelName}\n");
+            await File.AppendAllTextAsync(filename, $"<#{channelId}> #{channelName}{Environment.NewLine}");
             return true;
         }
 
@@ -373,7 +374,7 @@
             var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
             if (!File.Exists(filename))
             {
-                await File.WriteAllTextAsync(filename, $"<@&{roleId}> @{roleName}\n");
+                await File.WriteAllTextAsync(filename, $"<@&{roleId}> @{roleName}{Environment.NewLine}");
                 return true;
             }
 
@@ -386,7 +387,7 @@
                 }
             }
 
-            await File.AppendAllTextAsync(filename, $"<@&{roleId}> @{roleName}\n");
+            await File.AppendAllTextAsync(filename, $"<@&{roleId}> @{roleName}{Environment.NewLine}");
             return true;
         }
 
@@ -495,10 +496,10 @@
             var roleList = await DiscordHelper.GetIgnoredRolesAsync(Context);
             if (roleList.Count > 0)
             {
-                var output = "__Role Ignore List:__\n";
+                var output = $"__Role Ignore List:__{Environment.NewLine}";
                 foreach (var role in roleList)
                 {
-                    output += $"<@&{role}>\n";
+                    output += $"<@&{role}>{Environment.NewLine}";
                 }
 
                 await ReplyAsync(output, allowedMentions: AllowedMentions.None);
@@ -550,10 +551,10 @@
             var channelList = await DiscordHelper.GetIgnoredChannelsAsync(Context);
             if (channelList.Count > 0)
             {
-                var output = "__Channel Ignore List:__\n";
+                var output = $"__Channel Ignore List:__{Environment.NewLine}";
                 foreach (var channel in channelList)
                 {
-                    output += $"<#{channel}>\n";
+                    output += $"<#{channel}>{Environment.NewLine}";
                 }
 
                 await ReplyAsync(output);
@@ -697,7 +698,7 @@
                             }
                         }
 
-                        await ReplyAsync($"__Yellowlist Terms:__\n{output}");
+                        await ReplyAsync($"__Yellowlist Terms:__{Environment.NewLine}{output}");
                         await _logger.Log("yellowlist: get", Context);
                         break;
                     case "clear":

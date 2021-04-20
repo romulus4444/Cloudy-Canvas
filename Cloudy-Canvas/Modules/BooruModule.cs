@@ -56,7 +56,7 @@
                 if (spoilered)
                 {
                     var spoilerStrings = SetupTagListOutput(spoilerList);
-                    var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                    var output = totalString + $"Spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
                     await _logger.Log($"pick: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
                     await ReplyAsync(output);
                 }
@@ -106,7 +106,7 @@
                 if (spoilered)
                 {
                     var spoilerStrings = SetupTagListOutput(spoilerList);
-                    var output = totalString + $"Spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                    var output = totalString + $"Spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
                     await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
                     await ReplyAsync(output);
                 }
@@ -144,7 +144,7 @@
                 if (spoilered)
                 {
                     var spoilerStrings = SetupTagListOutput(spoilerList);
-                    var output = $"[Id# {imageId}] Result is a spoiler for {spoilerStrings}:\n|| https://manebooru.art/images/{imageId} ||";
+                    var output = $"[Id# {imageId}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
                     await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
                     await ReplyAsync(output);
                 }
@@ -205,7 +205,7 @@
             }
 
             var spoilerList = await _booru.GetSpoilerTagsAsync();
-            var output = "__Spoilered tags:__\n";
+            var output = $"__Spoilered tags:__{Environment.NewLine}";
             for (var x = 0; x < spoilerList.Count; x++)
             {
                 output += $"`{spoilerList[x].Item2}`";
