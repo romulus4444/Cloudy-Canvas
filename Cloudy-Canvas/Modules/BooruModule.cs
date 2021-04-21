@@ -244,7 +244,7 @@
 
             await BadlistHelper.InitializeYellowList(Context);
             var badTerms = await BadlistHelper.CheckYellowList(reportedImageId.ToString(), Context);
-            if (badTerms != "")
+            if (badTerms[0] != "")
             {
                 await ReplyAsync("That image is already blocked.");
             }
@@ -259,8 +259,7 @@
                 {
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
                     var adminRoleId = await DiscordHelper.GetAdminRoleAsync(Context);
-                    await DiscordHelper.PostToAdminChannelAsync(
-                        $"<@&{adminRoleId}>: <@{Context.User.Id}> has reported Image#{reportedImageId} || <https://manebooru.art/images/{imageId}> ||", Context);
+                    await DiscordHelper.PostToAdminChannelAsync($"<@&{adminRoleId}>: <@{Context.User.Id}> has reported Image#{reportedImageId} || <https://manebooru.art/images/{imageId}> ||", Context);
                     await ReplyAsync("Admins have been notified. Thank you for your report.");
                 }
             }
@@ -299,25 +298,36 @@
         private async Task<bool> CheckBadlists(string query)
         {
             await BadlistHelper.InitializeYellowList(Context);
+            await _logger.Log("<DEBUG> Checking for yellow terms", Context);
             var yellowTerms = await BadlistHelper.CheckYellowList(query, Context);
-            var redTerms = await BadlistHelper.CheckRedList(query, Context);
-            if (redTerms != "")
+            foreach (var yellowTerm in yellowTerms)
             {
-                await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
+                await _logger.Log(yellowTerm, Context);
+            }
+
+            await _logger.Log("<DEBUG> Checking for red terms", Context);
+            var redTerms = await BadlistHelper.CheckRedList(query, Context);
+            foreach (var redTerm in redTerms)
+            {
+                await _logger.Log(redTerm, Context);
+            }
+            if (redTerms[0] != "")
+            {
+                await _logger.Log($"pick: {query}, REDLISTED {redTerms[0]}", Context, true);
                 await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms[0]}", Context, true);
                 await Context.Message.DeleteAsync();
                 return false;
             }
 
-            if (yellowTerms == "")
+            if (yellowTerms[0] == "")
             {
                 return true;
             }
 
-            await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
+            await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms[0]}", Context, true);
             await ReplyAsync("I'm not gonna go look for that.");
-            await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context,
+            await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms[0]}", Context,
                 true);
             return false;
         }

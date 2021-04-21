@@ -118,7 +118,7 @@
 
         public static async Task<string> GetSetting(string settingName, SocketCommandContext context)
         {
-            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "txt", context);
+            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "cfg", context);
             if (!File.Exists(filepath))
             {
                 return "<ERROR> File not found";
@@ -144,7 +144,7 @@
 
         public static async Task SetSetting(string settingName, string settingValue, SocketCommandContext context)
         {
-            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "txt", context);
+            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "cfg", context);
             if (!File.Exists(filepath))
             {
                 await File.WriteAllTextAsync(filepath, $"{settingName}: {settingValue}");
