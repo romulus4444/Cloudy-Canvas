@@ -235,7 +235,7 @@
 
         [Command("report")]
         [Summary("Reports an image id to the admin channel")]
-        public async Task ReportAsync(long reportedImageId)
+        public async Task ReportAsync(long reportedImageId, [Remainder] string reason = "")
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
@@ -257,9 +257,16 @@
                 }
                 else
                 {
+                    var output = $"<@{Context.User.Id}> has reported Image #{reportedImageId}";
+                    if (reason != "")
+                    {
+                        output += $" with reason `{reason}`";
+                    }
+
+                    output += $" || <https://manebooru.art/images/{imageId}> ||";
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
                     var adminRoleId = await DiscordHelper.GetAdminRoleAsync(Context);
-                    await DiscordHelper.PostToAdminChannelAsync($"<@&{adminRoleId}>: <@{Context.User.Id}> has reported Image#{reportedImageId} || <https://manebooru.art/images/{imageId}> ||", Context);
+                    await DiscordHelper.PostToAdminChannelAsync(output, Context, true);
                     await ReplyAsync("Admins have been notified. Thank you for your report.");
                 }
             }

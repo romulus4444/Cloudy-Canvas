@@ -62,7 +62,7 @@
                     filepath = Path.Join(filepath, $"Default.{extension}");
                     break;
                 case "<date>":
-                    filepath = Path.Join(filepath, $"{DateTime.UtcNow:YYYY-mm-dd}.{extension}");
+                    filepath = Path.Join(filepath, $"{DateTime.UtcNow:yyyy-MM-dd}.{extension}");
                     break;
                 default:
                     filepath = Path.Join(filepath, $"{filename}.{extension}");
