@@ -320,16 +320,16 @@
                 return false;
             }
 
-            if (yellowTerms[0] == "")
+            if (yellowTerms[0] != "")
             {
-                return true;
+                await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms[0]}", Context, true);
+                await ReplyAsync("I'm not gonna go look for that.");
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms[0]}", Context,
+                    true);
+                return false;
             }
 
-            await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms[0]}", Context, true);
-            await ReplyAsync("I'm not gonna go look for that.");
-            await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms[0]}", Context,
-                true);
-            return false;
+            return true;
         }
     }
 }
