@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
     using Discord.Commands;
@@ -170,7 +171,14 @@
                 }
                 else
                 {
-                    await File.AppendAllTextAsync(filepath, $"{settingName}: {settingValue}");
+                    var updatedSettings = new List<string>();
+                    foreach (var setting in settings)
+                    {
+                        updatedSettings.Add(setting);
+                    }
+
+                    updatedSettings.Add($"{settingName}: {settingValue}");
+                    await File.WriteAllLinesAsync(filepath, updatedSettings);
                 }
             }
         }
