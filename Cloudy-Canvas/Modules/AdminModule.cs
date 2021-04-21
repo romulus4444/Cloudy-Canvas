@@ -279,14 +279,14 @@
 
         private static async Task ClearIgnoreRoleAsync(SocketCommandContext context)
         {
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "cfg", context);
             await File.WriteAllTextAsync(filename, "");
         }
 
         private static async Task<bool> RemoveIgnoreRoleAsync(ulong roleRemoveId, SocketCommandContext context)
         {
             var removed = false;
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "cfg", context);
             if (!File.Exists(filename))
             {
                 return false;
@@ -314,7 +314,7 @@
 
         private static async Task<bool> AddIgnoreChannelAsync(ulong channelId, string channelName, SocketCommandContext context)
         {
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "cfg", context);
             if (!File.Exists(filename))
             {
                 await File.WriteAllTextAsync(filename, $"<#{channelId}> #{channelName}{Environment.NewLine}");
@@ -337,7 +337,7 @@
         private static async Task<bool> RemoveIgnoreChannelAsync(ulong channelId, SocketCommandContext context)
         {
             var removed = false;
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "cfg", context);
             if (!File.Exists(filename))
             {
                 return false;
@@ -365,13 +365,13 @@
 
         private static async Task ClearIgnoreChannelAsync(SocketCommandContext context)
         {
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "cfg", context);
             await File.WriteAllTextAsync(filename, "");
         }
 
         private static async Task<bool> AddIgnoreRoleAsync(ulong roleId, string roleName, SocketCommandContext context)
         {
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "cfg", context);
             if (!File.Exists(filename))
             {
                 await File.WriteAllTextAsync(filename, $"<@&{roleId}> @{roleName}{Environment.NewLine}");
@@ -776,13 +776,13 @@
                 }
 
                 var adminChannel = context.Guild.GetTextChannel(adminChannelId);
-                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "txt", context, confirmedName, date);
+                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "log", context, confirmedName, date);
                 if (!File.Exists(filepath))
                 {
                     return "<ERROR> File does not exist";
                 }
 
-                await adminChannel.SendFileAsync(filepath, $"{confirmedName}-{date}.txt");
+                await adminChannel.SendFileAsync(filepath, $"{confirmedName}-{date}.log");
                 return "SUCCESS";
             }
         }

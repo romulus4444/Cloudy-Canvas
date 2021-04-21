@@ -21,7 +21,7 @@
         {
             if (file)
             {
-                await AppendToFile(message, context);
+                await AppendToFileAsync(message, context);
             }
 
             var logMessage = PrepareMessageForLogging(message, context);
@@ -33,7 +33,7 @@
             var logMessage = "";
             if (!header)
             {
-                logMessage += $"[{DateTime.UtcNow.ToString(CultureInfo.CurrentCulture)}] ";
+                logMessage += $"[{DateTime.UtcNow:s}] ";
             }
 
             if (context.IsPrivate)
@@ -74,15 +74,15 @@
 
             if (fileEntry || header)
             {
-                logMessage += "\n";
+                logMessage += Environment.NewLine;
             }
 
             return logMessage;
         }
 
-        private static async Task AppendToFile(string message, SocketCommandContext context)
+        private static async Task AppendToFileAsync(string message, SocketCommandContext context)
         {
-            var filepath = FileHelper.SetUpFilepath(FilePathType.Channel, "<date>", "txt", context);
+            var filepath = FileHelper.SetUpFilepath(FilePathType.Channel, "<date>", "log", context);
             if (!File.Exists(filepath))
             {
                 await File.WriteAllTextAsync(filepath, PrepareMessageForLogging(message, context, false, true));

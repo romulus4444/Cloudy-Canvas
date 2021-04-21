@@ -3,6 +3,7 @@
     using System;
     using System.Collections.Generic;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
     using Discord.Commands;
@@ -118,7 +119,7 @@
 
         public static async Task<string> GetSetting(string settingName, SocketCommandContext context)
         {
-            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "txt", context);
+            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "cfg", context);
             if (!File.Exists(filepath))
             {
                 return "<ERROR> File not found";
@@ -144,7 +145,7 @@
 
         public static async Task SetSetting(string settingName, string settingValue, SocketCommandContext context)
         {
-            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "txt", context);
+            var filepath = SetUpFilepath(FilePathType.Server, "Settings", "cfg", context);
             if (!File.Exists(filepath))
             {
                 await File.WriteAllTextAsync(filepath, $"{settingName}: {settingValue}");
@@ -170,7 +171,14 @@
                 }
                 else
                 {
-                    await File.AppendAllTextAsync(filepath, $"{settingName}: {settingValue}");
+                    var updatedSettings = new List<string>();
+                    foreach (var setting in settings)
+                    {
+                        updatedSettings.Add(setting);
+                    }
+
+                    updatedSettings.Add($"{settingName}: {settingValue}");
+                    await File.WriteAllLinesAsync(filepath, updatedSettings);
                 }
             }
         }
