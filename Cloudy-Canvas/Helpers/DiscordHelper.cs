@@ -60,7 +60,7 @@
 
         public static async Task<List<ulong>> GetIgnoredRolesAsync(SocketCommandContext context)
         {
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "txt", context);
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "cfg", context);
             if (!File.Exists(filename))
             {
                 return new List<ulong>();
@@ -132,7 +132,7 @@
 
         public static async Task<List<ulong>> GetIgnoredChannelsAsync(SocketCommandContext context)
         {
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "txt", context);
+            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "cfg", context);
             if (!File.Exists(filename))
             {
                 return new List<ulong>();
