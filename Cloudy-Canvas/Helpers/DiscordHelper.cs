@@ -109,8 +109,15 @@
                 return true;
             }
 
+            var adminRole = await GetAdminRoleAsync(context);
             var ignoredRoles = await GetIgnoredRolesAsync(context);
             var ignoredChannels = await GetIgnoredChannelsAsync(context);
+
+            if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == adminRole))
+            {
+                return true;
+            }
+
             foreach (var ignoredChannel in ignoredChannels)
             {
                 if (context.Channel.Id == ignoredChannel)
