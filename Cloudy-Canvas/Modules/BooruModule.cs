@@ -235,7 +235,7 @@
 
         [Command("report")]
         [Summary("Reports an image id to the admin channel")]
-        public async Task ReportAsync(long reportedImageId)
+        public async Task ReportAsync(long reportedImageId, [Remainder] string reason = "")
         {
             if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
             {
@@ -257,9 +257,16 @@
                 }
                 else
                 {
+                    var output = $"<@{Context.User.Id}> has reported Image #{reportedImageId}";
+                    if (reason != "")
+                    {
+                        output += $" with reason `{reason}`";
+                    }
+
+                    output += $" || <https://manebooru.art/images/{imageId}> ||";
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
                     var adminRoleId = await DiscordHelper.GetAdminRoleAsync(Context);
-                    await DiscordHelper.PostToAdminChannelAsync($"<@&{adminRoleId}>: <@{Context.User.Id}> has reported Image#{reportedImageId} || <https://manebooru.art/images/{imageId}> ||", Context);
+                    await DiscordHelper.PostToAdminChannelAsync(output, Context, true);
                     await ReplyAsync("Admins have been notified. Thank you for your report.");
                 }
             }
@@ -298,19 +305,19 @@
         private async Task<bool> CheckBadlists(string query)
         {
             await BadlistHelper.InitializeYellowList(Context);
-            await _logger.Log("<DEBUG> Checking for yellow terms", Context);
+            //await _logger.Log("<DEBUG> Checking for yellow terms", Context);
             var yellowTerms = await BadlistHelper.CheckYellowList(query, Context);
-            foreach (var yellowTerm in yellowTerms)
-            {
-                await _logger.Log(yellowTerm, Context);
-            }
+            //foreach (var yellowTerm in yellowTerms)
+            //{
+            //    await _logger.Log(yellowTerm, Context);
+            //}
 
-            await _logger.Log("<DEBUG> Checking for red terms", Context);
+            //await _logger.Log("<DEBUG> Checking for red terms", Context);
             var redTerms = await BadlistHelper.CheckRedList(query, Context);
-            foreach (var redTerm in redTerms)
-            {
-                await _logger.Log(redTerm, Context);
-            }
+            //foreach (var redTerm in redTerms)
+            //{
+            //    await _logger.Log(redTerm, Context);
+            //}
             if (redTerms[0] != "")
             {
                 await _logger.Log($"pick: {query}, REDLISTED {redTerms[0]}", Context, true);

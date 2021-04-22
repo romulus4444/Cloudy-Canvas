@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Net;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
@@ -187,7 +188,7 @@
                     .SetQueryParams(new { q = $"id:{HiddenTagId}" })
                     .GetAsync()
                     .ReceiveJson();
-                var combinedTagNames = impliedTagResults.tags[0].implied_tags;
+                var combinedTagNames = impliedTagResults.tags[0].implied_by_tags;
                 foreach (var combinedTagName in combinedTagNames)
                 {
                     var decodedString = WebUtility.UrlDecode(combinedTagName.ToString());
@@ -206,13 +207,19 @@
                     {
                         var impliedTagNameResultsSlug = await _settings.url
                             .AppendPathSegments("/api/v1/json/search/tags")
-                            .SetQueryParams(new { q = $"slug:{decodedString}" })
+                            .SetQueryParams(new { q = $"slug:{combinedTagName}" })
                             .GetAsync()
                             .ReceiveJson();
                         combinedTagId = impliedTagNameResultsSlug.tags[0].id;
                     }
 
-                    var combinedTag = new Tuple<long, string>(combinedTagId, decodedString.ToString());
+                    string decode = decodedString.ToString();
+                    string decolon = decodedString.ToString();
+                    if (decode.Contains("-colon-"))
+                    {
+                        decolon = decode.Replace("-colon-", ":");
+                    }
+                    var combinedTag = new Tuple<long, string>(combinedTagId, decolon);
                     impliedTagList.Add(combinedTag);
                 }
             }
@@ -227,8 +234,9 @@
                 combinedList.Add(impliedTag);
             }
 
-            await FileHelper.WriteRedListToFileAsync(combinedList);
-            return combinedList;
+            var dedupedList = combinedList.Distinct().ToList();
+            await FileHelper.WriteRedListToFileAsync(dedupedList);
+            return dedupedList;
         }
 
         public async Task<long> GetFeaturedImageIdAsync()
