@@ -39,7 +39,7 @@
             }
 
             bool spoiler = results.images[0].spoilered;
-            var spoilerList = await CheckSpoilerListAsync(results.images[0].tag_ids, settings);
+            var spoilerList = CheckSpoilerList(results.images[0].tag_ids, settings);
             returnResult = new Tuple<long, bool, List<string>>(results.images[0].id, spoiler, spoilerList);
             return (returnResult);
         }
@@ -71,7 +71,7 @@
                 .ReceiveJson();
             searchResult = results.images[0].id;
             bool spoiler = results.images[0].spoilered;
-            var spoilerList = await CheckSpoilerListAsync(results.images[0].tag_ids, settings);
+            var spoilerList = CheckSpoilerList(results.images[0].tag_ids, settings);
             returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, spoilerList);
             return (returnResult);
         }
@@ -97,7 +97,7 @@
 
             searchResult = results.images[0].id;
             bool spoiler = results.images[0].spoilered;
-            var spoilerList = await CheckSpoilerListAsync(results.images[0].tag_ids, settings);
+            var spoilerList = CheckSpoilerList(results.images[0].tag_ids, settings);
             returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, spoilerList);
             return (returnResult);
         }
@@ -133,7 +133,7 @@
             bool spoiler = results.images[0].spoilered;
             List<object> tagIds = results.images[0].tag_ids;
             List<object> tagNames = results.images[0].tags;
-            var spoilerList = await CheckSpoilerListAsync(tagIds, settings);
+            var spoilerList = CheckSpoilerList(tagIds, settings);
             var tagStrings = new List<string>();
             foreach (var tagName in tagNames)
             {
@@ -167,8 +167,14 @@
                 .GetAsync()
                 .ReceiveJson();
             var tagIds = results.filter.spoilered_tag_ids;
-            var output = await GetTagNamesAsync(tagIds);
-            settings.spoilerList = output;
+            var tagNames = await GetTagNamesAsync(tagIds);
+            var combinedTags = new List<Tuple<long, string>>();
+            for (var x = 0; x < tagIds.Count; x++)
+            {
+                var newItem = new Tuple<long, string>((long)tagIds[x], tagNames[x].ToString());
+                combinedTags.Add(newItem);
+            }
+            settings.spoilerList = combinedTags;
             await FileHelper.SaveServerSettingsAsync(settings, context);
         }
 
@@ -181,11 +187,11 @@
                 .GetAsync()
                 .ReceiveJson();
             var hiddenTagIds = hiddenTagResults.filter.hidden_tag_ids;
-            var output = await GetTagNamesAsync(hiddenTagIds);
+            var hiddenTagNames = await GetTagNamesAsync(hiddenTagIds);
             var combinedList = new List<Tuple<long, string>>();
             for (var x = 0; x < hiddenTagIds.Count; x++)
             {
-                var combinedTag = new Tuple<long, string>(hiddenTagIds[x], output[x]);
+                var combinedTag = new Tuple<long, string>(hiddenTagIds[x], hiddenTagNames[x]);
                 combinedList.Add(combinedTag);
             }
 
@@ -296,15 +302,14 @@
             await FileHelper.SaveServerSettingsAsync(settings, context);
         }
 
-        private async Task<List<string>> CheckSpoilerListAsync(List<object> tagIds, ServerSettings settings)
+        private static List<string> CheckSpoilerList(List<object> tagIds, ServerSettings settings)
         {
             var tagList = new List<string>();
-            var tagNameList = await GetTagNamesAsync(tagIds);
-            foreach (var tagName in tagNameList)
+            foreach (long tagId in tagIds)
             {
-                foreach (var spoilerTagName in settings.spoilerList)
+                foreach (var (spoilerTagId, spoilerTagName) in settings.spoilerList)
                 {
-                    if (tagName == spoilerTagName)
+                    if (tagId == spoilerTagId)
                     {
                         tagList.Add(spoilerTagName);
                     }

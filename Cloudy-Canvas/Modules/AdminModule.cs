@@ -32,7 +32,7 @@
             var settings = new ServerSettings();
             ulong channelSetId;
             settings.filterId = filterId;
-            await ReplyAsync($"Using https://manebooru.art/filters/{filterId}");
+            await ReplyAsync($"Using <https://manebooru.art/filters/{filterId}>");
             await ReplyAsync("Moving in to my new place...");
             if (adminChannelName == "")
             {
@@ -47,6 +47,8 @@
             {
                 settings.adminChannel = channelSetId;
                 await ReplyAsync($"Moved into <#{channelSetId}>!");
+                var adminChannel = Context.Guild.GetTextChannel(settings.adminChannel);
+                await adminChannel.SendMessageAsync("Howdy neighbors! I will send important message here now.");
             }
             else
             {
@@ -55,7 +57,6 @@
                 return;
             }
 
-            var adminChannel = Context.Guild.GetTextChannel(settings.adminChannel);
             await ReplyAsync("Looking for the bosses...");
             var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(adminRoleName, Context);
             if (roleSetId > 0)
@@ -78,10 +79,11 @@
             settings.logPostChannel = settings.adminChannel;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync("Settings saved. Now building the spoiler list and redlist. This may take a few minutes to complete.");
-            await _booru.RefreshListsAsync(Context);
             await ReplyAsync("I'm all set! Type `;help admin` for a list of other admin setup commands.");
             await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
-            await adminChannel.SendMessageAsync("Howdy neighbors! I will send important message here now.");
+            await _booru.RefreshListsAsync(Context);
+            await ReplyAsync("The lists have been built.");
+
         }
 
         [Command("admin")]
@@ -358,7 +360,7 @@
             var userRemoveId = await DiscordHelper.GeUserIdFromPingOrIfOnlySearchResultAsync(userName, Context);
             if (userRemoveId > 0)
             {
-                for (var x = settings.ignoredUsers.Count - 1; x > 0; x--)
+                for (var x = settings.ignoredUsers.Count - 1; x >= 0; x--)
                 {
                     var user = settings.ignoredUsers[x];
                     if (user != userRemoveId)
@@ -367,7 +369,9 @@
                     }
 
                     settings.ignoredUsers.Remove(user);
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
                     await ReplyAsync($"Removed <@{userRemoveId}> from ignore list.", allowedMentions: AllowedMentions.None);
+                    return;
                 }
 
                 await ReplyAsync($"<@{userRemoveId}> was not on the list.", allowedMentions: AllowedMentions.None);
@@ -396,6 +400,7 @@
                 }
 
                 settings.ignoredUsers.Add(userAddId);
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Added <@{userAddId}> to ignore list.", allowedMentions: AllowedMentions.None);
             }
             else
@@ -438,6 +443,7 @@
                     }
 
                     settings.ignoredRoles.Remove(role);
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
                     await ReplyAsync($"Removed <@&{roleRemoveId}> from ignore list.", allowedMentions: AllowedMentions.None);
                 }
 
@@ -467,6 +473,7 @@
                 }
 
                 settings.ignoredRoles.Add(roleAddId);
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Added <@&{roleAddId}> to ignore list.", allowedMentions: AllowedMentions.None);
             }
             else
@@ -528,6 +535,7 @@
                     }
 
                     settings.ignoredChannels.Remove(channel);
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
                     await ReplyAsync($"Removed <#{channelRemoveId}> from ignore list.");
                 }
 
@@ -557,6 +565,7 @@
                 }
 
                 settings.ignoredChannels.Add(channelAddId);
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Added <#{channelAddId}> to ignore list.");
             }
             else
