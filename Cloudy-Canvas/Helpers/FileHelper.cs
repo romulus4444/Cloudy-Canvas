@@ -74,8 +74,18 @@
         public static async Task<ServerSettings> LoadServerSettings(SocketCommandContext context)
         {
             var filepath = SetUpFilepath(FilePathType.Server, "Settings", "conf", context);
-            var fileContents = await File.ReadAllTextAsync(filepath);
-            var settings = JsonConvert.DeserializeObject<ServerSettings>(fileContents);
+            var settings = new ServerSettings();
+            if (!File.Exists(filepath))
+            {
+                var defaultFileContents = JsonConvert.SerializeObject(settings);
+                await File.WriteAllTextAsync(filepath, defaultFileContents);
+            }
+            else
+            {
+                var fileContents = await File.ReadAllTextAsync(filepath);
+                settings = JsonConvert.DeserializeObject<ServerSettings>(fileContents);
+            }
+            
             return settings;
         }
 

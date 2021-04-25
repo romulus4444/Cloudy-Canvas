@@ -67,13 +67,12 @@ namespace Cloudy_Canvas
         {
             var message = messageParam as SocketUserMessage;
             var argPos = 0;
-            var context = new SocketCommandContext(_client, message);
             if (!(message.HasCharPrefix(DevSettings.prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)) /*|| message.Author.IsBot*/)
             {
                 return;
             }
 
-
+            var context = new SocketCommandContext(_client, message);
             await _commands.ExecuteAsync(context, argPos, _services.BuildServiceProvider());
         }
 

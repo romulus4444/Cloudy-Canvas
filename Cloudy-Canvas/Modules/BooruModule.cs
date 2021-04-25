@@ -25,12 +25,12 @@
         public async Task PickAsync([Remainder] [Summary("Query string")] string query = "*")
         {
             var settings = await FileHelper.LoadServerSettings(Context);
-            if (!DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlists(query, settings))
+            if (!await CheckBadlistsAsync(query, settings))
             {
                 return;
             }
@@ -76,12 +76,12 @@
         public async Task PickRecentAsync([Remainder] [Summary("Query string")] string query = "*")
         {
             var settings = await FileHelper.LoadServerSettings(Context);
-            if (!DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlists(query, settings))
+            if (!await CheckBadlistsAsync(query, settings))
             {
                 return;
             }
@@ -127,12 +127,12 @@
         public async Task IdAsync([Summary("The image Id")] long id = 4010266)
         {
             var settings = await FileHelper.LoadServerSettings(Context);
-            if (!DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlists(id.ToString(), settings))
+            if (!await CheckBadlistsAsync(id.ToString(), settings))
             {
                 return;
             }
@@ -165,12 +165,12 @@
         public async Task TagsAsync([Summary("The image Id")] long id = 4010266)
         {
             var settings = await FileHelper.LoadServerSettings(Context);
-            if (!DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlists(id.ToString(), settings))
+            if (!await CheckBadlistsAsync(id.ToString(), settings))
             {
                 return;
             }
@@ -205,7 +205,7 @@
         public async Task GetSpoilersAsync()
         {
             var settings = await FileHelper.LoadServerSettings(Context);
-            if (!DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
@@ -229,7 +229,7 @@
         public async Task FeaturedAsync()
         {
             var settings = await FileHelper.LoadServerSettings(Context);
-            if (!DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
@@ -244,7 +244,7 @@
         public async Task ReportAsync(long reportedImageId, [Remainder] string reason = "")
         {
             var settings = await FileHelper.LoadServerSettings(Context);
-            if (!DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
@@ -308,24 +308,24 @@
             return output;
         }
 
-        private async Task<bool> CheckBadlists(string query, ServerSettings settings)
+        private async Task<bool> CheckBadlistsAsync(string query, ServerSettings settings)
         {
             var yellowTerms = BadlistHelper.CheckYellowList(query, settings);
             var redTerms = BadlistHelper.CheckRedList(query, settings);
             if (redTerms != "")
             {
-                await _logger.Log($"pick: {query}, REDLISTED {redTerms[0]}", Context, true);
+                await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
                 await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms[0]}", Context, true);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
                 await Context.Message.DeleteAsync();
                 return false;
             }
 
             if (yellowTerms != "")
             {
-                await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms[0]}", Context, true);
+                await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms[0]}", Context,
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context,
                     true);
                 return false;
             }

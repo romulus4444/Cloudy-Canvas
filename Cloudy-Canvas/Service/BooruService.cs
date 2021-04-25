@@ -131,15 +131,15 @@
             }
 
             bool spoiler = results.images[0].spoilered;
-            List<long> tagIds = results.images[0].tag_ids;
-            List<string> tagNames = results.images[0].tags;
+            List<object> tagIds = results.images[0].tag_ids;
+            List<object> tagNames = results.images[0].tags;
             var spoilerList = await CheckSpoilerListAsync(tagIds, settings);
             var tagStrings = new List<string>();
             foreach (var tagName in tagNames)
             {
-                if (!spoilerList.Contains(tagName))
+                if (!spoilerList.Contains(tagName.ToString()))
                 {
-                    tagStrings.Add(tagName);
+                    tagStrings.Add(tagName.ToString());
                 }
             }
 
@@ -164,7 +164,6 @@
             var settings = await FileHelper.LoadServerSettings(context);
             var results = await _settings.url
                 .AppendPathSegments($"/api/v1/json/filters/{settings.filterId}")
-                .SetQueryParams(new { key = _settings.token })
                 .GetAsync()
                 .ReceiveJson();
             var tagIds = results.filter.spoilered_tag_ids;
@@ -178,8 +177,7 @@
             //GET	/api/v1/json/filters/user
             var settings = await FileHelper.LoadServerSettings(context);
             var hiddenTagResults = await _settings.url
-                .AppendPathSegments($"/api/v1/json/filter/{settings.filterId}")
-                .SetQueryParams(new { key = _settings.token })
+                .AppendPathSegments($"/api/v1/json/filters/{settings.filterId}")
                 .GetAsync()
                 .ReceiveJson();
             var hiddenTagIds = hiddenTagResults.filter.hidden_tag_ids;
@@ -298,12 +296,12 @@
             await FileHelper.SaveServerSettingsAsync(settings, context);
         }
 
-        private async Task<List<string>> CheckSpoilerListAsync(List<long> tagIds, ServerSettings settings)
+        private async Task<List<string>> CheckSpoilerListAsync(List<object> tagIds, ServerSettings settings)
         {
             var tagList = new List<string>();
-            foreach (var tagId in tagIds)
+            var tagNameList = await GetTagNamesAsync(tagIds);
+            foreach (var tagName in tagNameList)
             {
-                var tagName = await GetTagNameByIdAsync(tagId);
                 foreach (var spoilerTagName in settings.spoilerList)
                 {
                     if (tagName == spoilerTagName)

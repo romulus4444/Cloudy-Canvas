@@ -32,6 +32,7 @@
             var settings = new ServerSettings();
             ulong channelSetId;
             settings.filterId = filterId;
+            await ReplyAsync($"Using https://manebooru.art/filters/{filterId}");
             await ReplyAsync("Moving in to my new place...");
             if (adminChannelName == "")
             {

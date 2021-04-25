@@ -49,7 +49,7 @@
             return settings.adminRole == 0 || context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.adminRole);
         }
 
-        public static bool CanUserRunThisCommandAsync(SocketCommandContext context, ServerSettings settings)
+        public static bool CanUserRunThisCommand(SocketCommandContext context, ServerSettings settings)
         {
             if (context.IsPrivate)
             {
