@@ -7,6 +7,7 @@
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Settings;
+    using Discord.Commands;
     using Flurl;
     using Flurl.Http;
     using Microsoft.Extensions.Options;
@@ -20,7 +21,7 @@
             _settings = settings.Value;
         }
 
-        public async Task<Tuple<long, bool, List<string>>> GetImageByIdAsync(long imageId)
+        public async Task<Tuple<long, bool, List<string>>> GetImageByIdAsync(long imageId, ServerSettings settings)
         {
             //GET	/api/v1/json/images/:image_id
             const long searchResult = -1;
@@ -29,7 +30,7 @@
             var safeQuery = "id:" + imageId + ", safe";
             var results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = safeQuery })
+                .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.filterId })
                 .GetAsync()
                 .ReceiveJson();
             if (results.total <= 0)
@@ -38,12 +39,12 @@
             }
 
             bool spoiler = results.images[0].spoilered;
-            var spoilerList = await GetSpoilerList(results.images[0].tag_ids);
+            var spoilerList = await CheckSpoilerListAsync(results.images[0].tag_ids, settings);
             returnResult = new Tuple<long, bool, List<string>>(results.images[0].id, spoiler, spoilerList);
             return (returnResult);
         }
 
-        public async Task<Tuple<long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query)
+        public async Task<Tuple<long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query, ServerSettings settings)
         {
             //GET	/api/v1/json/search/images?q=safe
             long searchResult = -1;
@@ -53,7 +54,7 @@
             var safeQuery = query + ", safe";
             var results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1 })
+                .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, filter_id = settings.filterId })
                 .GetAsync()
                 .ReceiveJson();
             numberOfResults = results.total;
@@ -65,17 +66,17 @@
             var page = new Random().Next((int)numberOfResults) + 1;
             results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page })
+                .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page, filter_id = settings.filterId })
                 .GetAsync()
                 .ReceiveJson();
             searchResult = results.images[0].id;
             bool spoiler = results.images[0].spoilered;
-            var spoilerList = await GetSpoilerList(results.images[0].tag_ids);
+            var spoilerList = await CheckSpoilerListAsync(results.images[0].tag_ids, settings);
             returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, spoilerList);
             return (returnResult);
         }
 
-        public async Task<Tuple<long, long, bool, List<string>>> GetFirstRecentImageByQueryAsync(string query)
+        public async Task<Tuple<long, long, bool, List<string>>> GetFirstRecentImageByQueryAsync(string query, ServerSettings settings)
         {
             //GET	/api/v1/json/search/images?q=safe
             long searchResult = -1;
@@ -85,7 +86,7 @@
             var safeQuery = query + ", safe";
             var results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, sf = "first_seen_at", sd = "desc" })
+                .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, sf = "first_seen_at", sd = "desc", filter_id = settings.filterId })
                 .GetAsync()
                 .ReceiveJson();
             numberOfResults = results.total;
@@ -96,41 +97,92 @@
 
             searchResult = results.images[0].id;
             bool spoiler = results.images[0].spoilered;
-            var spoilerList = await GetSpoilerList(results.images[0].tag_ids);
+            var spoilerList = await CheckSpoilerListAsync(results.images[0].tag_ids, settings);
             returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, spoilerList);
             return (returnResult);
         }
 
-        public async Task<List<Tuple<long, string>>> GetSpoilerTagsAsync()
+        public async Task<long> GetFeaturedImageIdAsync()
         {
-            //GET	/api/v1/json/filters/user
+            //GET	/api/v1/json/images/featured
             var results = await _settings.url
-                .AppendPathSegments("/api/v1/json/filters/user")
-                .SetQueryParams(new { key = _settings.token })
+                .AppendPathSegments("/api/v1/json/images/featured")
                 .GetAsync()
                 .ReceiveJson();
-            var tagIds = results.filters[0].spoilered_tag_ids;
-            var output = await GetTagNamesAsync(tagIds);
-            var combinedList = new List<Tuple<long, string>>();
-            for (var x = 0; x < tagIds.Count; x++)
-            {
-                var combinedTag = new Tuple<long, string>(tagIds[x], output[x]);
-                combinedList.Add(combinedTag);
-            }
-
-            await FileHelper.WriteSpoilerListToFileAsync(combinedList);
-            return combinedList;
+            var output = results.image.id;
+            return output;
         }
 
-        public async Task<List<Tuple<long, string>>> GetHiddenTagsAsync()
+        public async Task<Tuple<List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId, ServerSettings settings)
+        {
+            //GET	/api/v1/json/images/:image_id
+            var emptyTagList = new List<string>();
+            var emptySpoilerList = new List<string>();
+            var returnResult = new Tuple<List<string>, bool, List<string>>(emptyTagList, false, emptySpoilerList);
+            var safeQuery = "id:" + imageId + ", safe";
+            var results = await _settings.url
+                .AppendPathSegments("/api/v1/json/search/images")
+                .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.filterId })
+                .GetAsync()
+                .ReceiveJson();
+            if (results.total <= 0)
+            {
+                return returnResult;
+            }
+
+            bool spoiler = results.images[0].spoilered;
+            List<long> tagIds = results.images[0].tag_ids;
+            List<string> tagNames = results.images[0].tags;
+            var spoilerList = await CheckSpoilerListAsync(tagIds, settings);
+            var tagStrings = new List<string>();
+            foreach (var tagName in tagNames)
+            {
+                if (!spoilerList.Contains(tagName))
+                {
+                    tagStrings.Add(tagName);
+                }
+            }
+
+            if (tagIds.Count != tagNames.Count)
+            {
+                return returnResult;
+            }
+
+            returnResult = new Tuple<List<string>, bool, List<string>>(tagStrings, spoiler, spoilerList);
+            return (returnResult);
+        }
+
+        public async Task RefreshListsAsync(SocketCommandContext context)
+        {
+            await GetSpoilerTagsAsync(context);
+            await GetHiddenTagsAsync(context);
+        }
+
+        private async Task GetSpoilerTagsAsync(SocketCommandContext context)
         {
             //GET	/api/v1/json/filters/user
-            var hiddenTagResults = await _settings.url
-                .AppendPathSegments("/api/v1/json/filters/user")
+            var settings = await FileHelper.LoadServerSettings(context);
+            var results = await _settings.url
+                .AppendPathSegments($"/api/v1/json/filters/{settings.filterId}")
                 .SetQueryParams(new { key = _settings.token })
                 .GetAsync()
                 .ReceiveJson();
-            var hiddenTagIds = hiddenTagResults.filters[0].hidden_tag_ids;
+            var tagIds = results.filter.spoilered_tag_ids;
+            var output = await GetTagNamesAsync(tagIds);
+            settings.spoilerList = output;
+            await FileHelper.SaveServerSettingsAsync(settings, context);
+        }
+
+        private async Task GetHiddenTagsAsync(SocketCommandContext context)
+        {
+            //GET	/api/v1/json/filters/user
+            var settings = await FileHelper.LoadServerSettings(context);
+            var hiddenTagResults = await _settings.url
+                .AppendPathSegments($"/api/v1/json/filter/{settings.filterId}")
+                .SetQueryParams(new { key = _settings.token })
+                .GetAsync()
+                .ReceiveJson();
+            var hiddenTagIds = hiddenTagResults.filter.hidden_tag_ids;
             var output = await GetTagNamesAsync(hiddenTagIds);
             var combinedList = new List<Tuple<long, string>>();
             for (var x = 0; x < hiddenTagIds.Count; x++)
@@ -219,6 +271,7 @@
                     {
                         decolon = decode.Replace("-colon-", ":");
                     }
+
                     var combinedTag = new Tuple<long, string>(combinedTagId, decolon);
                     impliedTagList.Add(combinedTag);
                 }
@@ -234,77 +287,26 @@
                 combinedList.Add(impliedTag);
             }
 
-            var dedupedList = combinedList.Distinct().ToList();
-            await FileHelper.WriteRedListToFileAsync(dedupedList);
-            return dedupedList;
-        }
-
-        public async Task<long> GetFeaturedImageIdAsync()
-        {
-            //GET	/api/v1/json/images/featured
-            var results = await _settings.url
-                .AppendPathSegments("/api/v1/json/images/featured")
-                .GetAsync()
-                .ReceiveJson();
-            var output = results.image.id;
-            return output;
-        }
-
-        public async Task<Tuple<List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId)
-        {
-            //GET	/api/v1/json/images/:image_id
-            var emptyTagList = new List<string>();
-            var emptySpoilerList = new List<string>();
-            var returnResult = new Tuple<List<string>, bool, List<string>>(emptyTagList, false, emptySpoilerList);
-            var safeQuery = "id:" + imageId + ", safe";
-            var results = await _settings.url
-                .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = safeQuery })
-                .SetQueryParams(new { key = _settings.token })
-                .GetAsync()
-                .ReceiveJson();
-            if (results.total <= 0)
+            var outputList = new List<string>();
+            foreach (var (_, name) in combinedList)
             {
-                return returnResult;
+                outputList.Add(name);
             }
 
-            bool spoiler = results.images[0].spoilered;
-            List<object> tagIds = results.images[0].tag_ids;
-            List<object> tagNames = results.images[0].tags;
-            var spoilerList = await GetSpoilerList(tagIds);
-            var tagStrings = new List<string>();
-            for (var x = 0; x < tagNames.Count; x++)
-            {
-                if (!spoilerList.Contains(tagNames[x].ToString()))
-                {
-                    tagStrings.Add(tagNames[x].ToString());
-                }
-            }
-
-            if (tagIds.Count != tagNames.Count)
-            {
-                return returnResult;
-            }
-
-            returnResult = new Tuple<List<string>, bool, List<string>>(tagStrings, spoiler, spoilerList);
-            return (returnResult);
+            var dedupedList = outputList.Distinct().ToList();
+            settings.redList.list = dedupedList;
+            await FileHelper.SaveServerSettingsAsync(settings, context);
         }
 
-        public async Task RefreshListsAsync()
-        {
-            await GetSpoilerTagsAsync();
-            await GetHiddenTagsAsync();
-        }
-
-        private static async Task<List<string>> GetSpoilerList(List<object> tagIds)
+        private async Task<List<string>> CheckSpoilerListAsync(List<long> tagIds, ServerSettings settings)
         {
             var tagList = new List<string>();
-            var spoilerTagIdList = await FileHelper.GetSpoilerTagIdListFromFileAsync();
             foreach (var tagId in tagIds)
             {
-                foreach (var (spoilerTagId, spoilerTagName) in spoilerTagIdList)
+                var tagName = await GetTagNameByIdAsync(tagId);
+                foreach (var spoilerTagName in settings.spoilerList)
                 {
-                    if (spoilerTagId == (long)tagId)
+                    if (tagName == spoilerTagName)
                     {
                         tagList.Add(spoilerTagName);
                     }
@@ -319,11 +321,6 @@
             var tagNameList = new List<string>();
             foreach (var tagId in tagIdList)
             {
-                var results = await _settings.url
-                    .AppendPathSegments("/api/v1/json/filters/user")
-                    .SetQueryParams(new { key = _settings.token })
-                    .GetAsync()
-                    .ReceiveJson();
                 var name = await GetTagNameByIdAsync((long)tagId);
                 tagNameList.Add(name);
             }
