@@ -72,10 +72,10 @@
             }
 
             await ReplyAsync("Setting the other remaining settings to default values.");
-            settings.redList.alertChannel = settings.adminChannel;
-            settings.redList.alertRole = settings.adminRole;
-            settings.yellowList.alertChannel = settings.adminChannel;
-            settings.yellowList.alertRole = settings.adminRole;
+            settings.redAlertChannel = settings.adminChannel;
+            settings.redAlertRole = settings.adminRole;
+            settings.yellowAlertChannel = settings.adminChannel;
+            settings.yellowAlertRole = settings.adminRole;
             settings.logPostChannel = settings.adminChannel;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync("Settings saved. Now building the spoiler list and redlist. This may take a few minutes to complete.");
@@ -83,7 +83,6 @@
             await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
             await _booru.RefreshListsAsync(Context);
             await ReplyAsync("The lists have been built.");
-
         }
 
         [Command("admin")]
@@ -149,7 +148,7 @@
                         case "clear":
                             settings.ignoredChannels.Clear();
                             await FileHelper.SaveServerSettingsAsync(settings, Context);
-                            await ReplyAsync("Ignore channel list cleared.");
+                            await ReplyAsync("Ignored channels list cleared.");
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context, true);
                             break;
                         default:
@@ -181,6 +180,7 @@
                         case "clear":
                             settings.ignoredRoles.Clear();
                             await FileHelper.SaveServerSettingsAsync(settings, Context);
+                            await ReplyAsync("Ignored roles list cleared.");
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context, true);
                             break;
                         default:
@@ -190,7 +190,7 @@
                     }
 
                     break;
-                case "ignoreuser":
+                case "allowuser":
                     switch (commandTwo)
                     {
                         case "":
@@ -198,20 +198,21 @@
                             await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
-                            await IgnoreUserGetAsync();
+                            await AllowUserGetAsync();
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "add":
-                            await IgnoreUserAddAsync(commandThree);
+                            await AllowUserAddAsync(commandThree);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "remove":
-                            await IgnoreUserRemoveAsync(commandThree);
+                            await AllowUserRemoveAsync(commandThree);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
-                            settings.ignoredUsers.Clear();
+                            settings.allowedUsers.Clear();
                             await FileHelper.SaveServerSettingsAsync(settings, Context);
+                            await ReplyAsync("Allowed users list cleared.");
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context, true);
                             break;
                         default:
@@ -354,23 +355,23 @@
             }
         }
 
-        private async Task IgnoreUserRemoveAsync(string userName)
+        private async Task AllowUserRemoveAsync(string userName)
         {
             var settings = await FileHelper.LoadServerSettings(Context);
             var userRemoveId = await DiscordHelper.GeUserIdFromPingOrIfOnlySearchResultAsync(userName, Context);
             if (userRemoveId > 0)
             {
-                for (var x = settings.ignoredUsers.Count - 1; x >= 0; x--)
+                for (var x = settings.allowedUsers.Count - 1; x >= 0; x--)
                 {
-                    var user = settings.ignoredUsers[x];
+                    var user = settings.allowedUsers[x];
                     if (user != userRemoveId)
                     {
                         continue;
                     }
 
-                    settings.ignoredUsers.Remove(user);
+                    settings.allowedUsers.Remove(user);
                     await FileHelper.SaveServerSettingsAsync(settings, Context);
-                    await ReplyAsync($"Removed <@{userRemoveId}> from ignore list.", allowedMentions: AllowedMentions.None);
+                    await ReplyAsync($"Removed <@{userRemoveId}> from allow list.", allowedMentions: AllowedMentions.None);
                     return;
                 }
 
@@ -382,13 +383,13 @@
             }
         }
 
-        private async Task IgnoreUserAddAsync(string userName)
+        private async Task AllowUserAddAsync(string userName)
         {
             var settings = await FileHelper.LoadServerSettings(Context);
             var userAddId = await DiscordHelper.GeUserIdFromPingOrIfOnlySearchResultAsync(userName, Context);
             if (userAddId > 0)
             {
-                foreach (var user in settings.ignoredUsers)
+                foreach (var user in settings.allowedUsers)
                 {
                     if (user != userAddId)
                     {
@@ -399,9 +400,9 @@
                     return;
                 }
 
-                settings.ignoredUsers.Add(userAddId);
+                settings.allowedUsers.Add(userAddId);
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
-                await ReplyAsync($"Added <@{userAddId}> to ignore list.", allowedMentions: AllowedMentions.None);
+                await ReplyAsync($"Added <@{userAddId}> to allow list.", allowedMentions: AllowedMentions.None);
             }
             else
             {
@@ -409,13 +410,13 @@
             }
         }
 
-        private async Task IgnoreUserGetAsync()
+        private async Task AllowUserGetAsync()
         {
             var settings = await FileHelper.LoadServerSettings(Context);
-            if (settings.ignoredUsers.Count > 0)
+            if (settings.allowedUsers.Count > 0)
             {
-                var output = $"__User Ignore List:__{Environment.NewLine}";
-                foreach (var user in settings.ignoredUsers)
+                var output = $"__Allowed User List:__{Environment.NewLine}";
+                foreach (var user in settings.allowedUsers)
                 {
                     output += $"<@{user}>{Environment.NewLine}";
                 }
@@ -424,7 +425,7 @@
             }
             else
             {
-                await ReplyAsync("No users on ignore list.");
+                await ReplyAsync("No users on allow list.");
             }
         }
 
@@ -630,7 +631,7 @@
                         break;
                     case "get":
                         var output = "The yellowlist is currently empty.";
-                        foreach (var item in settings.yellowList.list)
+                        foreach (var item in settings.yellowList)
                         {
                             if (output == "The yellowlist is currently empty.")
                             {
@@ -646,7 +647,7 @@
                         await _logger.Log("yellowlist: get", Context);
                         break;
                     case "clear":
-                        settings.yellowList.list.Clear();
+                        settings.yellowList.Clear();
                         await FileHelper.SaveServerSettingsAsync(settings, Context);
                         await ReplyAsync("Yellowlist cleared");
                         await _logger.Log("yellowlist: clear", Context, true);

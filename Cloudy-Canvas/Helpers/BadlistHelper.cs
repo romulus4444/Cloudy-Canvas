@@ -9,15 +9,15 @@
         public static async Task<bool> RemoveYellowTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
             var lower = term.ToLower();
-            for (var x = settings.yellowList.list.Count - 1; x >= 0; x--)
+            for (var x = settings.yellowList.Count - 1; x >= 0; x--)
             {
-                var yellow = settings.yellowList.list[x];
+                var yellow = settings.yellowList[x];
                 if (yellow != lower)
                 {
                     continue;
                 }
 
-                settings.yellowList.list.Remove(yellow);
+                settings.yellowList.Remove(yellow);
                 await FileHelper.SaveServerSettingsAsync(settings, context);
                 return true;
             }
@@ -30,7 +30,7 @@
             var queryList = query.ToLower().Split(", ");
             var parsedList = ParseList(queryList);
             var matchedTerms = "";
-            foreach (var yellow in settings.yellowList.list)
+            foreach (var yellow in settings.yellowList)
             {
                 foreach (var term in parsedList)
                 {
@@ -56,7 +56,7 @@
         public static async Task<bool> AddYellowTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
             var lower = term.ToLower();
-            foreach (var yellow in settings.yellowList.list)
+            foreach (var yellow in settings.yellowList)
             {
                 if (yellow == lower)
                 {
@@ -64,7 +64,7 @@
                 }
             }
 
-            settings.yellowList.list.Add(lower);
+            settings.yellowList.Add(lower);
             await FileHelper.SaveServerSettingsAsync(settings, context);
             return true;
         }
@@ -74,11 +74,11 @@
             var queryList = query.ToLower().Split(", ");
             var parsedList = ParseList(queryList);
             var matchedTerms = "";
-            foreach (var red in settings.redList.list)
+            foreach (var red in settings.redList)
             {
                 foreach (var term in parsedList)
                 {
-                    if (term != red)
+                    if (term != red.Item2)
                     {
                         continue;
                     }

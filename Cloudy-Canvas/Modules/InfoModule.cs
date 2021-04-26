@@ -68,7 +68,7 @@
                     {
                         case "":
                             await ReplyAsync(
-                                $"**__;admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`;admin adminchannel ...`{Environment.NewLine}`;admin adminrole ...`{Environment.NewLine}`;admin ignorechannel ...`{Environment.NewLine}`;admin ignorerole ...`{Environment.NewLine}`;admin ignoreuser ...`{Environment.NewLine}{Environment.NewLine}Use `;help admin <command>` for more details on a particular command.");
+                                $"**__;admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`;admin adminchannel ...`{Environment.NewLine}`;admin adminrole ...`{Environment.NewLine}`;admin ignorechannel ...`{Environment.NewLine}`;admin ignorerole ...`{Environment.NewLine}`;admin alloweuser ...`{Environment.NewLine}{Environment.NewLine}Use `;help admin <command>` for more details on a particular command.");
                             break;
                         case "adminchannel":
                             await ReplyAsync(
@@ -86,9 +86,9 @@
                             await ReplyAsync(
                                 $"__;admin ignorerole Commands:__{Environment.NewLine}*Manages the list of roles to ignore commands from.*{Environment.NewLine}`;admin ignorerole get` Gets the current list of ignored roles.{Environment.NewLine}`;admin ignorerole add <role>` Adds <role> to the list of ignored roles. Accepts a role ping or plain text.{Environment.NewLine}`;admin ignorerole remove <role>` Removes <role> from the list of ignored roles. Accepts a role ping or plain text.{Environment.NewLine}`;admin ignorerole clear` Clears the list of ignored roles.");
                             break;
-                        case "ignoreuser":
+                        case "allowuser":
                             await ReplyAsync(
-                                $"__;admin ignoreuser Commands:__{Environment.NewLine}*Manages the list of users to ignore commands from.*{Environment.NewLine}`;admin ignoreuser get` Gets the current list of ignored users.{Environment.NewLine}`;admin ignoreuser add <user>` Adds <user> to the list of ignored users. Accepts a user ping or plain text.{Environment.NewLine}`;admin ignoreuser remove <user>` Removes <user> from the list of ignored users. Accepts a user ping or plain text.{Environment.NewLine}`;admin ignoreuser clear` Clears the list of ignored users.");
+                                $"__;admin allowuser Commands:__{Environment.NewLine}*Manages the list of users to allow commands from.*{Environment.NewLine}`;admin allowuser get` Gets the current list of allowd users.{Environment.NewLine}`;admin allowuser add <user>` Adds <user> to the list of allowd users. Accepts a user ping or plain text.{Environment.NewLine}`;admin allowuser remove <user>` Removes <user> from the list of allowd users. Accepts a user ping or plain text.{Environment.NewLine}`;admin allowuser clear` Clears the list of allowd users.");
                             break;
                         default:
                             await ReplyAsync("Invalid subcommand. Use `;help admin` for a list of available subcommands.");

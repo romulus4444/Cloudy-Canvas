@@ -213,7 +213,7 @@
             var output = $"__Spoilered tags:__{Environment.NewLine}";
             for (var x = 0; x < settings.spoilerList.Count; x++)
             {
-                output += $"`{settings.spoilerList[x]}`";
+                output += $"`{settings.spoilerList[x].Item2}`";
                 if (x < settings.spoilerList.Count - 1)
                 {
                     output += ", ";

@@ -61,6 +61,14 @@
                 return true;
             }
 
+            foreach (var allowedUser in settings.allowedUsers)
+            {
+                if (context.User.Id == allowedUser)
+                {
+                    return true;
+                }
+            }
+
             foreach (var ignoredChannel in settings.ignoredChannels)
             {
                 if (context.Channel.Id == ignoredChannel)
@@ -72,14 +80,6 @@
             foreach (var ignoredRole in settings.ignoredRoles)
             {
                 if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == ignoredRole))
-                {
-                    return false;
-                }
-            }
-
-            foreach (var ignoredUser in settings.ignoredUsers)
-            {
-                if (context.User.Id == ignoredUser)
                 {
                     return false;
                 }
