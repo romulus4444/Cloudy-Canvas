@@ -6,6 +6,7 @@
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
     using Cloudy_Canvas.Settings;
+    using Discord;
     using Discord.Commands;
 
     [Summary("Module for interfacing with Manebooru")]
@@ -271,7 +272,17 @@
 
                     output += $" || <https://manebooru.art/images/{imageId}> ||";
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
-                    await DiscordHelper.PostToAdminChannelAsync(output, Context, true);
+                    var reportChannel = Context.Guild.GetTextChannel(settings.reportChannel);
+                    if (settings.reportPing)
+                    {
+                        output = $"<@&{settings.reportRole}> " + output;
+                        await reportChannel.SendMessageAsync(output);
+                    }
+                    else
+                    {
+                        await reportChannel.SendMessageAsync(output, allowedMentions: AllowedMentions.None);
+                    }
+
                     await ReplyAsync("Admins have been notified. Thank you for your report.");
                 }
             }
@@ -316,7 +327,18 @@
             {
                 await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
                 await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
+                var redChannel = Context.Guild.GetTextChannel(settings.redAlertChannel);
+                if (settings.redPing)
+                {
+                    await redChannel.SendMessageAsync(
+                        $"<@&{settings.redAlertChannel}> <@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}");
+                }
+                else
+                {
+                    await redChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}",
+                        allowedMentions: AllowedMentions.None);
+                }
+
                 await Context.Message.DeleteAsync();
                 return false;
             }
@@ -325,8 +347,18 @@
             {
                 await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context,
-                    true);
+                var yellowChannel = Context.Guild.GetTextChannel(settings.yellowAlertChannel);
+                if (settings.yellowPing)
+                {
+                    await yellowChannel.SendMessageAsync(
+                        $"<@&{settings.yellowAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}");
+                }
+                else
+                {
+                    await yellowChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}",
+                        allowedMentions: AllowedMentions.None);
+                }
+
                 return false;
             }
 
