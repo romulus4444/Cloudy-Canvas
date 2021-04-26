@@ -20,7 +20,8 @@
         [Summary("Lists all commands")]
         public async Task HelpAsync([Summary("First subcommand")] string command = "", [Remainder] [Summary("Second subcommand")] string subCommand = "")
         {
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
@@ -60,14 +61,14 @@
                     break;
                 case "setup":
                     await ReplyAsync(
-                        $"`;setup <admin channel> <admin role>`{Environment.NewLine}*Only a server administrator may use this command.*{Environment.NewLine}Initial bot setup. Sets <admin channel> for important admin output messages and <admin role> as users who are allowed to use admin module commands.");
+                        $"`;setup <filter Id> <admin channel> <admin role>`{Environment.NewLine}*Only a server administrator may use this command.*{Environment.NewLine}Initial bot setup. Sets <filter ID> as the public Manebooru filter to use, <admin channel> for important admin output messages, and <admin role> as users who are allowed to use admin module commands.");
                     break;
                 case "admin":
                     switch (subCommand)
                     {
                         case "":
                             await ReplyAsync(
-                                $"**__;admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`;admin adminchannel ...`{Environment.NewLine}`;admin adminrole ...`{Environment.NewLine}`;admin ignorechannel ...`{Environment.NewLine}`;admin ignorerole ...`{Environment.NewLine}{Environment.NewLine}Use `;help admin <command>` for more details on a particular command.");
+                                $"**__;admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`;admin adminchannel ...`{Environment.NewLine}`;admin adminrole ...`{Environment.NewLine}`;admin ignorechannel ...`{Environment.NewLine}`;admin ignorerole ...`{Environment.NewLine}`;admin alloweuser ...`{Environment.NewLine}{Environment.NewLine}Use `;help admin <command>` for more details on a particular command.");
                             break;
                         case "adminchannel":
                             await ReplyAsync(
@@ -84,6 +85,10 @@
                         case "ignorerole":
                             await ReplyAsync(
                                 $"__;admin ignorerole Commands:__{Environment.NewLine}*Manages the list of roles to ignore commands from.*{Environment.NewLine}`;admin ignorerole get` Gets the current list of ignored roles.{Environment.NewLine}`;admin ignorerole add <role>` Adds <role> to the list of ignored roles. Accepts a role ping or plain text.{Environment.NewLine}`;admin ignorerole remove <role>` Removes <role> from the list of ignored roles. Accepts a role ping or plain text.{Environment.NewLine}`;admin ignorerole clear` Clears the list of ignored roles.");
+                            break;
+                        case "allowuser":
+                            await ReplyAsync(
+                                $"__;admin allowuser Commands:__{Environment.NewLine}*Manages the list of users to allow commands from.*{Environment.NewLine}`;admin allowuser get` Gets the current list of allowd users.{Environment.NewLine}`;admin allowuser add <user>` Adds <user> to the list of allowd users. Accepts a user ping or plain text.{Environment.NewLine}`;admin allowuser remove <user>` Removes <user> from the list of allowd users. Accepts a user ping or plain text.{Environment.NewLine}`;admin allowuser clear` Clears the list of allowd users.");
                             break;
                         default:
                             await ReplyAsync("Invalid subcommand. Use `;help admin` for a list of available subcommands.");
@@ -107,7 +112,7 @@
                     await ReplyAsync($"`;origin`{Environment.NewLine}Posts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.");
                     break;
                 default:
-                    await ReplyAsync($"Invalid command. Use `;help` for a list of available commands.");
+                    await ReplyAsync("Invalid command. Use `;help` for a list of available commands.");
                     break;
             }
         }
@@ -116,7 +121,8 @@
         [Summary("Displays the origin of Cloudy Canvas")]
         public async Task OriginAsync()
         {
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }

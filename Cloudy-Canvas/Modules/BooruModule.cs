@@ -5,6 +5,7 @@
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
+    using Cloudy_Canvas.Settings;
     using Discord.Commands;
 
     [Summary("Module for interfacing with Manebooru")]
@@ -23,17 +24,18 @@
         [Summary("Selects an image at random")]
         public async Task PickAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlists(query))
+            if (!await CheckBadlistsAsync(query, settings))
             {
                 return;
             }
 
-            var (imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query);
+            var (imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings);
             if (total == 0)
             {
                 await _logger.Log($"pick: {query}, total: {total}", Context);
@@ -73,17 +75,18 @@
         [Summary("Selects first image in a search")]
         public async Task PickRecentAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlists(query))
+            if (!await CheckBadlistsAsync(query, settings))
             {
                 return;
             }
 
-            var (imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query);
+            var (imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings);
             if (total == 0)
             {
                 await _logger.Log($"pickrecent: {query}, total: {total}", Context);
@@ -123,17 +126,18 @@
         [Summary("Selects an image by image id")]
         public async Task IdAsync([Summary("The image Id")] long id = 4010266)
         {
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlists(id.ToString()))
+            if (!await CheckBadlistsAsync(id.ToString(), settings))
             {
                 return;
             }
 
-            var (imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id);
+            var (imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings);
             if (imageId == -1)
             {
                 await ReplyAsync("I could not find that image.");
@@ -160,17 +164,18 @@
         [Summary("Selects a tag list by image Id")]
         public async Task TagsAsync([Summary("The image Id")] long id = 4010266)
         {
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlists(id.ToString()))
+            if (!await CheckBadlistsAsync(id.ToString(), settings))
             {
                 return;
             }
 
-            var (tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id);
+            var (tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings);
             if (tagList.Count == 0)
             {
                 await ReplyAsync("I could not find that image.");
@@ -199,17 +204,17 @@
         [Summary("Gets the list of spoiler tags")]
         public async Task GetSpoilersAsync()
         {
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            var spoilerList = await _booru.GetSpoilerTagsAsync();
             var output = $"__Spoilered tags:__{Environment.NewLine}";
-            for (var x = 0; x < spoilerList.Count; x++)
+            for (var x = 0; x < settings.spoilerList.Count; x++)
             {
-                output += $"`{spoilerList[x].Item2}`";
-                if (x < spoilerList.Count - 1)
+                output += $"`{settings.spoilerList[x].Item2}`";
+                if (x < settings.spoilerList.Count - 1)
                 {
                     output += ", ";
                 }
@@ -223,7 +228,8 @@
         [Summary("Selects the current Featured Image on Manebooru")]
         public async Task FeaturedAsync()
         {
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
@@ -237,20 +243,20 @@
         [Summary("Reports an image id to the admin channel")]
         public async Task ReportAsync(long reportedImageId, [Remainder] string reason = "")
         {
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            await BadlistHelper.InitializeYellowList(Context);
-            var badTerms = await BadlistHelper.CheckYellowList(reportedImageId.ToString(), Context);
-            if (badTerms[0] != "")
+            var badTerms = BadlistHelper.CheckYellowList(reportedImageId.ToString(), settings);
+            if (badTerms != "")
             {
                 await ReplyAsync("That image is already blocked.");
             }
             else
             {
-                var (imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId);
+                var (imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId, settings);
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");
@@ -265,7 +271,6 @@
 
                     output += $" || <https://manebooru.art/images/{imageId}> ||";
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
-                    var adminRoleId = await DiscordHelper.GetAdminRoleAsync(Context);
                     await DiscordHelper.PostToAdminChannelAsync(output, Context, true);
                     await ReplyAsync("Admins have been notified. Thank you for your report.");
                 }
@@ -276,13 +281,14 @@
         [Summary("Refreshes the spoiler list and redlist")]
         public async Task RefreshListsAsync()
         {
-            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context))
+            var settings = await FileHelper.LoadServerSettings(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
 
             await ReplyAsync("Refreshing spoiler list and redlist. This may take a few minutes.");
-            await _booru.RefreshListsAsync();
+            await _booru.RefreshListsAsync(Context);
             await ReplyAsync("Spoiler list and redlist refreshed!");
         }
 
@@ -302,36 +308,24 @@
             return output;
         }
 
-        private async Task<bool> CheckBadlists(string query)
+        private async Task<bool> CheckBadlistsAsync(string query, ServerSettings settings)
         {
-            await BadlistHelper.InitializeYellowList(Context);
-            //await _logger.Log("<DEBUG> Checking for yellow terms", Context);
-            var yellowTerms = await BadlistHelper.CheckYellowList(query, Context);
-            //foreach (var yellowTerm in yellowTerms)
-            //{
-            //    await _logger.Log(yellowTerm, Context);
-            //}
-
-            //await _logger.Log("<DEBUG> Checking for red terms", Context);
-            var redTerms = await BadlistHelper.CheckRedList(query, Context);
-            //foreach (var redTerm in redTerms)
-            //{
-            //    await _logger.Log(redTerm, Context);
-            //}
-            if (redTerms[0] != "")
+            var yellowTerms = BadlistHelper.CheckYellowList(query, settings);
+            var redTerms = BadlistHelper.CheckRedList(query, settings);
+            if (redTerms != "")
             {
-                await _logger.Log($"pick: {query}, REDLISTED {redTerms[0]}", Context, true);
+                await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
                 await ReplyAsync("You're kidding me, right?");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms[0]}", Context, true);
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}", Context, true);
                 await Context.Message.DeleteAsync();
                 return false;
             }
 
-            if (yellowTerms[0] != "")
+            if (yellowTerms != "")
             {
-                await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms[0]}", Context, true);
+                await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms[0]}", Context,
+                await DiscordHelper.PostToAdminChannelAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}", Context,
                     true);
                 return false;
             }
