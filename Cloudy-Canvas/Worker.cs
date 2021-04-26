@@ -4,7 +4,6 @@ namespace Cloudy_Canvas
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
-    using Cloudy_Canvas.Service;
     using Cloudy_Canvas.Settings;
     using Discord;
     using Discord.Commands;
@@ -20,17 +19,14 @@ namespace Cloudy_Canvas
         private readonly IServiceCollection _services;
         private readonly DiscordSettings _settings;
         private readonly CommandService _commands;
-        private readonly BooruService _booru;
         private DiscordSocketClient _client;
-        private bool _ready;
 
-        public Worker(ILogger<Worker> logger, IServiceCollection services, IOptions<DiscordSettings> settings, BooruService booru)
+        public Worker(ILogger<Worker> logger, IServiceCollection services, IOptions<DiscordSettings> settings)
         {
             _logger = logger;
             _commands = new CommandService();
             _settings = settings.Value;
             _services = services;
-            _booru = booru;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -44,7 +40,6 @@ namespace Cloudy_Canvas
                 await _client.StartAsync();
                 await _client.SetGameAsync("with my paintbrush");
                 await InstallCommandsAsync();
-                await _booru.RefreshListsAsync();
 
                 // Block this task until the program is closed.
                 await Task.Delay(-1);
@@ -60,12 +55,6 @@ namespace Cloudy_Canvas
             {
                 await _client.StopAsync();
             }
-        }
-
-        private Task ReadyAsync()
-        {
-            _ready = true;
-            return Task.CompletedTask;
         }
 
         private async Task InstallCommandsAsync()

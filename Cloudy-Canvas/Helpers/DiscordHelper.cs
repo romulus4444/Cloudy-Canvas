@@ -1,7 +1,5 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
-    using System.Collections.Generic;
-    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
@@ -35,90 +33,43 @@
             return channel == null ? "<ERROR> Invalid channel" : channel.Name;
         }
 
-        public static async Task<ulong> GetRoleIdIfAccessAsync(string roleName, SocketCommandContext context)
+        public static ulong GetRoleIdIfAccessAsync(string roleName, SocketCommandContext context)
         {
             var id = ConvertRolePingToId(roleName);
-            if (id > 0)
-            {
-                return await CheckIfRoleExistsAsync(id, context);
-            }
-
-            return await CheckIfRoleExistsAsync(roleName, context);
+            return id > 0 ? CheckIfRoleExistsAsync(id, context) : CheckIfRoleExistsAsync(roleName, context);
         }
 
-        public static string ConvertRolePingToNameAsync(string rolePing, SocketCommandContext context)
-        {
-            var id = ConvertRolePingToId(rolePing);
-            if (id <= 0)
-            {
-                return "<ERROR> Invalid role";
-            }
-
-            var role = context.Guild.GetRole(id);
-            return role == null ? "<ERROR> Invalid role" : role.Name;
-        }
-
-        public static async Task<List<ulong>> GetIgnoredRolesAsync(SocketCommandContext context)
-        {
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredRoles", "cfg", context);
-            if (!File.Exists(filename))
-            {
-                return new List<ulong>();
-            }
-
-            var roleList = await File.ReadAllLinesAsync(filename);
-            var roleIdList = new List<ulong>();
-            foreach (var role in roleList)
-            {
-                var one = role.Split("> @", 2)[0].Substring(3);
-                roleIdList.Add(ulong.Parse(one));
-            }
-
-            return roleIdList;
-        }
-
-        public static async Task<bool> DoesUserHaveAdminRoleAsync(SocketCommandContext context)
+        public static bool DoesUserHaveAdminRoleAsync(SocketCommandContext context, ServerSettings settings)
         {
             if (context.IsPrivate)
             {
                 return true;
             }
 
-            var adminRole = await GetAdminRoleAsync(context);
-            return adminRole == 0 || context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == adminRole);
+            return settings.adminRole == 0 || context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.adminRole);
         }
 
-        public static async Task<ulong> GetAdminRoleAsync(SocketCommandContext context)
-        {
-            var setting = await FileHelper.GetSetting("adminrole", context);
-            ulong roleId = 0;
-            if (setting.Contains("<ERROR>") || !(setting.Contains("<@&") && setting.Contains(">")))
-            {
-                return roleId;
-            }
-
-            var split = setting.Split("<@&", 2)[1].Split('>', 2)[0];
-            roleId = ulong.Parse(split);
-            return roleId;
-        }
-
-        public static async Task<bool> CanUserRunThisCommandAsync(SocketCommandContext context)
+        public static bool CanUserRunThisCommand(SocketCommandContext context, ServerSettings settings)
         {
             if (context.IsPrivate)
             {
                 return true;
             }
 
-            var adminRole = await GetAdminRoleAsync(context);
-            var ignoredRoles = await GetIgnoredRolesAsync(context);
-            var ignoredChannels = await GetIgnoredChannelsAsync(context);
-
-            if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == adminRole))
+            if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.adminRole))
             {
                 return true;
             }
 
-            foreach (var ignoredChannel in ignoredChannels)
+            foreach (var allowedUser in settings.allowedUsers)
+            {
+                if (context.User.Id == allowedUser)
+                {
+                    return true;
+                }
+            }
+
+            foreach (var ignoredChannel in settings.ignoredChannels)
             {
                 if (context.Channel.Id == ignoredChannel)
                 {
@@ -126,7 +77,7 @@
                 }
             }
 
-            foreach (var ignoredRole in ignoredRoles)
+            foreach (var ignoredRole in settings.ignoredRoles)
             {
                 if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == ignoredRole))
                 {
@@ -137,34 +88,15 @@
             return true;
         }
 
-        public static async Task<List<ulong>> GetIgnoredChannelsAsync(SocketCommandContext context)
-        {
-            var filename = FileHelper.SetUpFilepath(FilePathType.Server, "IgnoredChannels", "cfg", context);
-            if (!File.Exists(filename))
-            {
-                return new List<ulong>();
-            }
-
-            var channelList = await File.ReadAllLinesAsync(filename);
-            var channelIdList = new List<ulong>();
-            foreach (var channel in channelList)
-            {
-                var one = channel.Split("> #", 2)[0].Substring(2);
-                channelIdList.Add(ulong.Parse(one));
-            }
-
-            return channelIdList;
-        }
-
         public static async Task PostToAdminChannelAsync(string message, SocketCommandContext context, bool ping = false)
         {
-            var adminChannelId = await GetAdminChannelAsync(context);
-            if (adminChannelId <= 0)
+            var settings = await FileHelper.LoadServerSettings(context);
+            if (settings.adminChannel <= 0)
             {
                 return;
             }
 
-            var adminChannel = context.Guild.GetTextChannel(adminChannelId);
+            var adminChannel = context.Guild.GetTextChannel(settings.adminChannel);
             if (ping)
             {
                 await adminChannel.SendMessageAsync(message);
@@ -175,18 +107,16 @@
             }
         }
 
-        public static async Task<ulong> GetAdminChannelAsync(SocketCommandContext context)
+        public static async Task<ulong> GeUserIdFromPingOrIfOnlySearchResultAsync(string userName, SocketCommandContext context)
         {
-            var setting = await FileHelper.GetSetting("adminchannel", context);
-            ulong channelId = 0;
-            if (setting.Contains("<ERROR>") || !(setting.Contains("<#") && setting.Contains(">")))
+            var userId = ConvertUserPingToId(userName);
+            if (userId > 0)
             {
-                return channelId;
+                return userId;
             }
 
-            var split = setting.Split("<#", 2)[1].Split('>', 2)[0];
-            channelId = ulong.Parse(split);
-            return channelId;
+            var userList = await context.Guild.SearchUsersAsync(userName);
+            return userList.Count != 1 ? 0 : userList.First().Id;
         }
 
         private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
@@ -205,7 +135,6 @@
                 }
             }
 
-            await Task.CompletedTask;
             return 0;
         }
 
@@ -225,7 +154,6 @@
                 }
             }
 
-            await Task.CompletedTask;
             return 0;
         }
 
@@ -241,7 +169,19 @@
             return ulong.Parse(trim);
         }
 
-        private static async Task<ulong> CheckIfRoleExistsAsync(string roleName, SocketCommandContext context)
+        private static ulong ConvertUserPingToId(string userPing)
+        {
+            if (!userPing.Contains("<@") || !userPing.Contains(">"))
+            {
+                return 0;
+            }
+
+            var frontTrim = userPing.Substring(2);
+            var trim = frontTrim.Split('>', 2)[0];
+            return ulong.Parse(trim);
+        }
+
+        private static ulong CheckIfRoleExistsAsync(string roleName, SocketCommandContext context)
         {
             if (context.IsPrivate)
             {
@@ -256,11 +196,10 @@
                 }
             }
 
-            await Task.CompletedTask;
             return 0;
         }
 
-        private static async Task<ulong> CheckIfRoleExistsAsync(ulong roleId, SocketCommandContext context)
+        private static ulong CheckIfRoleExistsAsync(ulong roleId, SocketCommandContext context)
         {
             if (context.IsPrivate)
             {
@@ -275,7 +214,6 @@
                 }
             }
 
-            await Task.CompletedTask;
             return 0;
         }
 
