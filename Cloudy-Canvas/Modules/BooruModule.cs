@@ -331,7 +331,7 @@
                 if (settings.redPing)
                 {
                     await redChannel.SendMessageAsync(
-                        $"<@&{settings.redAlertChannel}> <@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}");
+                        $"<@&{settings.redAlertRole}> <@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}");
                 }
                 else
                 {

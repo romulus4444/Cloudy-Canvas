@@ -295,6 +295,58 @@
                     }
 
                     break;
+                case "redchannel":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await RedChannelGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await RedChannelSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await RedChannelClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "redrole":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await RedRoleGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await RedRoleSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await RedRoleClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
                 default:
                     await ReplyAsync($"Invalid command `{commandOne}`");
                     await _logger.Log($"admin: {commandOne} <FAIL>", Context);
@@ -680,6 +732,76 @@
             else
             {
                 await ReplyAsync("Yellow alert role not set yet.");
+            }
+        }
+
+        private async Task RedChannelClearAsync(ServerSettings settings)
+        {
+            settings.redAlertChannel = settings.adminChannel;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Red alert channel reset to the current admin channel, <#{settings.redAlertChannel}>");
+        }
+
+        private async Task RedChannelSetAsync(string channelName, ServerSettings settings)
+        {
+            var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelSetId > 0)
+            {
+                settings.redAlertChannel = channelSetId;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Red alert channel set to <#{channelSetId}>");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
+        private async Task RedChannelGetAsync(ServerSettings settings)
+        {
+            if (settings.redAlertChannel > 0)
+            {
+                await ReplyAsync($"Red alerts are being posted in <#{settings.redAlertChannel}>");
+            }
+            else
+            {
+                await ReplyAsync("Red alert channel not set yet.");
+            }
+        }
+
+        private async Task RedRoleClearAsync(ServerSettings settings)
+        {
+            settings.redAlertRole = 0;
+            settings.redPing = false;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Red alerts will not ping anyone now in <#{settings.redAlertChannel}>");
+        }
+
+        private async Task RedRoleSetAsync(string roleName, ServerSettings settings)
+        {
+            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            if (roleSetId > 0)
+            {
+                settings.redAlertRole = roleSetId;
+                settings.redPing = true;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Red alerts will now ping <@&{settings.redAlertRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync($"Invalid role name #{roleName}.");
+            }
+        }
+
+        private async Task RedRoleGetAsync(ServerSettings settings)
+        {
+            if (settings.redAlertRole > 0)
+            {
+                await ReplyAsync($"Red alerts will ping <@&{settings.redAlertRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync("Red alert role not set yet.");
             }
         }
 
