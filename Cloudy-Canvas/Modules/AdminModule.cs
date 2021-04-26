@@ -347,6 +347,58 @@
                     }
 
                     break;
+                case "reportchannel":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await ReportChannelGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await ReportChannelSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await ReportChannelClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "reportrole":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await ReportRoleGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await ReportRoleSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await ReportRoleClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
                 default:
                     await ReplyAsync($"Invalid command `{commandOne}`");
                     await _logger.Log($"admin: {commandOne} <FAIL>", Context);
@@ -802,6 +854,76 @@
             else
             {
                 await ReplyAsync("Red alert role not set yet.");
+            }
+        }
+
+        private async Task ReportChannelClearAsync(ServerSettings settings)
+        {
+            settings.reportChannel = settings.adminChannel;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Report alert channel reset to the current admin channel, <#{settings.reportChannel}>");
+        }
+
+        private async Task ReportChannelSetAsync(string channelName, ServerSettings settings)
+        {
+            var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelSetId > 0)
+            {
+                settings.reportChannel = channelSetId;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Report alert channel set to <#{channelSetId}>");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
+        private async Task ReportChannelGetAsync(ServerSettings settings)
+        {
+            if (settings.reportChannel > 0)
+            {
+                await ReplyAsync($"Report alerts are being posted in <#{settings.reportChannel}>");
+            }
+            else
+            {
+                await ReplyAsync("Report alert channel not set yet.");
+            }
+        }
+
+        private async Task ReportRoleClearAsync(ServerSettings settings)
+        {
+            settings.reportRole = 0;
+            settings.reportPing = false;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Report alerts will not ping anyone now in <#{settings.reportChannel}>");
+        }
+
+        private async Task ReportRoleSetAsync(string roleName, ServerSettings settings)
+        {
+            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            if (roleSetId > 0)
+            {
+                settings.reportRole = roleSetId;
+                settings.reportPing = true;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Report alerts will now ping <@&{settings.reportRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync($"Invalid role name #{roleName}.");
+            }
+        }
+
+        private async Task ReportRoleGetAsync(ServerSettings settings)
+        {
+            if (settings.reportRole > 0)
+            {
+                await ReplyAsync($"Report alerts will ping <@&{settings.reportRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync("Report alert role not set yet.");
             }
         }
 
