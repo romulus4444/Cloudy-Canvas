@@ -4,14 +4,14 @@
     {
         ////-------------------------Production-------------------------
         //public static char prefix { get; } = ';'; //production prefix
-        //public static ulong CloudyCanvasId { get; } = 828682017868218445; //Cloudy Canvas's Production Id
-        //public static string RootPath { get; } = "BotSettings"; //Production folders
+        //public static bool useDevPrefix { get; } = false; //Use the alternate prefix
+        //public static string RootPath { get; } = "botsettings"; //Production folders
         ////------------------------------------------------------------
 
         //-------------------------Development------------------------
         public static char prefix { get; } = '?'; //development prefix
-        public static ulong CloudyCanvasId { get; } = 833556029521657856; //Cloudy Canvas's Development Id
-        public static string RootPath { get; } = "DevSettings"; //Development folders
+        public static bool useDevPrefix { get; } = true; //Use the alternate prefix
+        public static string RootPath { get; } = "devsettings"; //Development folders
         //------------------------------------------------------------
     }
 }

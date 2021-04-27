@@ -21,7 +21,7 @@
         [Summary("Lists all commands")]
         public async Task HelpCommandAsync([Summary("First subcommand")] string command = "", [Remainder] [Summary("Second subcommand")] string subCommand = "")
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -157,7 +157,7 @@
         [Summary("Displays the origin of Cloudy Canvas")]
         public async Task OriginCommandAsync()
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -171,7 +171,7 @@
         [Summary("Displays the origin of Cloudy Canvas")]
         public async Task AboutCommandAsync()
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;

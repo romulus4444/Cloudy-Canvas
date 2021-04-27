@@ -4,6 +4,7 @@ namespace Cloudy_Canvas
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Settings;
     using Discord;
     using Discord.Commands;
@@ -19,14 +20,16 @@ namespace Cloudy_Canvas
         private readonly IServiceCollection _services;
         private readonly DiscordSettings _settings;
         private readonly CommandService _commands;
+        private readonly AllPreloadedSettings _servers;
         private DiscordSocketClient _client;
 
-        public Worker(ILogger<Worker> logger, IServiceCollection services, IOptions<DiscordSettings> settings)
+        public Worker(ILogger<Worker> logger, IServiceCollection services, IOptions<DiscordSettings> settings, AllPreloadedSettings servers)
         {
             _logger = logger;
             _commands = new CommandService();
             _settings = settings.Value;
             _services = services;
+            _servers = servers;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -37,6 +40,7 @@ namespace Cloudy_Canvas
                 _client.Log += Log;
                 await _client.LoginAsync(TokenType.Bot,
                     _settings.token);
+
                 await _client.StartAsync();
                 await _client.SetGameAsync("with my paintbrush");
                 await InstallCommandsAsync();
@@ -67,13 +71,23 @@ namespace Cloudy_Canvas
         {
             var message = messageParam as SocketUserMessage;
             var argPos = 0;
-            if (!(message.HasCharPrefix(DevSettings.prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)) /*|| message.Author.IsBot*/)
+            var context = new SocketCommandContext(_client, message);
+            var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
+            var settings = await FileHelper.LoadServerPresettingsAsync(context, _servers);
+            if (DevSettings.useDevPrefix)
             {
-                return;
+                settings.prefix = DevSettings.prefix;
             }
 
-            var context = new SocketCommandContext(_client, message);
-            await _commands.ExecuteAsync(context, argPos, _services.BuildServiceProvider());
+            if (message.HasCharPrefix(settings.prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            {
+                if (!(settings.listenToBots) && message.Author.IsBot)
+                {
+                    return;
+                }
+
+                await _commands.ExecuteAsync(context, argPos, _services.BuildServiceProvider());
+            }
         }
 
         private Task Log(LogMessage msg)

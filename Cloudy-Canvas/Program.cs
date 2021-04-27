@@ -1,6 +1,7 @@
 namespace Cloudy_Canvas
 {
     using System;
+    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
     using Cloudy_Canvas.Settings;
     using Microsoft.Extensions.Configuration;
@@ -44,6 +45,8 @@ namespace Cloudy_Canvas
                 services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
                 services.AddTransient<BooruService>();
                 services.AddSingleton<LoggingService>();
+                var settings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
+                services.AddSingleton(settings);
                 services.AddSingleton(services);
 
                 services.AddHostedService<Worker>();

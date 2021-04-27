@@ -1,5 +1,6 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
+    using System.Collections.Generic;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
     using Discord.Commands;
@@ -99,7 +100,23 @@
 
         private static string[] ParseList(string[] queryList)
         {
-            return queryList;
+            var parsedList = new List<string>();
+            foreach (var query in queryList)
+            {
+                var parsedString = "";
+                foreach (var character in query)
+                {
+                    if (character == '"')
+                    {
+                        continue;
+                    }
+
+                    parsedString += character;
+                }
+                parsedList.Add(parsedString.Trim());
+            }
+            
+            return parsedList.ToArray();
         }
     }
 }
