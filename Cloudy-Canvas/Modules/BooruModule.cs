@@ -25,7 +25,7 @@
         [Summary("Selects an image at random")]
         public async Task PickComandAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -76,7 +76,7 @@
         [Summary("Selects first image in a search")]
         public async Task PickRecentCommandAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -127,7 +127,7 @@
         [Summary("Selects an image by image id")]
         public async Task IdCommandAsync([Summary("The image Id")] long id = 4010266)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -165,7 +165,7 @@
         [Summary("Selects a tag list by image Id")]
         public async Task TagsCommandAsync([Summary("The image Id")] long id = 4010266)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -205,7 +205,7 @@
         [Summary("Gets the list of spoiler tags")]
         public async Task GetSpoilersCommandAsync()
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -229,7 +229,7 @@
         [Summary("Selects the current Featured Image on Manebooru")]
         public async Task FeaturedCommandAsync()
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -244,7 +244,7 @@
         [Summary("Reports an image id to the admin channel")]
         public async Task ReportAsync(long reportedImageId, [Remainder] string reason = "")
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -292,7 +292,7 @@
         [Summary("Refreshes the spoiler list and redlist")]
         public async Task RefreshListsCommandAsync()
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;

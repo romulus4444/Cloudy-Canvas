@@ -1,9 +1,12 @@
 namespace Cloudy_Canvas
 {
     using System;
+    using System.IO;
+    using System.Net;
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Settings;
     using Discord;
     using Discord.Commands;
@@ -12,6 +15,7 @@ namespace Cloudy_Canvas
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
+    using Newtonsoft.Json;
 
     public class Worker : BackgroundService
     {
@@ -20,6 +24,7 @@ namespace Cloudy_Canvas
         private readonly DiscordSettings _settings;
         private readonly CommandService _commands;
         private DiscordSocketClient _client;
+        private AllPreloadedSettings servers;
 
         public Worker(ILogger<Worker> logger, IServiceCollection services, IOptions<DiscordSettings> settings)
         {
@@ -37,6 +42,8 @@ namespace Cloudy_Canvas
                 _client.Log += Log;
                 await _client.LoginAsync(TokenType.Bot,
                     _settings.token);
+                servers = await FileHelper.LoadAllPresettingsAsync();
+
                 await _client.StartAsync();
                 await _client.SetGameAsync("with my paintbrush");
                 await InstallCommandsAsync();
@@ -67,12 +74,19 @@ namespace Cloudy_Canvas
         {
             var message = messageParam as SocketUserMessage;
             var argPos = 0;
-            if (!(message.HasCharPrefix(DevSettings.prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)) /*|| message.Author.IsBot*/)
+            var context = new SocketCommandContext(_client, message);
+            var settings = await FileHelper.LoadServerPresettingsAsync(context, servers);
+
+            if (DevSettings.useDevPrefix)
+            {
+                settings.prefix = DevSettings.prefix;
+            }
+
+            if (!(message.HasCharPrefix(settings.prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos) || !settings.listenToBots))
             {
                 return;
             }
-
-            var context = new SocketCommandContext(_client, message);
+            
             await _commands.ExecuteAsync(context, argPos, _services.BuildServiceProvider());
         }
 

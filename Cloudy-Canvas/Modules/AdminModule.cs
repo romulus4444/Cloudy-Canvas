@@ -91,7 +91,7 @@
             [Summary("Second subcommand")] string commandTwo = "",
             [Remainder] [Summary("Third subcommand")] string commandThree = "")
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
@@ -436,7 +436,7 @@
         [Summary("Posts a message to a specified channel")]
         public async Task EchoCommandAsync([Summary("The channel to send to")] string channelName = "", [Remainder] [Summary("The message to send")] string message = "")
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
@@ -476,6 +476,22 @@
 
             await ReplyAsync($"{channelName} {message}");
             await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context, true);
+        }
+
+        [Command("setprefix")]
+        [Summary("Sets the bot listen prefix")]
+        public async Task SetPrefixCommandAsync([Summary("The prefix character")] char prefix = ';')
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            serverPresettings.prefix = prefix;
+            await ReplyAsync($"I will now listen for '{prefix}' on this server.");
+            await FileHelper.SaveServerPresettingsAsync(Context, serverPresettings);
         }
 
         private async Task AdminChannelSetAsync(string channelName, ServerSettings settings)
@@ -1001,7 +1017,7 @@
             [Summary("Manages the search term yellowlist")]
             public async Task YellowListCommandAsync([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
             {
-                var settings = await FileHelper.LoadServerSettings(Context);
+                var settings = await FileHelper.LoadServerSettingsAsync(Context);
                 if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
                 {
                     return;
@@ -1088,7 +1104,7 @@
                 [Summary("The channel to get the log from")] string channel = "",
                 [Summary("The date (in format (YYYY-MM-DD) to get the log from")] string date = "")
             {
-                var settings = await FileHelper.LoadServerSettings(Context);
+                var settings = await FileHelper.LoadServerSettingsAsync(Context);
                 if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
                 {
                     return;
@@ -1121,7 +1137,7 @@
 
             private async Task<string> LogGetAsync(string channelName, string date, SocketCommandContext context)
             {
-                var settings = await FileHelper.LoadServerSettings(Context);
+                var settings = await FileHelper.LoadServerSettingsAsync(Context);
                 await ReplyAsync($"Retrieving log from {channelName} on {date}...");
                 var confirmedName = DiscordHelper.ConvertChannelPingToName(channelName, context);
                 if (confirmedName.Contains("<ERROR>"))
