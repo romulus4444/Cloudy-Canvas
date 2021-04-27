@@ -4,6 +4,7 @@ namespace Cloudy_Canvas
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
+    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Settings;
     using Discord;
     using Discord.Commands;
@@ -72,7 +73,8 @@ namespace Cloudy_Canvas
             var argPos = 0;
             var context = new SocketCommandContext(_client, message);
             var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
-            var settings = _servers.settings[serverId];
+            //var settings = _servers.settings[serverId];
+            var settings = await FileHelper.LoadServerPresettingsAsync(context, _servers);
             if (DevSettings.useDevPrefix)
             {
                 settings.prefix = DevSettings.prefix;
