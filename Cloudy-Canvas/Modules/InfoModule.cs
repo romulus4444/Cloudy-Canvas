@@ -4,6 +4,7 @@
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
+    using Discord;
     using Discord.Commands;
 
     [Summary("Module for providing information")]
@@ -18,9 +19,9 @@
 
         [Command("help")]
         [Summary("Lists all commands")]
-        public async Task HelpAsync([Summary("First subcommand")] string command = "", [Remainder] [Summary("Second subcommand")] string subCommand = "")
+        public async Task HelpCommandAsync([Summary("First subcommand")] string command = "", [Remainder] [Summary("Second subcommand")] string subCommand = "")
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -32,7 +33,7 @@
             {
                 case "":
                     await ReplyAsync(
-                        $"**__All Commands:__**{Environment.NewLine}{Environment.NewLine}**Booru Module:**{Environment.NewLine}*All searches use manechat-compliant filters*{Environment.NewLine}`;pick ...`{Environment.NewLine}`;pickrecent ...`{Environment.NewLine}`;id ...`{Environment.NewLine}`;tags ...`{Environment.NewLine}`;featured`{Environment.NewLine}`;getspoilers`{Environment.NewLine}`;report ...`{Environment.NewLine}{Environment.NewLine}**Admin Module:**{Environment.NewLine}`;setup ...`{Environment.NewLine}`;admin ...`{Environment.NewLine}`;yellowlist ...`{Environment.NewLine}`;log ...`{Environment.NewLine}`;echo ...`{Environment.NewLine}{Environment.NewLine}**Info Module:**{Environment.NewLine}`;origin`{Environment.NewLine}{Environment.NewLine}Use `;help <command>` for more details on a particular command.");
+                        $"**__All Commands:__**{Environment.NewLine}**Booru Module:**{Environment.NewLine}*All searches use manechat-compliant filters*{Environment.NewLine}`;pick ...`{Environment.NewLine}`;pickrecent ...`{Environment.NewLine}`;id ...`{Environment.NewLine}`;tags ...`{Environment.NewLine}`;featured`{Environment.NewLine}`;getspoilers`{Environment.NewLine}`;report ...`{Environment.NewLine}**Admin Module:**{Environment.NewLine}`;setup ...`{Environment.NewLine}`;admin ...`{Environment.NewLine}`;yellowlist ...`{Environment.NewLine}`;log ...`{Environment.NewLine}`;echo ...`{Environment.NewLine}**Info Module:**{Environment.NewLine}`;origin`{Environment.NewLine}`;about`{Environment.NewLine}{Environment.NewLine}Use `;help <command>` for more details on a particular command.");
                     break;
                 case "pick":
                     await ReplyAsync(
@@ -57,7 +58,8 @@
                     await ReplyAsync($"`;getspoilers`{Environment.NewLine}Posts a list of currently spoilered tags.");
                     break;
                 case "report":
-                    await ReplyAsync($"`;report <id>`{Environment.NewLine}Alerts the admins about image#<id>. Only use this for images that violate the server rules!");
+                    await ReplyAsync(
+                        $"`;report <id> <reason>`{Environment.NewLine}Alerts the admins about image#<id> with an optional <reason> for the admins to see. Only use this for images that violate the server rules!");
                     break;
                 case "setup":
                     await ReplyAsync(
@@ -68,7 +70,7 @@
                     {
                         case "":
                             await ReplyAsync(
-                                $"**__;admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`;admin adminchannel ...`{Environment.NewLine}`;admin adminrole ...`{Environment.NewLine}`;admin ignorechannel ...`{Environment.NewLine}`;admin ignorerole ...`{Environment.NewLine}`;admin alloweuser ...`{Environment.NewLine}{Environment.NewLine}Use `;help admin <command>` for more details on a particular command.");
+                                $"**__;admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`;admin adminchannel ...`{Environment.NewLine}`;admin adminrole ...`{Environment.NewLine}`;admin ignorechannel ...`{Environment.NewLine}`;admin ignorerole ...`{Environment.NewLine}`;admin allowuser ...`{Environment.NewLine}`;admin yellowchannel ...`{Environment.NewLine}`;admin yellowrole ...`{Environment.NewLine}`;admin redchannel ...`{Environment.NewLine}`;admin redrole ...`{Environment.NewLine}`;admin reportchannel ...`{Environment.NewLine}`;admin reportrole ...`{Environment.NewLine}`;admin logchannel ...`{Environment.NewLine}{Environment.NewLine}Use `;help admin <command>` for more details on a particular command.");
                             break;
                         case "adminchannel":
                             await ReplyAsync(
@@ -88,7 +90,35 @@
                             break;
                         case "allowuser":
                             await ReplyAsync(
-                                $"__;admin allowuser Commands:__{Environment.NewLine}*Manages the list of users to allow commands from.*{Environment.NewLine}`;admin allowuser get` Gets the current list of allowd users.{Environment.NewLine}`;admin allowuser add <user>` Adds <user> to the list of allowd users. Accepts a user ping or plain text.{Environment.NewLine}`;admin allowuser remove <user>` Removes <user> from the list of allowd users. Accepts a user ping or plain text.{Environment.NewLine}`;admin allowuser clear` Clears the list of allowd users.");
+                                $"__;admin allowuser Commands:__{Environment.NewLine}*Manages the list of users to allow commands from.*{Environment.NewLine}`;admin allowuser get` Gets the current list of allowd users.{Environment.NewLine}`;admin allowuser add <user>` Adds <user> to the list of allowd users. Accepts a user ping or plain text.{Environment.NewLine}`;admin allowuser remove <user>` Removes <user> from the list of allowed users. Accepts a user ping or plain text.{Environment.NewLine}`;admin allowuser clear` Clears the list of allowd users.");
+                            break;
+                        case "yellowchannel":
+                            await ReplyAsync(
+                                $"__;admin yellowchannel Commands:__{Environment.NewLine}*Manages the yellow alert channel.*{Environment.NewLine}`;admin yellowchannel get` Gets the current yellow alert channel.{Environment.NewLine}`;admin yellowchannel set <channel>` Sets the yellow alert channel to <channel>. Accepts a channel ping or plain text.{Environment.NewLine}`;admin yellowchannel clear` Resets the yellow alert channel to the current admin channel.");
+                            break;
+                        case "yellowrole":
+                            await ReplyAsync(
+                                $"__;admin yellowrole Commands:__{Environment.NewLine}*Manages the yellow alert role.*{Environment.NewLine}`;admin yellowrole get` Gets the current yellow alert role.{Environment.NewLine}`;admin yellowrole set <role>` Sets the yellow alert role to <role> and turns pinging on. Accepts a role ping or plain text.{Environment.NewLine}`;admin yellowrole clear` Resets the yellow alert role to no role and turns pinging off.");
+                            break;
+                        case "redchannel":
+                            await ReplyAsync(
+                                $"__;admin redchannel Commands:__{Environment.NewLine}*Manages the red alert channel.*{Environment.NewLine}`;admin redchannel get` Gets the current red alert channel.{Environment.NewLine}`;admin redchannel set <channel>` Sets the red alert channel to <channel>. Accepts a channel ping or plain text.{Environment.NewLine}`;admin redchannel clear` Resets the red alert channel to the current admin channel.");
+                            break;
+                        case "redrole":
+                            await ReplyAsync(
+                                $"__;admin redrole Commands:__{Environment.NewLine}*Manages the red alert role.*{Environment.NewLine}`;admin redrole get` Gets the current red alert role.{Environment.NewLine}`;admin redrole set <role>` Sets the red alert role to <role> and turns pinging on. Accepts a role ping or plain text.{Environment.NewLine}`;admin redrole clear` Resets the red alert channel to no role and turns pinging off.");
+                            break;
+                        case "reportchannel":
+                            await ReplyAsync(
+                                $"__;admin reportchannel Commands:__{Environment.NewLine}*Manages the report alert channel.*{Environment.NewLine}`;admin reportchannel get` Gets the current report alert channel.{Environment.NewLine}`;admin reportchannel set <channel>` Sets the report alert channel to <channel>. Accepts a channel ping or plain text.{Environment.NewLine}`;admin reportchannel clear` Resets the report alert channel to the current admin channel.");
+                            break;
+                        case "reportrole":
+                            await ReplyAsync(
+                                $"__;admin reportrole Commands:__{Environment.NewLine}*Manages the report alert role.*{Environment.NewLine}`;admin reportrole get` Gets the current report alert role.{Environment.NewLine}`;admin reportrole set <role>` Sets the report alert role to <role> and turns pinging on. Accepts a role ping or plain text.{Environment.NewLine}`;admin reportrole clear` Resets the report alert channel to no role and turns pinging off.");
+                            break;
+                        case "logchannel":
+                            await ReplyAsync(
+                                $"__;admin logchannel Commands:__{Environment.NewLine}*Manages the log post channel.*{Environment.NewLine}`;admin logchannel get` Gets the current log post channel.{Environment.NewLine}`;admin logchannel set <channel>` Sets the log post channel to <channel>. Accepts a channel ping or plain text.{Environment.NewLine}`;admin logchannel clear` Resets the log post channel to the current admin channel.");
                             break;
                         default:
                             await ReplyAsync("Invalid subcommand. Use `;help admin` for a list of available subcommands.");
@@ -111,6 +141,12 @@
                 case "origin":
                     await ReplyAsync($"`;origin`{Environment.NewLine}Posts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.");
                     break;
+                case "about":
+                    await ReplyAsync("`;about` Information about this bot.");
+                    break;
+                case "help":
+                    await ReplyAsync("<:sweetiegrump:642466824696627200>");
+                    break;
                 default:
                     await ReplyAsync("Invalid command. Use `;help` for a list of available commands.");
                     break;
@@ -119,9 +155,9 @@
 
         [Command("origin")]
         [Summary("Displays the origin of Cloudy Canvas")]
-        public async Task OriginAsync()
+        public async Task OriginCommandAsync()
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
@@ -129,6 +165,22 @@
 
             await _logger.Log("origin", Context);
             await ReplyAsync("Here is where I came from, thanks to RavenSunArt! <https://www.deviantart.com/ravensunart> https://imgur.com/a/RB16usb");
+        }
+
+        [Command("about")]
+        [Summary("Displays the origin of Cloudy Canvas")]
+        public async Task AboutCommandAsync()
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            {
+                return;
+            }
+
+            await _logger.Log("about", Context);
+            await ReplyAsync(
+                $"**__Cloudy Canvas__** <:ccwink:803340572383117372>{Environment.NewLine}Created April 5th, 2021{Environment.NewLine}A Discord bot for interfacing with the <:manebooru:803361798216482878> <https://manebooru.art/> imageboard.{Environment.NewLine}{Environment.NewLine}Written by Raymond Welch (<@221742476153716736>) in C# using Discord.net. Special thanks to Ember Heartshine for hosting and HenBasket for testing.{Environment.NewLine}{Environment.NewLine}**GitHub:** <https://github.com/romulus4444/Cloudy-Canvas>",
+                allowedMentions: AllowedMentions.None);
         }
     }
 }

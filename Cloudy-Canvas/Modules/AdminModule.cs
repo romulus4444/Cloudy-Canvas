@@ -14,17 +14,19 @@
     {
         private readonly LoggingService _logger;
         private readonly BooruService _booru;
+        private readonly AllPreloadedSettings _servers;
 
-        public AdminModule(LoggingService logger, BooruService booru)
+        public AdminModule(LoggingService logger, BooruService booru, AllPreloadedSettings servers)
         {
             _logger = logger;
             _booru = booru;
+            _servers = servers;
         }
 
         [Command("setup")]
         [Summary("Bot setup command")]
         [RequireUserPermission(GuildPermission.Administrator)]
-        public async Task SetupAsync(
+        public async Task SetupCommandAsync(
             int filterId,
             [Summary("Admin channel name")] string adminChannelName = "",
             [Remainder] [Summary("Admin role name")] string adminRoleName = "")
@@ -71,28 +73,27 @@
                 return;
             }
 
-            await ReplyAsync("Setting the other remaining settings to default values.");
+            await ReplyAsync("Setting the remaining admin settings to default values (all alerts will post to the admin channel, and no roles will be pinged)...");
             settings.redAlertChannel = settings.adminChannel;
-            settings.redAlertRole = settings.adminRole;
             settings.yellowAlertChannel = settings.adminChannel;
-            settings.yellowAlertRole = settings.adminRole;
             settings.logPostChannel = settings.adminChannel;
+            settings.reportChannel = settings.adminChannel;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
-            await ReplyAsync("Settings saved. Now building the spoiler list and redlist. This may take a few minutes to complete.");
-            await ReplyAsync("I'm all set! Type `;help admin` for a list of other admin setup commands.");
+            await ReplyAsync(
+                "Settings saved. Now building the spoiler list and redlist. Please wait until they are completed. This may take a few minutes, depending on how many tags are spoilered or hidden in the filter.");
+            await _booru.RefreshListsAsync(Context, settings);
+            await ReplyAsync("The lists have been built. I'm all set! Type `;help admin` for a list of other admin setup commands.");
             await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
-            await _booru.RefreshListsAsync(Context);
-            await ReplyAsync("The lists have been built.");
         }
 
         [Command("admin")]
         [Summary("Manages admin commands")]
-        public async Task AdminAsync(
+        public async Task AdminCommandAsync(
             [Summary("First subcommand")] string commandOne = "",
             [Summary("Second subcommand")] string commandTwo = "",
             [Remainder] [Summary("Third subcommand")] string commandThree = "")
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
@@ -112,11 +113,33 @@
                             await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
-                            await AdminChannelGetAsync();
+                            await AdminChannelGetAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "set":
-                            await AdminChannelSetAsync(commandThree);
+                            await AdminChannelSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "adminrole":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await AdminRoleGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await AdminRoleSetAsync(commandThree, settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         default:
@@ -134,15 +157,15 @@
                             await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
-                            await IgnoreChannelGetAsync();
+                            await IgnoreChannelGetAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "add":
-                            await IgnoreChannelAddAsync(commandThree);
+                            await IgnoreChannelAddAsync(commandThree, settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "remove":
-                            await IgnoreChannelRemoveAsync(commandThree);
+                            await IgnoreChannelRemoveAsync(commandThree, settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
@@ -166,15 +189,15 @@
                             await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
-                            await IgnoreRoleGetAsync();
+                            await IgnoreRoleGetAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "add":
-                            await IgnoreRoleAddAsync(commandThree);
+                            await IgnoreRoleAddAsync(commandThree, settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "remove":
-                            await IgnoreRoleRemoveAsync(commandThree);
+                            await IgnoreRoleRemoveAsync(commandThree, settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
@@ -198,15 +221,15 @@
                             await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
-                            await AllowUserGetAsync();
+                            await AllowUserGetAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "add":
-                            await AllowUserAddAsync(commandThree);
+                            await AllowUserAddAsync(commandThree, settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "remove":
-                            await AllowUserRemoveAsync(commandThree);
+                            await AllowUserRemoveAsync(commandThree, settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
@@ -222,7 +245,7 @@
                     }
 
                     break;
-                case "adminrole":
+                case "yellowchannel":
                     switch (commandTwo)
                     {
                         case "":
@@ -230,11 +253,171 @@
                             await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
-                            await AdminRoleGetAsync();
+                            await YellowChannelGetAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "set":
-                            await AdminRoleSetAsync(commandThree);
+                            await YellowChannelSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await YellowChannelClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "yellowrole":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await YellowRoleGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await YellowRoleSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await YellowRoleClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "redchannel":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await RedChannelGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await RedChannelSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await RedChannelClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "redrole":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await RedRoleGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await RedRoleSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await RedRoleClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "reportchannel":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await ReportChannelGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await ReportChannelSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await ReportChannelClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "reportrole":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await ReportRoleGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await ReportRoleSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await ReportRoleClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "logchannel":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await LogChannelGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await LogChannelSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await LogChannelClearAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         default:
@@ -253,9 +436,9 @@
 
         [Command("echo")]
         [Summary("Posts a message to a specified channel")]
-        public async Task EchoAsync([Summary("The channel to send to")] string channelName = "", [Remainder] [Summary("The message to send")] string message = "")
+        public async Task EchoCommandAsync([Summary("The channel to send to")] string channelName = "", [Remainder] [Summary("The message to send")] string message = "")
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
@@ -297,12 +480,74 @@
             await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context, true);
         }
 
-        private async Task AdminChannelSetAsync(string channelName)
+        [Command("setprefix")]
+        [Summary("Sets the bot listen prefix")]
+        public async Task SetPrefixCommandAsync([Summary("The prefix character")] char prefix = ';')
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
+            serverPresettings.prefix = prefix;
+            await ReplyAsync($"I will now listen for '{prefix}' on this server.");
+            _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+            await FileHelper.SaveAllPresettingsAsync(_servers);
+        }
+
+        [Command("listentobots")]
+        [Summary("Sets the bot listen prefix")]
+        public async Task ListenToBotsCommandAsync([Summary("yes or no")] string command = "")
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
+            switch (command.ToLower())
+            {
+                case "":
+                    var not = "";
+                    if (!serverPresettings.listenToBots)
+                    {
+                        not = " not";
+                    }
+
+                    await ReplyAsync($"Currently{not} listening to bots.");
+                    break;
+                case "y":
+                case "yes":
+                case "on":
+                case "true":
+                    await ReplyAsync("Now listening to bots.");
+                    serverPresettings.listenToBots = true;
+                    _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                    await FileHelper.SaveAllPresettingsAsync(_servers);
+                    break;
+                case "n":
+                case "no":
+                case "off":
+                case "false":
+                    await ReplyAsync("Not listening to bots.");
+                    serverPresettings.listenToBots = false;
+                    _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                    await FileHelper.SaveAllPresettingsAsync(_servers);
+                    break;
+                default:
+                    await ReplyAsync("Invalid command.");
+                    break;
+            }
+        }
+
+        private async Task AdminChannelSetAsync(string channelName, ServerSettings settings)
         {
             var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
             if (channelSetId > 0)
             {
-                var settings = await FileHelper.LoadServerSettings(Context);
                 settings.adminChannel = channelSetId;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Admin channel set to <#{channelSetId}>");
@@ -313,9 +558,8 @@
             }
         }
 
-        private async Task AdminChannelGetAsync()
+        private async Task AdminChannelGetAsync(ServerSettings settings)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
             if (settings.adminChannel > 0)
             {
                 await ReplyAsync($"Admin channel is <#{settings.adminChannel}>");
@@ -326,12 +570,11 @@
             }
         }
 
-        private async Task AdminRoleSetAsync(string roleName)
+        private async Task AdminRoleSetAsync(string roleName, ServerSettings settings)
         {
             var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
             if (roleSetId > 0)
             {
-                var settings = await FileHelper.LoadServerSettings(Context);
                 settings.adminRole = roleSetId;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Admin role set to <@&{roleSetId}>", allowedMentions: AllowedMentions.None);
@@ -342,9 +585,8 @@
             }
         }
 
-        private async Task AdminRoleGetAsync()
+        private async Task AdminRoleGetAsync(ServerSettings settings)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
             if (settings.adminRole > 0)
             {
                 await ReplyAsync($"Admin role is <@&{settings.adminRole}>", allowedMentions: AllowedMentions.None);
@@ -355,9 +597,148 @@
             }
         }
 
-        private async Task AllowUserRemoveAsync(string userName)
+        private async Task IgnoreChannelGetAsync(ServerSettings settings)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
+            if (settings.ignoredChannels.Count > 0)
+            {
+                var output = $"__Channel Ignore List:__{Environment.NewLine}";
+                foreach (var channel in settings.ignoredChannels)
+                {
+                    output += $"<#{channel}>{Environment.NewLine}";
+                }
+
+                await ReplyAsync(output);
+            }
+            else
+            {
+                await ReplyAsync("No channels on ignore list.");
+            }
+        }
+
+        private async Task IgnoreChannelRemoveAsync(string channelName, ServerSettings settings)
+        {
+            var channelRemoveId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelRemoveId > 0)
+            {
+                for (var x = settings.ignoredChannels.Count - 1; x > 0; x--)
+                {
+                    var channel = settings.ignoredChannels[x];
+                    if (channel != channelRemoveId)
+                    {
+                        continue;
+                    }
+
+                    settings.ignoredChannels.Remove(channel);
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
+                    await ReplyAsync($"Removed <#{channelRemoveId}> from ignore list.");
+                }
+
+                await ReplyAsync($"<#{channelRemoveId}> was not on the list.");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
+        private async Task IgnoreChannelAddAsync(string channelName, ServerSettings settings)
+        {
+            var channelAddId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelAddId > 0)
+            {
+                foreach (var channel in settings.ignoredChannels)
+                {
+                    if (channel != channelAddId)
+                    {
+                        continue;
+                    }
+
+                    await ReplyAsync($"<#{channelAddId}> is already on the list.");
+                    return;
+                }
+
+                settings.ignoredChannels.Add(channelAddId);
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Added <#{channelAddId}> to ignore list.");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
+        private async Task IgnoreRoleRemoveAsync(string roleName, ServerSettings settings)
+        {
+            var roleRemoveId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            if (roleRemoveId > 0)
+            {
+                for (var x = settings.ignoredRoles.Count - 1; x > 0; x--)
+                {
+                    var role = settings.ignoredRoles[x];
+                    if (role != roleRemoveId)
+                    {
+                        continue;
+                    }
+
+                    settings.ignoredRoles.Remove(role);
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
+                    await ReplyAsync($"Removed <@&{roleRemoveId}> from ignore list.", allowedMentions: AllowedMentions.None);
+                }
+
+                await ReplyAsync($"<@&{roleRemoveId}> was not on the list.", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name @{roleName}.", allowedMentions: AllowedMentions.None);
+            }
+        }
+
+        private async Task IgnoreRoleAddAsync(string roleName, ServerSettings settings)
+        {
+            var roleAddId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            if (roleAddId > 0)
+            {
+                foreach (var role in settings.ignoredRoles)
+                {
+                    if (role != roleAddId)
+                    {
+                        continue;
+                    }
+
+                    await ReplyAsync($"<@&{roleAddId}> is already on the list.", allowedMentions: AllowedMentions.None);
+                    return;
+                }
+
+                settings.ignoredRoles.Add(roleAddId);
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Added <@&{roleAddId}> to ignore list.", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync($"Invalid role name @{roleName}.", allowedMentions: AllowedMentions.None);
+            }
+        }
+
+        private async Task IgnoreRoleGetAsync(ServerSettings settings)
+        {
+            if (settings.ignoredRoles.Count > 0)
+            {
+                var output = $"__Role Ignore List:__{Environment.NewLine}";
+                foreach (var role in settings.ignoredRoles)
+                {
+                    output += $"<@&{role}>{Environment.NewLine}";
+                }
+
+                await ReplyAsync(output, allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync("No roles on ignore list.");
+            }
+        }
+
+        private async Task AllowUserRemoveAsync(string userName, ServerSettings settings)
+        {
             var userRemoveId = await DiscordHelper.GeUserIdFromPingOrIfOnlySearchResultAsync(userName, Context);
             if (userRemoveId > 0)
             {
@@ -383,9 +764,8 @@
             }
         }
 
-        private async Task AllowUserAddAsync(string userName)
+        private async Task AllowUserAddAsync(string userName, ServerSettings settings)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
             var userAddId = await DiscordHelper.GeUserIdFromPingOrIfOnlySearchResultAsync(userName, Context);
             if (userAddId > 0)
             {
@@ -410,9 +790,8 @@
             }
         }
 
-        private async Task AllowUserGetAsync()
+        private async Task AllowUserGetAsync(ServerSettings settings)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
             if (settings.allowedUsers.Count > 0)
             {
                 var output = $"__Allowed User List:__{Environment.NewLine}";
@@ -429,118 +808,21 @@
             }
         }
 
-        private async Task IgnoreRoleRemoveAsync(string roleName)
+        private async Task YellowChannelClearAsync(ServerSettings settings)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
-            var roleRemoveId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
-            if (roleRemoveId > 0)
-            {
-                for (var x = settings.ignoredRoles.Count - 1; x > 0; x--)
-                {
-                    var role = settings.ignoredRoles[x];
-                    if (role != roleRemoveId)
-                    {
-                        continue;
-                    }
-
-                    settings.ignoredRoles.Remove(role);
-                    await FileHelper.SaveServerSettingsAsync(settings, Context);
-                    await ReplyAsync($"Removed <@&{roleRemoveId}> from ignore list.", allowedMentions: AllowedMentions.None);
-                }
-
-                await ReplyAsync($"<@&{roleRemoveId}> was not on the list.", allowedMentions: AllowedMentions.None);
-            }
-            else
-            {
-                await ReplyAsync($"Invalid channel name @{roleName}.", allowedMentions: AllowedMentions.None);
-            }
+            settings.yellowAlertChannel = settings.adminChannel;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Yellow alert channel reset to the current admin channel, <#{settings.yellowAlertChannel}>");
         }
 
-        private async Task IgnoreRoleAddAsync(string roleName)
+        private async Task YellowChannelSetAsync(string channelName, ServerSettings settings)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
-            var roleAddId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
-            if (roleAddId > 0)
+            var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelSetId > 0)
             {
-                foreach (var role in settings.ignoredRoles)
-                {
-                    if (role != roleAddId)
-                    {
-                        continue;
-                    }
-
-                    await ReplyAsync($"<@&{roleAddId}> is already on the list.", allowedMentions: AllowedMentions.None);
-                    return;
-                }
-
-                settings.ignoredRoles.Add(roleAddId);
+                settings.yellowAlertChannel = channelSetId;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
-                await ReplyAsync($"Added <@&{roleAddId}> to ignore list.", allowedMentions: AllowedMentions.None);
-            }
-            else
-            {
-                await ReplyAsync($"Invalid role name @{roleName}.", allowedMentions: AllowedMentions.None);
-            }
-        }
-
-        private async Task IgnoreRoleGetAsync()
-        {
-            var settings = await FileHelper.LoadServerSettings(Context);
-            if (settings.ignoredRoles.Count > 0)
-            {
-                var output = $"__Role Ignore List:__{Environment.NewLine}";
-                foreach (var role in settings.ignoredRoles)
-                {
-                    output += $"<@&{role}>{Environment.NewLine}";
-                }
-
-                await ReplyAsync(output, allowedMentions: AllowedMentions.None);
-            }
-            else
-            {
-                await ReplyAsync("No roles on ignore list.");
-            }
-        }
-
-        private async Task IgnoreChannelGetAsync()
-        {
-            var settings = await FileHelper.LoadServerSettings(Context);
-            if (settings.ignoredChannels.Count > 0)
-            {
-                var output = $"__Channel Ignore List:__{Environment.NewLine}";
-                foreach (var channel in settings.ignoredChannels)
-                {
-                    output += $"<#{channel}>{Environment.NewLine}";
-                }
-
-                await ReplyAsync(output);
-            }
-            else
-            {
-                await ReplyAsync("No channels on ignore list.");
-            }
-        }
-
-        private async Task IgnoreChannelRemoveAsync(string channelName)
-        {
-            var settings = await FileHelper.LoadServerSettings(Context);
-            var channelRemoveId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
-            if (channelRemoveId > 0)
-            {
-                for (var x = settings.ignoredChannels.Count - 1; x > 0; x--)
-                {
-                    var channel = settings.ignoredChannels[x];
-                    if (channel != channelRemoveId)
-                    {
-                        continue;
-                    }
-
-                    settings.ignoredChannels.Remove(channel);
-                    await FileHelper.SaveServerSettingsAsync(settings, Context);
-                    await ReplyAsync($"Removed <#{channelRemoveId}> from ignore list.");
-                }
-
-                await ReplyAsync($"<#{channelRemoveId}> was not on the list.");
+                await ReplyAsync($"Yellow alert channel set to <#{channelSetId}>");
             }
             else
             {
@@ -548,30 +830,225 @@
             }
         }
 
-        private async Task IgnoreChannelAddAsync(string channelName)
+        private async Task YellowChannelGetAsync(ServerSettings settings)
         {
-            var settings = await FileHelper.LoadServerSettings(Context);
-            var channelAddId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
-            if (channelAddId > 0)
+            if (settings.yellowAlertChannel > 0)
             {
-                foreach (var channel in settings.ignoredChannels)
-                {
-                    if (channel != channelAddId)
-                    {
-                        continue;
-                    }
+                await ReplyAsync($"Yellow alerts are being posted in <#{settings.yellowAlertChannel}>");
+            }
+            else
+            {
+                await ReplyAsync("Yellow alert channel not set yet.");
+            }
+        }
 
-                    await ReplyAsync($"<#{channelAddId}> is already on the list.");
-                    return;
-                }
+        private async Task YellowRoleClearAsync(ServerSettings settings)
+        {
+            settings.yellowAlertRole = 0;
+            settings.yellowPing = false;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Yellow alerts will not ping anyone now in <#{settings.yellowAlertChannel}>");
+        }
 
-                settings.ignoredChannels.Add(channelAddId);
+        private async Task YellowRoleSetAsync(string roleName, ServerSettings settings)
+        {
+            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            if (roleSetId > 0)
+            {
+                settings.yellowAlertRole = roleSetId;
+                settings.yellowPing = true;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
-                await ReplyAsync($"Added <#{channelAddId}> to ignore list.");
+                await ReplyAsync($"Yellow alerts will now ping <@&{settings.yellowAlertRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync($"Invalid role name #{roleName}.");
+            }
+        }
+
+        private async Task YellowRoleGetAsync(ServerSettings settings)
+        {
+            if (settings.yellowAlertRole > 0)
+            {
+                await ReplyAsync($"Yellow alerts will ping <@&{settings.yellowAlertRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync("Yellow alert role not set yet.");
+            }
+        }
+
+        private async Task RedChannelClearAsync(ServerSettings settings)
+        {
+            settings.redAlertChannel = settings.adminChannel;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Red alert channel reset to the current admin channel, <#{settings.redAlertChannel}>");
+        }
+
+        private async Task RedChannelSetAsync(string channelName, ServerSettings settings)
+        {
+            var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelSetId > 0)
+            {
+                settings.redAlertChannel = channelSetId;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Red alert channel set to <#{channelSetId}>");
             }
             else
             {
                 await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
+        private async Task RedChannelGetAsync(ServerSettings settings)
+        {
+            if (settings.redAlertChannel > 0)
+            {
+                await ReplyAsync($"Red alerts are being posted in <#{settings.redAlertChannel}>");
+            }
+            else
+            {
+                await ReplyAsync("Red alert channel not set yet.");
+            }
+        }
+
+        private async Task RedRoleClearAsync(ServerSettings settings)
+        {
+            settings.redAlertRole = 0;
+            settings.redPing = false;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Red alerts will not ping anyone now in <#{settings.redAlertChannel}>");
+        }
+
+        private async Task RedRoleSetAsync(string roleName, ServerSettings settings)
+        {
+            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            if (roleSetId > 0)
+            {
+                settings.redAlertRole = roleSetId;
+                settings.redPing = true;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Red alerts will now ping <@&{settings.redAlertRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync($"Invalid role name #{roleName}.");
+            }
+        }
+
+        private async Task RedRoleGetAsync(ServerSettings settings)
+        {
+            if (settings.redAlertRole > 0)
+            {
+                await ReplyAsync($"Red alerts will ping <@&{settings.redAlertRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync("Red alert role not set yet.");
+            }
+        }
+
+        private async Task ReportChannelClearAsync(ServerSettings settings)
+        {
+            settings.reportChannel = settings.adminChannel;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Report alert channel reset to the current admin channel, <#{settings.reportChannel}>");
+        }
+
+        private async Task ReportChannelSetAsync(string channelName, ServerSettings settings)
+        {
+            var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelSetId > 0)
+            {
+                settings.reportChannel = channelSetId;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Report alert channel set to <#{channelSetId}>");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
+        private async Task ReportChannelGetAsync(ServerSettings settings)
+        {
+            if (settings.reportChannel > 0)
+            {
+                await ReplyAsync($"Report alerts are being posted in <#{settings.reportChannel}>");
+            }
+            else
+            {
+                await ReplyAsync("Report alert channel not set yet.");
+            }
+        }
+
+        private async Task ReportRoleClearAsync(ServerSettings settings)
+        {
+            settings.reportRole = 0;
+            settings.reportPing = false;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Report alerts will not ping anyone now in <#{settings.reportChannel}>");
+        }
+
+        private async Task ReportRoleSetAsync(string roleName, ServerSettings settings)
+        {
+            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            if (roleSetId > 0)
+            {
+                settings.reportRole = roleSetId;
+                settings.reportPing = true;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Report alerts will now ping <@&{settings.reportRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync($"Invalid role name #{roleName}.");
+            }
+        }
+
+        private async Task ReportRoleGetAsync(ServerSettings settings)
+        {
+            if (settings.reportRole > 0)
+            {
+                await ReplyAsync($"Report alerts will ping <@&{settings.reportRole}>", allowedMentions: AllowedMentions.None);
+            }
+            else
+            {
+                await ReplyAsync("Report alert role not set yet.");
+            }
+        }
+
+        private async Task LogChannelClearAsync(ServerSettings settings)
+        {
+            settings.logPostChannel = settings.adminChannel;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Report alert channel reset to the current admin channel, <#{settings.logPostChannel}>");
+        }
+
+        private async Task LogChannelSetAsync(string channelName, ServerSettings settings)
+        {
+            var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelSetId > 0)
+            {
+                settings.logPostChannel = channelSetId;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Retrieved logs will be sent to <#{channelSetId}>");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
+        private async Task LogChannelGetAsync(ServerSettings settings)
+        {
+            if (settings.logPostChannel > 0)
+            {
+                await ReplyAsync($"Logs are being posted in <#{settings.logPostChannel}>");
+            }
+            else
+            {
+                await ReplyAsync("Log posting channel not set yet.");
             }
         }
 
@@ -587,9 +1064,9 @@
 
             [Command("yellowlist")]
             [Summary("Manages the search term yellowlist")]
-            public async Task YellowListAsync([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
+            public async Task YellowListCommandAsync([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
             {
-                var settings = await FileHelper.LoadServerSettings(Context);
+                var settings = await FileHelper.LoadServerSettingsAsync(Context);
                 if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
                 {
                     return;
@@ -672,11 +1149,11 @@
 
             [Command("log")]
             [Summary("Retrieves a log file")]
-            public async Task LogAsync(
+            public async Task LogCommandAsync(
                 [Summary("The channel to get the log from")] string channel = "",
                 [Summary("The date (in format (YYYY-MM-DD) to get the log from")] string date = "")
             {
-                var settings = await FileHelper.LoadServerSettings(Context);
+                var settings = await FileHelper.LoadServerSettingsAsync(Context);
                 if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
                 {
                     return;
@@ -709,7 +1186,7 @@
 
             private async Task<string> LogGetAsync(string channelName, string date, SocketCommandContext context)
             {
-                var settings = await FileHelper.LoadServerSettings(Context);
+                var settings = await FileHelper.LoadServerSettingsAsync(Context);
                 await ReplyAsync($"Retrieving log from {channelName} on {date}...");
                 var confirmedName = DiscordHelper.ConvertChannelPingToName(channelName, context);
                 if (confirmedName.Contains("<ERROR>"))

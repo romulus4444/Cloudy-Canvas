@@ -1,5 +1,7 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
@@ -8,8 +10,6 @@
 
     public static class DiscordHelper
     {
-        private static readonly ulong CloudyCanvasId = DevSettings.CloudyCanvasId;
-
         public static async Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
         {
             var id = ConvertChannelPingToId(channelName);
@@ -88,25 +88,6 @@
             return true;
         }
 
-        public static async Task PostToAdminChannelAsync(string message, SocketCommandContext context, bool ping = false)
-        {
-            var settings = await FileHelper.LoadServerSettings(context);
-            if (settings.adminChannel <= 0)
-            {
-                return;
-            }
-
-            var adminChannel = context.Guild.GetTextChannel(settings.adminChannel);
-            if (ping)
-            {
-                await adminChannel.SendMessageAsync(message);
-            }
-            else
-            {
-                await adminChannel.SendMessageAsync(message, allowedMentions: AllowedMentions.None);
-            }
-        }
-
         public static async Task<ulong> GeUserIdFromPingOrIfOnlySearchResultAsync(string userName, SocketCommandContext context)
         {
             var userId = ConvertUserPingToId(userName);
@@ -121,7 +102,7 @@
 
         private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
         {
-            var cloudyCanvas = await context.Channel.GetUserAsync(CloudyCanvasId);
+            var cloudyCanvas = await context.Channel.GetUserAsync(context.Client.CurrentUser.Id);
             if (context.IsPrivate)
             {
                 return 0;
@@ -140,7 +121,7 @@
 
         private static async Task<ulong> CheckIfChannelExistsAsync(ulong channelId, SocketCommandContext context)
         {
-            var cloudyCanvas = await context.Channel.GetUserAsync(CloudyCanvasId);
+            var cloudyCanvas = await context.Channel.GetUserAsync(context.Client.CurrentUser.Id);
             if (context.IsPrivate)
             {
                 return 0;
@@ -227,6 +208,19 @@
             var frontTrim = rolePing.Substring(3);
             var trim = frontTrim.Split('>', 2)[0];
             return ulong.Parse(trim);
+        }
+
+        public static string[] CheckAliasesAsync(string message, ServerSettings settings)
+        {
+            foreach (var (alias, replacement) in settings.aliases)
+            {
+                if (message.Contains(alias))
+                {
+                    message = message.Replace(alias, replacement);
+                }
+            }
+
+            return message.Split(" ");
         }
     }
 }
