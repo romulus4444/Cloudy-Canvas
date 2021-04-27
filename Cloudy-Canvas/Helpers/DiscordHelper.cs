@@ -88,25 +88,6 @@
             return true;
         }
 
-        public static async Task PostToAdminChannelAsync(string message, SocketCommandContext context, bool ping = false)
-        {
-            var settings = await FileHelper.LoadServerSettings(context);
-            if (settings.adminChannel <= 0)
-            {
-                return;
-            }
-
-            var adminChannel = context.Guild.GetTextChannel(settings.adminChannel);
-            if (ping)
-            {
-                await adminChannel.SendMessageAsync(message);
-            }
-            else
-            {
-                await adminChannel.SendMessageAsync(message, allowedMentions: AllowedMentions.None);
-            }
-        }
-
         public static async Task<ulong> GeUserIdFromPingOrIfOnlySearchResultAsync(string userName, SocketCommandContext context)
         {
             var userId = ConvertUserPingToId(userName);

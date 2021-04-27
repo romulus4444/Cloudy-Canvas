@@ -151,10 +151,10 @@
             return (returnResult);
         }
 
-        public async Task RefreshListsAsync(SocketCommandContext context)
+        public async Task RefreshListsAsync(SocketCommandContext context, ServerSettings settings)
         {
-            await GetSpoilerTagsAsync(context);
-            await GetHiddenTagsAsync(context);
+            await GetSpoilerTagsAsync(context, settings);
+            await GetHiddenTagsAsync(context, settings);
         }
 
         private static List<string> CheckSpoilerList(List<object> tagIds, ServerSettings settings)
@@ -186,10 +186,9 @@
             return output;
         }
 
-        private async Task GetSpoilerTagsAsync(SocketCommandContext context)
+        private async Task GetSpoilerTagsAsync(SocketCommandContext context, ServerSettings settings)
         {
             //GET	/api/v1/json/filters/user
-            var settings = await FileHelper.LoadServerSettings(context);
             var results = await _settings.url
                 .AppendPathSegments($"/api/v1/json/filters/{settings.filterId}")
                 .GetAsync()
@@ -207,10 +206,9 @@
             await FileHelper.SaveServerSettingsAsync(settings, context);
         }
 
-        private async Task GetHiddenTagsAsync(SocketCommandContext context)
+        private async Task GetHiddenTagsAsync(SocketCommandContext context, ServerSettings settings)
         {
             //GET	/api/v1/json/filters/user
-            var settings = await FileHelper.LoadServerSettings(context);
             var hiddenTagResults = await _settings.url
                 .AppendPathSegments($"/api/v1/json/filters/{settings.filterId}")
                 .GetAsync()
