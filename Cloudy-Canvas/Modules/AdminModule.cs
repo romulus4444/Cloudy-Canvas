@@ -399,6 +399,32 @@
                     }
 
                     break;
+                case "logchannel":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await LogChannelGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await LogChannelSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            await LogChannelClearAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
                 default:
                     await ReplyAsync($"Invalid command `{commandOne}`");
                     await _logger.Log($"admin: {commandOne} <FAIL>", Context);
@@ -924,6 +950,40 @@
             else
             {
                 await ReplyAsync("Report alert role not set yet.");
+            }
+        }
+
+        private async Task LogChannelClearAsync(ServerSettings settings)
+        {
+            settings.logPostChannel = settings.adminChannel;
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync($"Report alert channel reset to the current admin channel, <#{settings.logPostChannel}>");
+        }
+
+        private async Task LogChannelSetAsync(string channelName, ServerSettings settings)
+        {
+            var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelSetId > 0)
+            {
+                settings.logPostChannel = channelSetId;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Retrieved logs will be sent to <#{channelSetId}>");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
+        private async Task LogChannelGetAsync(ServerSettings settings)
+        {
+            if (settings.logPostChannel > 0)
+            {
+                await ReplyAsync($"Logs are being posted in <#{settings.logPostChannel}>");
+            }
+            else
+            {
+                await ReplyAsync("Log posting channel not set yet.");
             }
         }
 
