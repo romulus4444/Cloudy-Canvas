@@ -125,7 +125,7 @@
             {
                 allPresettings = allPresettingsInput;
             }
-            
+
             var settings = new ServerPreloadedSettings();
             var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
             if (allPresettings.settings.ContainsKey(serverId))
@@ -141,23 +141,7 @@
             return settings;
         }
 
-        public static async Task SaveServerPresettingsAsync(SocketCommandContext context, ServerPreloadedSettings serverPresettings)
-        {
-            var allPresettings = await LoadAllPresettingsAsync();
-            var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
-            if (allPresettings.settings.ContainsKey(serverId))
-            {
-                allPresettings.settings[serverId] = serverPresettings;
-            }
-            else
-            {
-                allPresettings.settings.Add(serverId, serverPresettings);
-            }
-
-            await SaveAllPresettingsAsync(allPresettings);
-        }
-
-        private static async Task SaveAllPresettingsAsync(AllPreloadedSettings settings)
+        public static async Task SaveAllPresettingsAsync(AllPreloadedSettings settings)
         {
             var filepath = SetUpFilepath(FilePathType.Root, "preloadedsettings", "conf");
             var fileContents = JsonConvert.SerializeObject(settings, Formatting.Indented);

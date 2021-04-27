@@ -14,11 +14,13 @@
     {
         private readonly LoggingService _logger;
         private readonly BooruService _booru;
+        private readonly AllPreloadedSettings _servers;
 
-        public AdminModule(LoggingService logger, BooruService booru)
+        public AdminModule(LoggingService logger, BooruService booru, AllPreloadedSettings servers)
         {
             _logger = logger;
             _booru = booru;
+            _servers = servers;
         }
 
         [Command("setup")]
@@ -483,15 +485,62 @@
         public async Task SetPrefixCommandAsync([Summary("The prefix character")] char prefix = ';')
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
             if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
 
+            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
             serverPresettings.prefix = prefix;
             await ReplyAsync($"I will now listen for '{prefix}' on this server.");
-            await FileHelper.SaveServerPresettingsAsync(Context, serverPresettings);
+            _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+            await FileHelper.SaveAllPresettingsAsync(_servers);
+        }
+
+        [Command("listentobots")]
+        [Summary("Sets the bot listen prefix")]
+        public async Task ListenToBotsCommandAsync([Summary("yes or no")] string command = "")
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
+            switch (command.ToLower())
+            {
+                case "":
+                    var not = "";
+                    if (!serverPresettings.listenToBots)
+                    {
+                        not = " not";
+                    }
+
+                    await ReplyAsync($"Currently{not} listening to bots.");
+                    break;
+                case "y":
+                case "yes":
+                case "on":
+                case "true":
+                    await ReplyAsync("Now listening to bots.");
+                    serverPresettings.listenToBots = true;
+                    _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                    await FileHelper.SaveAllPresettingsAsync(_servers);
+                    break;
+                case "n":
+                case "no":
+                case "off":
+                case "false":
+                    await ReplyAsync("Not listening to bots.");
+                    serverPresettings.listenToBots = false;
+                    _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                    await FileHelper.SaveAllPresettingsAsync(_servers);
+                    break;
+                default:
+                    await ReplyAsync("Invalid command.");
+                    break;
+            }
         }
 
         private async Task AdminChannelSetAsync(string channelName, ServerSettings settings)

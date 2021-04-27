@@ -1,12 +1,9 @@
 namespace Cloudy_Canvas
 {
     using System;
-    using System.IO;
-    using System.Net;
     using System.Reflection;
     using System.Threading;
     using System.Threading.Tasks;
-    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Settings;
     using Discord;
     using Discord.Commands;
@@ -15,7 +12,6 @@ namespace Cloudy_Canvas
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
-    using Newtonsoft.Json;
 
     public class Worker : BackgroundService
     {
@@ -23,15 +19,16 @@ namespace Cloudy_Canvas
         private readonly IServiceCollection _services;
         private readonly DiscordSettings _settings;
         private readonly CommandService _commands;
+        private readonly AllPreloadedSettings _servers;
         private DiscordSocketClient _client;
-        private AllPreloadedSettings servers;
 
-        public Worker(ILogger<Worker> logger, IServiceCollection services, IOptions<DiscordSettings> settings)
+        public Worker(ILogger<Worker> logger, IServiceCollection services, IOptions<DiscordSettings> settings, AllPreloadedSettings servers)
         {
             _logger = logger;
             _commands = new CommandService();
             _settings = settings.Value;
             _services = services;
+            _servers = servers;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -42,7 +39,6 @@ namespace Cloudy_Canvas
                 _client.Log += Log;
                 await _client.LoginAsync(TokenType.Bot,
                     _settings.token);
-                servers = await FileHelper.LoadAllPresettingsAsync();
 
                 await _client.StartAsync();
                 await _client.SetGameAsync("with my paintbrush");
@@ -75,19 +71,22 @@ namespace Cloudy_Canvas
             var message = messageParam as SocketUserMessage;
             var argPos = 0;
             var context = new SocketCommandContext(_client, message);
-            var settings = await FileHelper.LoadServerPresettingsAsync(context, servers);
-
+            var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
+            var settings = _servers.settings[serverId];
             if (DevSettings.useDevPrefix)
             {
                 settings.prefix = DevSettings.prefix;
             }
 
-            if (!(message.HasCharPrefix(settings.prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos) || !settings.listenToBots))
+            if (message.HasCharPrefix(settings.prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
-                return;
+                if (!(settings.listenToBots) && message.Author.IsBot)
+                {
+                    return;
+                }
+
+                await _commands.ExecuteAsync(context, argPos, _services.BuildServiceProvider());
             }
-            
-            await _commands.ExecuteAsync(context, argPos, _services.BuildServiceProvider());
         }
 
         private Task Log(LogMessage msg)
