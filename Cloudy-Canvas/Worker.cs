@@ -73,7 +73,6 @@ namespace Cloudy_Canvas
             var argPos = 0;
             var context = new SocketCommandContext(_client, message);
             var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
-            //var settings = _servers.settings[serverId];
             var settings = await FileHelper.LoadServerPresettingsAsync(context, _servers);
             if (DevSettings.useDevPrefix)
             {

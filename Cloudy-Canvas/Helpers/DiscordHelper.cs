@@ -1,5 +1,7 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
+    using System;
+    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
@@ -206,6 +208,19 @@
             var frontTrim = rolePing.Substring(3);
             var trim = frontTrim.Split('>', 2)[0];
             return ulong.Parse(trim);
+        }
+
+        public static string[] CheckAliasesAsync(string message, ServerSettings settings)
+        {
+            foreach (var (alias, replacement) in settings.aliases)
+            {
+                if (message.Contains(alias))
+                {
+                    message = message.Replace(alias, replacement);
+                }
+            }
+
+            return message.Split(" ");
         }
     }
 }

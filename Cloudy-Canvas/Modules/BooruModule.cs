@@ -23,7 +23,7 @@
 
         [Command("pick")]
         [Summary("Selects an image at random")]
-        public async Task PickComandAsync([Remainder] [Summary("Query string")] string query = "*")
+        public async Task PickCommandAsync([Remainder] [Summary("Query string")] string query = "*")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
