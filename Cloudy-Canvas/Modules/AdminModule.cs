@@ -79,7 +79,7 @@
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync(
                 "Settings saved. Now building the spoiler list and redlist. Please wait until they are completed. This may take a few minutes, depending on how many tags are spoilered or hidden in the filter.");
-            await _booru.RefreshListsAsync(Context);
+            await _booru.RefreshListsAsync(Context, settings);
             await ReplyAsync("The lists have been built. I'm all set! Type `;help admin` for a list of other admin setup commands.");
             await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
         }
