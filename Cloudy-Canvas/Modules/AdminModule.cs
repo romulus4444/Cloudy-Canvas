@@ -33,6 +33,13 @@
         {
             var settings = new ServerSettings();
             ulong channelSetId;
+            var checkedFilterId = await _booru.CheckFilterAsync(filterId);
+            if (checkedFilterId == 0)
+            {
+                await ReplyAsync("I could not find that filter; please make sure it exists and is set to public. You may change the filter later with `;admin filter set <filterId>`. Continuing setup with my default filter of 175.");
+                filterId = 175;
+            }
+
             settings.filterId = filterId;
             await ReplyAsync($"Using <https://manebooru.art/filters/{filterId}>");
             await ReplyAsync("Moving in to my new place...");
@@ -55,7 +62,7 @@
             else
             {
                 await ReplyAsync($"I couldn't find a place called #{adminChannelName}.");
-                await _logger.Log($"setup: channel {adminChannelName} <FAIL>, role {adminRoleName} NOT CHECKED", Context);
+                await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <FAIL>, role {adminRoleName} <NOT CHECKED>", Context);
                 return;
             }
 
@@ -69,7 +76,7 @@
             else
             {
                 await ReplyAsync($"I couldn't find @{adminRoleName}.");
-                await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL>", Context, true);
+                await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL>", Context, true);
                 return;
             }
 
@@ -104,6 +111,28 @@
                 case "":
                     await ReplyAsync("You need to specify an admin command.");
                     await _logger.Log("admin: <FAIL>", Context);
+                    break;
+                case "filter":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await FilterGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await FilterSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
                     break;
                 case "adminchannel":
                     switch (commandTwo)
@@ -603,6 +632,28 @@
         public async Task InvalidCommandAsync()
         {
             await ReplyAsync("I don't know that command.");
+        }
+
+        private async Task FilterSetAsync(string filter, ServerSettings settings)
+        {
+            var filterId = await _booru.CheckFilterAsync(int.Parse(filter));
+            if (filterId > 0)
+            {
+                settings.filterId = filterId;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Filter set to {filterId}. Please wait while the spoiler list and redlist are rebuilt.");
+                await _booru.RefreshListsAsync(Context, settings);
+                await ReplyAsync($"The lists have been refreshed for Filter {filterId}");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid filter {filter}. Make sure the requested filter exists and is set to public");
+            }
+        }
+
+        private async Task FilterGetAsync(ServerSettings settings)
+        {
+            await ReplyAsync($"The current filter is <https://manebooru.art/filters/{settings.filterId}>");
         }
 
         private async Task AdminChannelSetAsync(string channelName, ServerSettings settings)
