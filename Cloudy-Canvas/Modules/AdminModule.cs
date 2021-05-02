@@ -543,6 +543,68 @@
             }
         }
 
+        [Command("alias")]
+        [Summary("Sets an alias")]
+        public async Task SetAliasCommandAsync(string shortForm = "", [Remainder] string longForm = "")
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
+            if (shortForm == "")
+            {
+                var output = $"__Current aliases:__{Environment.NewLine}";
+                foreach (var (shortFormA, longFormA) in serverPresettings.aliases)
+                {
+                    output += $"`{shortFormA}`: `{longFormA}`{Environment.NewLine}";
+                }
+
+                await ReplyAsync(output);
+                return;
+            }
+
+            if (longForm == "")
+            {
+                serverPresettings.aliases.Remove(shortForm);
+                _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                await FileHelper.SaveAllPresettingsAsync(_servers);
+                await ReplyAsync($"`{shortForm}` alias cleared.");
+                return;
+            }
+
+            if (serverPresettings.aliases.ContainsKey(shortForm))
+            {
+                serverPresettings.aliases[shortForm] = longForm;
+                _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                await FileHelper.SaveAllPresettingsAsync(_servers);
+                await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`, replacing what was there before.");
+            }
+            else
+            {
+                serverPresettings.aliases.Add(shortForm, longForm);
+                _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                await FileHelper.SaveAllPresettingsAsync(_servers);
+                await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`");
+            }
+        }
+
+        [Command("<blank message>")]
+        [Summary("Runs on a blank message")]
+        public async Task BlankMessageCommandAsync()
+        {
+            await ReplyAsync("Did you need something?");
+        }
+
+        [Command("<invalid command>")]
+        [Summary("Runs on an invalid command")]
+        public async Task InvalidCommandAsync()
+        {
+            await ReplyAsync("I don't know that command.");
+        }
+
         private async Task AdminChannelSetAsync(string channelName, ServerSettings settings)
         {
             var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
