@@ -70,7 +70,7 @@ Manages the active filter.
 
 `;admin filter get` Gets the current active filter.
 
-`;admin filter set <filter ID>` Sets the active filter to `<Filter ID>`. Validates that the filter is useable by the bot.
+`;admin filter set <filter ID>` Sets the active filter to `<Filter ID>`. Validates that the filter is useable by the bot. The spoiler list and redlist are rebuilt after the new filter is set.
  
  ---
  
