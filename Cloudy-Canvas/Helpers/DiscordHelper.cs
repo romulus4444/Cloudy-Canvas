@@ -1,11 +1,8 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
-    using System;
-    using System.Collections.Generic;
     using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
-    using Discord;
     using Discord.Commands;
 
     public static class DiscordHelper
@@ -98,6 +95,20 @@
 
             var userList = await context.Guild.SearchUsersAsync(userName);
             return userList.Count != 1 ? 0 : userList.First().Id;
+        }
+
+        public static string CheckAliasesAsync(string message, ServerPreloadedSettings settings)
+        {
+            var parsedMessage = message;
+            foreach (var (shortForm, longForm) in settings.aliases)
+            {
+                if (message.Contains(settings.prefix + shortForm))
+                {
+                    parsedMessage = message.Replace(shortForm, longForm);
+                }
+            }
+
+            return parsedMessage.Substring(1).TrimStart();
         }
 
         private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
@@ -208,19 +219,6 @@
             var frontTrim = rolePing.Substring(3);
             var trim = frontTrim.Split('>', 2)[0];
             return ulong.Parse(trim);
-        }
-
-        public static string[] CheckAliasesAsync(string message, ServerSettings settings)
-        {
-            foreach (var (alias, replacement) in settings.aliases)
-            {
-                if (message.Contains(alias))
-                {
-                    message = message.Replace(alias, replacement);
-                }
-            }
-
-            return message.Split(" ");
         }
     }
 }

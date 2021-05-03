@@ -33,6 +33,13 @@
         {
             var settings = new ServerSettings();
             ulong channelSetId;
+            var checkedFilterId = await _booru.CheckFilterAsync(filterId);
+            if (checkedFilterId == 0)
+            {
+                await ReplyAsync("I could not find that filter; please make sure it exists and is set to public. You may change the filter later with `;admin filter set <filterId>`. Continuing setup with my default filter of 175.");
+                filterId = 175;
+            }
+
             settings.filterId = filterId;
             await ReplyAsync($"Using <https://manebooru.art/filters/{filterId}>");
             await ReplyAsync("Moving in to my new place...");
@@ -55,7 +62,7 @@
             else
             {
                 await ReplyAsync($"I couldn't find a place called #{adminChannelName}.");
-                await _logger.Log($"setup: channel {adminChannelName} <FAIL>, role {adminRoleName} NOT CHECKED", Context);
+                await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <FAIL>, role {adminRoleName} <NOT CHECKED>", Context);
                 return;
             }
 
@@ -69,7 +76,7 @@
             else
             {
                 await ReplyAsync($"I couldn't find @{adminRoleName}.");
-                await _logger.Log($"setup: channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL>", Context, true);
+                await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL>", Context, true);
                 return;
             }
 
@@ -104,6 +111,28 @@
                 case "":
                     await ReplyAsync("You need to specify an admin command.");
                     await _logger.Log("admin: <FAIL>", Context);
+                    break;
+                case "filter":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await FilterGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "set":
+                            await FilterSetAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
                     break;
                 case "adminchannel":
                     switch (commandTwo)
@@ -541,6 +570,131 @@
                     await ReplyAsync("Invalid command.");
                     break;
             }
+        }
+
+        [Command("alias")]
+        [Summary("Sets an alias")]
+        public async Task AliasCommandAsync(string shortForm = "", [Remainder] string longForm = "")
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
+            if (shortForm == "")
+            {
+                var output = $"__Current aliases:__{Environment.NewLine}";
+                foreach (var (shortFormA, longFormA) in serverPresettings.aliases)
+                {
+                    output += $"`{shortFormA}`: `{longFormA}`{Environment.NewLine}";
+                }
+
+                await ReplyAsync(output);
+                return;
+            }
+
+            if (longForm == "")
+            {
+                serverPresettings.aliases.Remove(shortForm);
+                _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                await FileHelper.SaveAllPresettingsAsync(_servers);
+                await ReplyAsync($"`{shortForm}` alias cleared.");
+                return;
+            }
+
+            if (serverPresettings.aliases.ContainsKey(shortForm))
+            {
+                serverPresettings.aliases[shortForm] = longForm;
+                _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                await FileHelper.SaveAllPresettingsAsync(_servers);
+                await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`, replacing what was there before.");
+            }
+            else
+            {
+                serverPresettings.aliases.Add(shortForm, longForm);
+                _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                await FileHelper.SaveAllPresettingsAsync(_servers);
+                await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`");
+            }
+        }
+
+        [Command("getsettings")]
+        [Summary("Posts the settings file to the log channel")]
+        public async Task GetSettingsCommandAsync()
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            if (Context.IsPrivate)
+            {
+                await ReplyAsync("Cannot get settings in a DM.");
+                return;
+            }
+
+            var errorMessage = await SettingsGetAsync(Context, settings);
+            if (errorMessage.Contains("<ERROR>"))
+            {
+                await ReplyAsync(errorMessage);
+                await _logger.Log($"getsettings: {errorMessage} <FAIL>", Context);
+                return;
+            }
+
+            await _logger.Log($"getsettings: <SUCCESS>", Context);
+        }
+
+        private async Task<string> SettingsGetAsync(SocketCommandContext context, ServerSettings settings)
+        {
+            await ReplyAsync("Retrieving settings file...");
+            var filepath = FileHelper.SetUpFilepath(FilePathType.Server, "settings", "conf", Context);
+            if (!File.Exists(filepath))
+            {
+                return "<ERROR> File does not exist";
+            }
+
+            var logPostChannel = context.Guild.GetTextChannel(settings.logPostChannel);
+            await logPostChannel.SendFileAsync(filepath, $"{context.Guild.Name}-settings.conf");
+            return "SUCCESS";
+        }
+
+        [Command("<blank message>")]
+        [Summary("Runs on a blank message")]
+        public async Task BlankMessageCommandAsync()
+        {
+            await ReplyAsync("Did you need something?");
+        }
+
+        [Command("<invalid command>")]
+        [Summary("Runs on an invalid command")]
+        public async Task InvalidCommandAsync()
+        {
+            await ReplyAsync("I don't know that command.");
+        }
+
+        private async Task FilterSetAsync(string filter, ServerSettings settings)
+        {
+            var filterId = await _booru.CheckFilterAsync(int.Parse(filter));
+            if (filterId > 0)
+            {
+                settings.filterId = filterId;
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Filter set to {filterId}. Please wait while the spoiler list and redlist are rebuilt.");
+                await _booru.RefreshListsAsync(Context, settings);
+                await ReplyAsync($"The lists have been refreshed for Filter {filterId}");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid filter {filter}. Make sure the requested filter exists and is set to public");
+            }
+        }
+
+        private async Task FilterGetAsync(ServerSettings settings)
+        {
+            await ReplyAsync($"The current filter is <https://manebooru.art/filters/{settings.filterId}>");
         }
 
         private async Task AdminChannelSetAsync(string channelName, ServerSettings settings)
@@ -1079,16 +1233,69 @@
                         await _logger.Log("yellowlist: <FAIL>", Context);
                         break;
                     case "add":
-                        var added = await BadlistHelper.AddYellowTerm(term, settings, Context);
-                        if (added)
+                        var (addList, failList) = await BadlistHelper.AddYellowTerm(term, settings, Context);
+                        if (failList.Count == 0)
                         {
-                            await ReplyAsync($"Added `{term}` to the yellowlist.");
-                            await _logger.Log($"yellowlist: add {term} <SUCCESS>", Context, true);
+                            var addOutput = "";
+                            for (var x = 0; x < addList.Count; x++)
+                            {
+                                var addedTerm = addList[x];
+                                addOutput += $"`{addedTerm}`";
+                                if (x < addList.Count - 2)
+                                {
+                                    addOutput += ", ";
+                                }
+
+                                if (x == addList.Count - 2)
+                                {
+                                    addOutput += ", and ";
+                                }
+                            }
+
+                            await ReplyAsync($"Added {addOutput} to the yellowlist.");
+                            await _logger.Log($"yellowlist: add {addOutput} <SUCCESS>", Context, true);
+                        }
+                        else if (addList.Count == 0)
+                        {
+                            await ReplyAsync("All terms entered are already on the yellowlist.");
+                            await _logger.Log($"yellowlist: add <FAIL> {term}", Context);
                         }
                         else
                         {
-                            await ReplyAsync($"`{term}` is already on the yellowlist.");
-                            await _logger.Log($"yellowlist: add {term} <FAIL>", Context);
+                            var failOutput = "";
+                            var addOutput = "";
+                            for (var x = 0; x < addList.Count; x++)
+                            {
+                                var addedTerm = addList[x];
+                                addOutput += $"`{addedTerm}`";
+                                if (x < addList.Count - 2)
+                                {
+                                    addOutput += ", ";
+                                }
+
+                                if (x == addList.Count - 2)
+                                {
+                                    addOutput += ", and ";
+                                }
+                            }
+
+                            for (var x = 0; x < failList.Count; x++)
+                            {
+                                var failedTerm = failList[x];
+                                failOutput += $"`{failedTerm}`";
+                                if (x < failList.Count - 2)
+                                {
+                                    failOutput += ", ";
+                                }
+
+                                if (x == failList.Count - 2)
+                                {
+                                    failOutput += ", and ";
+                                }
+                            }
+
+                            await ReplyAsync($"Added {addOutput} to the yellowlist, and the yellowlist already contained {failOutput}.");
+                            await _logger.Log($"yellowlist: add {addOutput} <FAIL> {failOutput}", Context);
                         }
 
                         break;
@@ -1159,6 +1366,12 @@
                     return;
                 }
 
+                if (Context.IsPrivate)
+                {
+                    await ReplyAsync("Cannot get logs in a DM.");
+                    return;
+                }
+
                 if (channel == "")
                 {
                     await ReplyAsync("You need to enter a channel and date.");
@@ -1173,7 +1386,7 @@
                     return;
                 }
 
-                var errorMessage = await LogGetAsync(channel, date, Context);
+                var errorMessage = await LogGetAsync(channel, date, Context, settings);
                 if (errorMessage.Contains("<ERROR>"))
                 {
                     await ReplyAsync(errorMessage);
@@ -1184,9 +1397,8 @@
                 await _logger.Log($"log: {channel} {date} <SUCCESS>", Context);
             }
 
-            private async Task<string> LogGetAsync(string channelName, string date, SocketCommandContext context)
+            private async Task<string> LogGetAsync(string channelName, string date, SocketCommandContext context, ServerSettings settings)
             {
-                var settings = await FileHelper.LoadServerSettingsAsync(Context);
                 await ReplyAsync($"Retrieving log from {channelName} on {date}...");
                 var confirmedName = DiscordHelper.ConvertChannelPingToName(channelName, context);
                 if (confirmedName.Contains("<ERROR>"))
@@ -1194,9 +1406,9 @@
                     return confirmedName;
                 }
 
-                if (settings.adminChannel <= 0)
+                if (settings.logPostChannel <= 0)
                 {
-                    return "<ERROR> Admin channel not set.";
+                    return "<ERROR> Log post channel not set.";
                 }
 
                 var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "log", context, confirmedName, date);

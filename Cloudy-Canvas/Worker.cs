@@ -70,6 +70,7 @@ namespace Cloudy_Canvas
         private async Task HandleCommandAsync(SocketMessage messageParam)
         {
             var message = messageParam as SocketUserMessage;
+            var newMessage = messageParam;
             var argPos = 0;
             var context = new SocketCommandContext(_client, message);
             var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
@@ -86,7 +87,30 @@ namespace Cloudy_Canvas
                     return;
                 }
 
-                await _commands.ExecuteAsync(context, argPos, _services.BuildServiceProvider());
+                var parsedMessage = DiscordHelper.CheckAliasesAsync(message.Content, settings);
+                if (parsedMessage == "")
+                {
+                    parsedMessage = "<blank message>";
+                }
+
+                var validCommand = false;
+                foreach (var command in _commands.Commands)
+                {
+                    if (command.Name != parsedMessage.Split(" ")[0])
+                    {
+                        continue;
+                    }
+
+                    validCommand = true;
+                    break;
+                }
+
+                if (!validCommand)
+                {
+                    parsedMessage = "<invalid command>";
+                }
+
+                await _commands.ExecuteAsync(context, parsedMessage, _services.BuildServiceProvider());
             }
         }
 
