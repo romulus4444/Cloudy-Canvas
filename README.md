@@ -90,7 +90,7 @@ Manages the admin role.
 
 ---
 
-Manages the list of channels to ignore commands from.
+Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.
 
 `;admin ignorechannel get` Gets the current list of ignored channels.
 
@@ -102,7 +102,7 @@ Manages the list of channels to ignore commands from.
  
  ---
 
-Manages the list of roles to ignore commands from.
+Manages the list of roles to ignore commands from. Cloudy will not respond to users that have any of these roles.
 
 `;admin ignorerole get` Gets the current list of ignored roles.
 
@@ -114,7 +114,7 @@ Manages the list of roles to ignore commands from.
  
  ---
 
-Manages the list of users to allow commands from.
+Manages the list of users to allow commands from. This overrides the ignorechannel and ignorerole restrictions!
 
 `;admin allowuser get` Gets the current list of allowed users.
 
