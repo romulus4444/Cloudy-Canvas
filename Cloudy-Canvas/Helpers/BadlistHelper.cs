@@ -1,5 +1,6 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
+    using System;
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
@@ -54,20 +55,36 @@
             return matchedTerms;
         }
 
-        public static async Task<bool> AddYellowTerm(string term, ServerSettings settings, SocketCommandContext context)
+        public static async Task<Tuple<List<string>, List<string>>> AddYellowTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
-            var lower = term.ToLower();
-            foreach (var yellow in settings.yellowList)
+            var termList = term.ToLower().Split(", ");
+            var failList = new List<string>();
+            var addList = new List<string>();
+            foreach (var singleTerm in termList)
             {
-                if (yellow == lower)
+                var failed = false;
+                foreach (var yellow in settings.yellowList)
                 {
-                    return false;
+                    if (yellow != singleTerm)
+                    {
+                        continue;
+                    }
+                    failList.Add(singleTerm);
+                    failed = true;
                 }
+
+                if (failed)
+                {
+                    continue;
+                }
+
+                settings.yellowList.Add(singleTerm);
+                addList.Add(singleTerm);
             }
 
-            settings.yellowList.Add(lower);
             await FileHelper.SaveServerSettingsAsync(settings, context);
-            return true;
+            var combined = new Tuple<List<string>, List<string>> (addList, failList);
+            return combined;
         }
 
         public static string CheckRedList(string query, ServerSettings settings)

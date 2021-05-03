@@ -1192,16 +1192,69 @@
                         await _logger.Log("yellowlist: <FAIL>", Context);
                         break;
                     case "add":
-                        var added = await BadlistHelper.AddYellowTerm(term, settings, Context);
-                        if (added)
+                        var (addList, failList) = await BadlistHelper.AddYellowTerm(term, settings, Context);
+                        if (failList.Count == 0)
                         {
-                            await ReplyAsync($"Added `{term}` to the yellowlist.");
-                            await _logger.Log($"yellowlist: add {term} <SUCCESS>", Context, true);
+                            var addOutput = "";
+                            for (var x = 0; x < addList.Count; x++)
+                            {
+                                var addedTerm = addList[x];
+                                addOutput += $"`{addedTerm}`";
+                                if (x < addList.Count - 2)
+                                {
+                                    addOutput += ", ";
+                                }
+
+                                if (x == addList.Count - 2)
+                                {
+                                    addOutput += ", and ";
+                                }
+                            }
+
+                            await ReplyAsync($"Added {addOutput} to the yellowlist.");
+                            await _logger.Log($"yellowlist: add {addOutput} <SUCCESS>", Context, true);
+                        }
+                        else if (addList.Count == 0)
+                        {
+                            await ReplyAsync("All terms entered are already on the yellowlist.");
+                            await _logger.Log($"yellowlist: add <FAIL> {term}", Context);
                         }
                         else
                         {
-                            await ReplyAsync($"`{term}` is already on the yellowlist.");
-                            await _logger.Log($"yellowlist: add {term} <FAIL>", Context);
+                            var failOutput = "";
+                            var addOutput = "";
+                            for (var x = 0; x < addList.Count; x++)
+                            {
+                                var addedTerm = addList[x];
+                                addOutput += $"`{addedTerm}`";
+                                if (x < addList.Count - 2)
+                                {
+                                    addOutput += ", ";
+                                }
+
+                                if (x == addList.Count - 2)
+                                {
+                                    addOutput += ", and ";
+                                }
+                            }
+
+                            for (var x = 0; x < failList.Count; x++)
+                            {
+                                var failedTerm = failList[x];
+                                failOutput += $"`{failedTerm}`";
+                                if (x < failList.Count - 2)
+                                {
+                                    failOutput += ", ";
+                                }
+
+                                if (x == failList.Count - 2)
+                                {
+                                    failOutput += ", and ";
+                                }
+                            }
+
+                            await ReplyAsync($"Added {addOutput} to the yellowlist, and the yellowlist already contained {failOutput}.");
+                            await _logger.Log($"yellowlist: add {addOutput} <FAIL> {failOutput}", Context);
                         }
 
                         break;
