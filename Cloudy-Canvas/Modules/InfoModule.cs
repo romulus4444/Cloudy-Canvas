@@ -33,7 +33,7 @@
             {
                 case "":
                     await ReplyAsync(
-                        $"**__All Commands:__**{Environment.NewLine}**Booru Module:**{Environment.NewLine}`;pick ...`{Environment.NewLine}`;pickrecent ...`{Environment.NewLine}`;id ...`{Environment.NewLine}`;tags ...`{Environment.NewLine}`;featured`{Environment.NewLine}`;getspoilers`{Environment.NewLine}`;report ...`{Environment.NewLine}**Admin Module:**{Environment.NewLine}`;setup ...`{Environment.NewLine}`;admin ...`{Environment.NewLine}`;yellowlist ...`{Environment.NewLine}`;log ...`{Environment.NewLine}`;echo ...`{Environment.NewLine}`;setprefix ...`{Environment.NewLine}`;listentobots ...`{Environment.NewLine}`;alias ...`{Environment.NewLine}`;getsettings`{Environment.NewLine}**Info Module:**{Environment.NewLine}`;origin`{Environment.NewLine}`;about`{Environment.NewLine}{Environment.NewLine}Use `;help <command>` for more details on a particular command.");
+                        $"**__All Commands:__**{Environment.NewLine}**Booru Module:**{Environment.NewLine}`;pick ...`{Environment.NewLine}`;pickrecent ...`{Environment.NewLine}`;id ...`{Environment.NewLine}`;tags ...`{Environment.NewLine}`;featured`{Environment.NewLine}`;getspoilers`{Environment.NewLine}`;report ...`{Environment.NewLine}**Admin Module:**{Environment.NewLine}`;setup ...`{Environment.NewLine}`;admin ...`{Environment.NewLine}`;yellowlist ...`{Environment.NewLine}`;log ...`{Environment.NewLine}`;echo ...`{Environment.NewLine}`;setprefix ...`{Environment.NewLine}`;listentobots ...`{Environment.NewLine}`;alias ...`{Environment.NewLine}`;getsettings`{Environment.NewLine}`;refreshlists`{Environment.NewLine}**Info Module:**{Environment.NewLine}`;origin`{Environment.NewLine}`;about`{Environment.NewLine}{Environment.NewLine}Use `;help <command>` for more details on a particular command.");
                     break;
                 case "pick":
                     await ReplyAsync(
@@ -41,7 +41,7 @@
                     break;
                 case "pickrecent":
                     await ReplyAsync(
-                        $"`;pick <query>`{Environment.NewLine}Posts the most recently posted image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.");
+                        $"`;pickrecent <query>`{Environment.NewLine}Posts the most recently posted image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.");
                     break;
                 case "id":
                     await ReplyAsync(
@@ -157,6 +157,10 @@
                 case "getsettings":
                     await ReplyAsync(
                         $"`;getsettings`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Posts the settings file to the log channel. This includes the redlist.");
+                    break;
+                case "refreshlists":
+                    await ReplyAsync(
+                        $"`;refreshlists`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Rebuilds the spoiler list and redlist from the current active filter. This may take several minutes depending on how many tags are in there.");
                     break;
                 case "origin":
                     await ReplyAsync($"`;origin`{Environment.NewLine}Posts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.");
