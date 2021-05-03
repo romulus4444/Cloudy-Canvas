@@ -116,13 +116,13 @@ Manages the list of roles to ignore commands from.
 
 Manages the list of users to allow commands from.
 
-`;admin allowuser get` Gets the current list of allowd users.
+`;admin allowuser get` Gets the current list of allowed users.
 
-`;admin allowuser add <user>` Adds `<user>` to the list of allowd users. Accepts a user ping or plain text.
+`;admin allowuser add <user>` Adds `<user>` to the list of allowed users. Accepts a user ping or plain text.
  
 `;admin allowuser remove <user>` Removes `<user>` from the list of allowed users. Accepts a user ping or plain text.
  
-`;admin allowuser clear` Clears the list of allowd users.
+`;admin allowuser clear` Clears the list of allowed users.
  
  ---
 
