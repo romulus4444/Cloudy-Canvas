@@ -1,23 +1,243 @@
 # Cloudy-Canvas
-Discord bot for integration with the Manebooru imageboard
+Created April 5th, 2021
 
-### Commands:
-#### Booru Module:
-**;pick <query>** //posts an image from Manebooru within the bot's filters matching the query
+A Discord bot for interfacing with the [Manebooru](https://manebooru.art/) imageboard.
+
+Written by Raymond Welch ([@Dr. Romulus#4444](https://github.com/romulus4444)) in C# using Discord.net. Special thanks to Ember Heartshine for hosting and HenBasket for testing.
+
+I am currently only considering requests to add Cloudy Canvas to servers that I am in, but feel free to contact me on Discord about it.
+
+Cloudy Canvas's profile picture was drawn by me and can be found [here](https://manebooru.art/images/4010266).
+
+Important terms:
+
+`query` Any query that could be entered into the search field on Manebooru. This is a list of comma-seprated terms, and may include logical operators and image metadata flags. See [here](https://manebooru.art/pages/search_syntax) for more details.
+
+`yellowlist` A list of terms that the bot will not search for if included in the query. These terms are not prevented from appearing in search results. Use cases include terms like `breasts` that are inappropriate to search for in a SFW server, but is a perfectly okay tag to appear in search results. This list can include image IDs as well. A user searching for a yellow term will generate an alert message sent to the current yellow alert channel.
+
+`redlist` A list of terms built from tags hidden by the active filter, tags that imply those hidden tags, and tags that are aliased to those hidden tags. It is highly advisable to include `banned tags` in your active filter's hidden tags. Red terms will never appear in any Cloudy search result (because they are blocked by the filter). A user searching for a red term will have their search query deleted by Cloudy, and an alert will be sent to the current red alert channel.
+
+## Commands:
+### Booru Module:
+*All searches are subject to the current active filter*
+
+---
+
+`;pick <query>` Posts a random image from a Manebooru `<query>`, if it is available. If results include any spoilered tags, the post is made in || spoiler bars.
+
+---
+
+`;pickrecent <query>` Posts the most recently posted image from a Manebooru `<query>`, if it is available. If results include any spoilered tags, the post is made in || spoiler bars.
+
+---
+
+`;id <number>` Posts Image #`<number>` from Manebooru, if it is available. If the image includes spoilered tags, the post is made in || spoiler bars.
+
+---
+
+`;tags <number>` Posts the list of tags on Image #`<number>` from Manebooru, if it is available, including identifying any tags that are spoilered.
+
+---
+
+`;featured` Posts the current Featured Image from Manebooru.
+
+---
+
+`;getspoilers` Posts a list of currently spoilered tags.
+
+---
+
+`;report <id> <reason>` Alerts the admins about image #`<id>` with an optional `<reason>` for the admins to see. Only use this for images that violate the server rules!
+
+---
+
+### Admin Module
+*Only users with the specified admin role may use the commands in this module*
+
+---
+
+Initial bot setup. Run this before doing anything else when adding Cloudy Canvas to your server!
+
+`;setup <filter ID> <admin channel> <admin role>` *(Only a server administrator may use this command)*
+
+Sets `<filter ID>` as the public Manebooru filter to use, `<admin channel>` for important admin output messages, and `<admin role>` as users who are allowed to use admin module commands. Validates that `<Filter ID>` is useable and if not, uses Filter 175 (Cloudy Canvas's default filter). Filters are viewable at `https://manebooru.art/filters/<filter ID>`. All alert channels are defaulted to the admin channel, and all alert roles and pings are turned off. The spoiler list and redlist are then built, which can take several minutes, depending on how many tags in the filter are spoilered or hidden. Please wait until the lists are done being built before running more commands. This is a one-time process, unless manually initiated later.
+
+---
+
+Manages the active filter.
+
+`;admin filter get` Gets the current active filter.
+
+`;admin filter set <filter ID>` Sets the active filter to `<Filter ID>`. Validates that the filter is useable by the bot.
  
-**;id <imageId>** //posts an image from Manebooru with the specified ID number
+ ---
+ 
+Manages the admin channel.
 
-**;featured** //posts the current Featured Image from Manebooru
+`;admin adminchannel get` Gets the current admin channel.
 
-#### Admin Module
-**;admin <commands>** //commands for managing the bot's settings
-  * **adminchannel <channel-name>** //Sets #channel-name as the admin channel. If <channel-name> is blank, it returns the currently set admin channel, if there is one.
+`;admin adminchannel set <channel>` Sets the admin channel to `<channel>`. Accepts a channel ping or plain text.
 
-**;blacklist <commands>** //manages the list of terms the bot will not search for
-  * **get** //gets the current list
-  * **add <term>** //adds <term> to the blacklist
-  * **remove <term>** //removes <term> from the blacklist
-  * **clear** //clears the blacklist of all terms
+---
 
-#### Info Module
-**;help <command>** //Posts a list of commands, or more information about <command>
+Manages the admin role.
+
+`;admin adminrole get` Gets the current admin role.
+
+`;admin adminrole set` <role> Sets the admin role to <role>. Accepts a role ping or plain text.
+
+---
+
+Manages the list of channels to ignore commands from.
+
+`;admin ignorechannel get` Gets the current list of ignored channels.
+
+`;admin ignorechannel add <channel>` Adds `<channel>` to the list of ignored channels. Accepts a channel ping or plain text.
+ 
+`;admin ignorechannel remove <channel>` Removes `<channel>` from the list of ignored channels. Accepts a channel ping or plain text.
+ 
+`;admin ignorechannel clear` Clears the list of ignored channels.
+ 
+ ---
+
+Manages the list of roles to ignore commands from.
+
+`;admin ignorerole get` Gets the current list of ignored roles.
+
+`;admin ignorerole add <role>` Adds `<role>` to the list of ignored roles. Accepts a role ping or plain text.
+ 
+`;admin ignorerole remove <role>` Removes `<role>` from the list of ignored roles. Accepts a role ping or plain text.
+ 
+`;admin ignorerole clear` Clears the list of ignored roles.
+ 
+ ---
+
+Manages the list of users to allow commands from.
+
+`;admin allowuser get` Gets the current list of allowd users.
+
+`;admin allowuser add <user>` Adds `<user>` to the list of allowd users. Accepts a user ping or plain text.
+ 
+`;admin allowuser remove <user>` Removes `<user>` from the list of allowed users. Accepts a user ping or plain text.
+ 
+`;admin allowuser clear` Clears the list of allowd users.
+ 
+ ---
+
+Manages the yellow alert channel.
+
+`;admin yellowchannel get` Gets the current yellow alert channel.
+
+`;admin yellowchannel set <channel>` Sets the yellow alert channel to `<channel>`. Accepts a channel ping or plain text.
+ 
+`;admin yellowchannel clear` Resets the yellow alert channel to the current admin channel.
+ 
+ ---
+
+Manages the yellow alert role.
+
+`;admin yellowrole get` Gets the current yellow alert role.
+
+`;admin yellowrole set <role>` Sets the yellow alert role to `<role>` and turns pinging on. Accepts a role ping or plain text.
+ 
+`;admin yellowrole clear` Resets the yellow alert role to no role and turns pinging off.
+ 
+ ---
+
+Manages the red alert channel.
+
+`;admin redchannel get` Gets the current red alert channel.
+
+`;admin redchannel set <channel>` Sets the red alert channel to `<channel>`. Accepts a channel ping or plain text.
+ 
+`;admin redchannel clear` Resets the red alert channel to the current admin channel.
+ 
+ ---
+
+Manages the red alert role.
+
+`;admin redrole get` Gets the current red alert role.
+
+`;admin redrole set <role>` Sets the red alert role to `<role>` and turns pinging on. Accepts a role ping or plain text.
+ 
+`;admin redrole clear` Resets the red alert channel to no role and turns pinging off.
+ 
+ ---
+Manages the report alert channel.
+
+`;admin reportchannel get` Gets the current report alert channel.
+
+`;admin reportchannel set <channel>` Sets the report alert channel to `<channel>`. Accepts a channel ping or plain text.
+ 
+`;admin reportchannel clear` Resets the report alert channel to the current admin channel.
+
+---
+
+Manages the report alert role.
+
+`;admin reportrole get` Gets the current report alert role.
+
+`;admin reportrole set <role>` Sets the report alert role to `<role>` and turns pinging on. Accepts a role ping or plain text.
+ 
+`;admin reportrole clear` Resets the report alert channel to no role and turns pinging off.
+ 
+ ---
+
+Manages the log post channel.
+
+`;admin logchannel get` Gets the current log post channel.
+
+`;admin logchannel set <channel>` Sets the log post channel to `<channel>`. Accepts a channel ping or plain text.
+ 
+`;admin logchannel clear` Resets the log post channel to the current admin channel.
+ 
+ ---
+
+Manages the list of terms users are unable to search for.
+
+`;yellowlist get` Gets the current list of yellowlisted terms.
+
+`;yellowlist add <term>` Add `<term>` to the yellowlist. `<term>` may be a comma-separated list.
+
+`;yellowlist remove <term>` Removes `<term>` from the yellowlist.
+
+`;yellowlist clear` Clears the yellowlist of all terms.
+ 
+ ---
+
+`;log <channel> <date>` Posts the log file from `<channel>` and `<date>` into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD.
+ 
+ ---
+
+`;echo <channel> <message>` Posts `<message>` to a valid `<channel>`. If `<channel>` is invalid, posts to the current channel instead. Accepts a channel ping or plain text.
+ 
+ ---
+
+`;setprefix <prefix>` Sets the prefix in front of commands to listen for to `<prefix>`. Accepts a single character.
+ 
+ ---
+
+`;listentobots <pos/neg>` Toggles whether or not to run commands posted by other bots. Accepts `y/n`, `yes/no`, `on/off`, or `true/false`.
+
+---
+
+`;alias <short> <long>` Sets `<short>` as an alias of `<long>`. If that alias exists, replaces the previous value of `<long>`. If `<long>` is blank, clears that alias. If both are blank, posts the entire list of aliases.
+ 
+ ---
+
+`;getsettings` Posts the settings file to the log channel. This includes the redlist.
+
+---
+
+### Info Module
+`;origin` Posts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.
+
+---
+
+`;about` Information about this bot.
+
+---
+
+`;help` A list of commands and descriptions, much like this page.
+
+---
