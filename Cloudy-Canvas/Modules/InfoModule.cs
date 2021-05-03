@@ -33,7 +33,7 @@
             {
                 case "":
                     await ReplyAsync(
-                        $"**__All Commands:__**{Environment.NewLine}**Booru Module:**{Environment.NewLine}*All searches use manechat-compliant filters*{Environment.NewLine}`;pick ...`{Environment.NewLine}`;pickrecent ...`{Environment.NewLine}`;id ...`{Environment.NewLine}`;tags ...`{Environment.NewLine}`;featured`{Environment.NewLine}`;getspoilers`{Environment.NewLine}`;report ...`{Environment.NewLine}**Admin Module:**{Environment.NewLine}`;setup ...`{Environment.NewLine}`;admin ...`{Environment.NewLine}`;yellowlist ...`{Environment.NewLine}`;log ...`{Environment.NewLine}`;echo ...`{Environment.NewLine}**Info Module:**{Environment.NewLine}`;origin`{Environment.NewLine}`;about`{Environment.NewLine}{Environment.NewLine}Use `;help <command>` for more details on a particular command.");
+                        $"**__All Commands:__**{Environment.NewLine}**Booru Module:**{Environment.NewLine}`;pick ...`{Environment.NewLine}`;pickrecent ...`{Environment.NewLine}`;id ...`{Environment.NewLine}`;tags ...`{Environment.NewLine}`;featured`{Environment.NewLine}`;getspoilers`{Environment.NewLine}`;report ...`{Environment.NewLine}**Admin Module:**{Environment.NewLine}`;setup ...`{Environment.NewLine}`;admin ...`{Environment.NewLine}`;yellowlist ...`{Environment.NewLine}`;log ...`{Environment.NewLine}`;echo ...`{Environment.NewLine}`;setprefix ...`{Environment.NewLine}`;listentobots ...`{Environment.NewLine}`;alias ...`{Environment.NewLine}`;getsettings`{Environment.NewLine}**Info Module:**{Environment.NewLine}`;origin`{Environment.NewLine}`;about`{Environment.NewLine}{Environment.NewLine}Use `;help <command>` for more details on a particular command.");
                     break;
                 case "pick":
                     await ReplyAsync(
@@ -59,18 +59,22 @@
                     break;
                 case "report":
                     await ReplyAsync(
-                        $"`;report <id> <reason>`{Environment.NewLine}Alerts the admins about image#<id> with an optional <reason> for the admins to see. Only use this for images that violate the server rules!");
+                        $"`;report <id> <reason>`{Environment.NewLine}Alerts the admins about image #<id> with an optional <reason> for the admins to see. Only use this for images that violate the server rules!");
                     break;
                 case "setup":
                     await ReplyAsync(
-                        $"`;setup <filter Id> <admin channel> <admin role>`{Environment.NewLine}*Only a server administrator may use this command.*{Environment.NewLine}Initial bot setup. Sets <filter ID> as the public Manebooru filter to use, <admin channel> for important admin output messages, and <admin role> as users who are allowed to use admin module commands.");
+                        $"`;setup <filter ID> <admin channel> <admin role>`{Environment.NewLine}*Only a server administrator may use this command.*{Environment.NewLine}Initial bot setup. Sets <filter ID> as the public Manebooru filter to use, <admin channel> for important admin output messages, and <admin role> as users who are allowed to use admin module commands. Validates that <Filter ID> is useable and if not, uses Filter 175.");
                     break;
                 case "admin":
                     switch (subCommand)
                     {
                         case "":
                             await ReplyAsync(
-                                $"**__;admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`;admin adminchannel ...`{Environment.NewLine}`;admin adminrole ...`{Environment.NewLine}`;admin ignorechannel ...`{Environment.NewLine}`;admin ignorerole ...`{Environment.NewLine}`;admin allowuser ...`{Environment.NewLine}`;admin yellowchannel ...`{Environment.NewLine}`;admin yellowrole ...`{Environment.NewLine}`;admin redchannel ...`{Environment.NewLine}`;admin redrole ...`{Environment.NewLine}`;admin reportchannel ...`{Environment.NewLine}`;admin reportrole ...`{Environment.NewLine}`;admin logchannel ...`{Environment.NewLine}{Environment.NewLine}Use `;help admin <command>` for more details on a particular command.");
+                                $"**__;admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`;admin filter ...`{Environment.NewLine}`;admin adminchannel ...`{Environment.NewLine}`;admin adminrole ...`{Environment.NewLine}`;admin ignorechannel ...`{Environment.NewLine}`;admin ignorerole ...`{Environment.NewLine}`;admin allowuser ...`{Environment.NewLine}`;admin yellowchannel ...`{Environment.NewLine}`;admin yellowrole ...`{Environment.NewLine}`;admin redchannel ...`{Environment.NewLine}`;admin redrole ...`{Environment.NewLine}`;admin reportchannel ...`{Environment.NewLine}`;admin reportrole ...`{Environment.NewLine}`;admin logchannel ...`{Environment.NewLine}{Environment.NewLine}Use `;help admin <command>` for more details on a particular command.");
+                            break;
+                        case "filter":
+                            await ReplyAsync(
+                                $"__;admin filter Commands:__{Environment.NewLine}*Manages the active filter.*{Environment.NewLine}`;admin filter get` Gets the current active filter.{Environment.NewLine}`;admin filter set <filter ID>` Sets the active filter to <Filter ID>. Validates that the filter is useable by the bot.");
                             break;
                         case "adminchannel":
                             await ReplyAsync(
@@ -128,7 +132,7 @@
                     break;
                 case "yellowlist":
                     await ReplyAsync(
-                        $"**__;yellowlist Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands.*{Environment.NewLine}Manages the list of terms users are unable to search for.{Environment.NewLine}`;yellowlist add <term>` Add <term> to the yellowlist.{Environment.NewLine}`;yellowlist remove <term>` Removes <term> from the yellowlist.{Environment.NewLine}`;yellowlist get` Gets the current list of yellowlisted terms.{Environment.NewLine}`;yellowlist clear` Clears the yellowlist of all terms.");
+                        $"**__;yellowlist Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands.*{Environment.NewLine}Manages the list of terms users are unable to search for.{Environment.NewLine}`;yellowlist add <term>` Add <term> to the yellowlist. <term> may be a comma-separated list.{Environment.NewLine}`;yellowlist remove <term>` Removes <term> from the yellowlist.{Environment.NewLine}`;yellowlist get` Gets the current list of yellowlisted terms.{Environment.NewLine}`;yellowlist clear` Clears the yellowlist of all terms.");
                     break;
                 case "log":
                     await ReplyAsync(
@@ -137,6 +141,22 @@
                 case "echo":
                     await ReplyAsync(
                         $"`;echo <channel> <message>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Posts <message> to a valid <channel>. If <channel> is invalid, posts to the current channel instead. Accepts a channel ping or plain text.");
+                    break;
+                case "setprefix":
+                    await ReplyAsync(
+                        $"`;setprefix <prefix>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Sets the prefix in front of commands to listen for to <prefix>. Accepts a single character.");
+                    break;
+                case "listentobots":
+                    await ReplyAsync(
+                        $"`;listentobots <pos/neg>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Toggles whether or not to run commands posted by other bots. Accepts y/n, yes/no, on/off, or true/false.");
+                    break;
+                case "alias":
+                    await ReplyAsync(
+                        $"`;alias <short> <long>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Sets <short> as an alias of <long>. If that alias exists, replaces the previous value of <long>. If <long> is blank, clears that alias. If both are blank, posts the entire list of aliases.");
+                    break;
+                case "getsettings":
+                    await ReplyAsync(
+                        $"`;getsettings`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Posts the settings file to the log channel. This includes the redlist.");
                     break;
                 case "origin":
                     await ReplyAsync($"`;origin`{Environment.NewLine}Posts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.");
