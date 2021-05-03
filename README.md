@@ -13,6 +13,8 @@ Important terms:
 
 `query` Any query that could be entered into the search field on Manebooru. This is a list of comma-seprated terms, and may include logical operators and image metadata flags. See [here](https://manebooru.art/pages/search_syntax) for more details.
 
+`active filter` The Manebooru filter that your server uses to filter images in the search results. It is advisable to make your own account on Manebooru, add a new filter, tailor it to your server's needs, and make it public (at the bottom of the page under Advanced Options). You do not need to leave it as your account's active filter, as long as you know the ID (it's in the URL when viewing the filter: `https://manebooru.art/filters/<filter ID>`) and the filter is public.
+
 `yellowlist` A list of terms that the bot will not search for if included in the query. These terms are not prevented from appearing in search results. Use cases include terms like `breasts` that are inappropriate to search for in a SFW server, but is a perfectly okay tag to appear in search results. This list can include image IDs as well. A user searching for a yellow term will generate an alert message sent to the current yellow alert channel.
 
 `redlist` A list of terms built from tags hidden by the active filter, tags that imply those hidden tags, and tags that are aliased to those hidden tags. It is highly advisable to include `banned tags` in your active filter's hidden tags. Red terms will never appear in any Cloudy search result (because they are blocked by the filter). A user searching for a red term will have their search query deleted by Cloudy, and an alert will be sent to the current red alert channel.
