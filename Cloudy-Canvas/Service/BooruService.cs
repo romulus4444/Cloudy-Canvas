@@ -157,6 +157,27 @@
             await GetHiddenTagsAsync(context, settings);
         }
 
+        public async Task<int> CheckFilterAsync(int filter)
+        {
+            //GET	/api/v1/json/filters/user
+            dynamic results = null;
+            try
+            {
+                results = await _settings.url
+                    .AppendPathSegments($"/api/v1/json/filters/{filter}")
+                    .GetAsync()
+                    .ReceiveJson();
+            }
+            catch (FlurlHttpException ex)
+            {
+                if (ex.StatusCode == 404)
+                {
+                    return 0;
+                }
+            }
+            return results != null ? (int)results.filter.id : 0;
+        }
+
         private static List<string> CheckSpoilerList(List<object> tagIds, ServerSettings settings)
         {
             var tagList = new List<string>();

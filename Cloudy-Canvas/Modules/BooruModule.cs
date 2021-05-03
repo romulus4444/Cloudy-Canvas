@@ -303,14 +303,66 @@
             await ReplyAsync("Spoiler list and redlist refreshed!");
         }
 
-        private static string SetupTagListOutput(IReadOnlyList<string> tagList)
+        private static string SetupTagListOutput(List<string> tagList)
         {
-            var output = "";
-            for (var x = 0; x < tagList.Count; x++)
+            var sortedList = tagList;
+            sortedList.Sort();
+            var newList = new List<string>();
+            foreach (var tag in sortedList)
             {
-                var spoilerTerm = tagList[x];
+                if (tag.StartsWith("artist:"))
+                {
+                    newList.Add(tag);
+                }
+            }
+
+            foreach (var tag in sortedList)
+            {
+                if (tag.StartsWith("editor:"))
+                {
+                    newList.Add(tag);
+                }
+            }
+
+            foreach (var tag in sortedList)
+            {
+                if (tag.StartsWith("character:"))
+                {
+                    newList.Add(tag);
+                }
+            }
+
+            foreach (var tag in sortedList)
+            {
+                if (tag.StartsWith("species:"))
+                {
+                    newList.Add(tag);
+                }
+            }
+
+            foreach (var tag in sortedList)
+            {
+                if (tag.StartsWith("episode:"))
+                {
+                    newList.Add(tag);
+                }
+            }
+
+            foreach (var tag in sortedList)
+            {
+                if (tag.StartsWith("artist:") || tag.StartsWith("editor:") || tag.StartsWith("character:") || tag.StartsWith("species:") || tag.StartsWith("episode:"))
+                {
+                    continue;
+                }
+                newList.Add(tag);
+            }
+
+            var output = "";
+            for (var x = 0; x < newList.Count; x++)
+            {
+                var spoilerTerm = newList[x];
                 output += $"`{spoilerTerm}`";
-                if (x < tagList.Count - 1)
+                if (x < newList.Count - 1)
                 {
                     output += ", ";
                 }

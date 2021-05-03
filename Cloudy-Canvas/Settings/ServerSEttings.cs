@@ -10,7 +10,6 @@
             filterId = 175;
             adminChannel = 0;
             adminRole = 0;
-            aliases = new List<Tuple<string, string>>();
             spoilerList = new List<Tuple<long, string>>();
             yellowList = new List<string>();
             yellowAlertChannel = 0;
@@ -32,7 +31,6 @@
         public int filterId { get; set; }
         public ulong adminChannel { get; set; }
         public ulong adminRole { get; set; }
-        public List<Tuple<string, string>> aliases { get; set; }
         public List<Tuple<long, string>> spoilerList { get; set; }
         public List<string> yellowList { get; set; }
         public ulong yellowAlertChannel { get; set; }
