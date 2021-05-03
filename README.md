@@ -207,7 +207,7 @@ Manages the list of terms users are unable to search for.
  
  ---
 
-`;log <channel> <date>` Posts the log file from `<channel>` and `<date>` into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD.
+`;log <channel> <date>` Posts the log file from `<channel>` and `<date>` into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD. Logs are saved based on date in UTC.
  
  ---
 
