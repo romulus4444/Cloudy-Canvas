@@ -225,9 +225,13 @@ Manages the list of terms users are unable to search for.
 
 `;alias <short> <long>` Sets `<short>` as an alias of `<long>`. If that alias exists, replaces the previous value of `<long>`. If `<long>` is blank, clears that alias. If both are blank, posts the entire list of aliases.
  
- ---
+---
 
 `;getsettings` Posts the settings file to the log channel. This includes the redlist.
+
+---
+
+`;refreshlists` Rebuilds the spoiler list and redlist from the current active filter. This may take several minutes depending on how many tags are in there.
 
 ---
 
