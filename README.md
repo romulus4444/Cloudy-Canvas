@@ -211,6 +211,7 @@ Manages the list of terms users are unable to search for.
  
  ---
 
+`;echo <message>` Posts `<message>` to the current channel.
 `;echo <channel> <message>` Posts `<message>` to a valid `<channel>`. If `<channel>` is invalid, posts to the current channel instead. Accepts a channel ping or plain text.
  
  ---
