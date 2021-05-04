@@ -152,7 +152,7 @@
                     break;
                 case "alias":
                     await ReplyAsync(
-                        $"`;alias <short> <long>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Sets <short> as an alias of <long>. If that alias exists, replaces the previous value of <long>. If <long> is blank, clears that alias. If both are blank, posts the entire list of aliases.");
+                        $"**__;alias Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands.*{Environment.NewLine}Manages the list of command aliases.{Environment.NewLine}`;alias add <short> <long>` Sets <short> as an alias of <long>. If a command starts with <short>, <short> is replaced with <long> and the command is then processed normally. Do not include prefixes in <short> or <long>. Example: `;alias cute pick cute` sets `;cute` to run `;pick cute` instead. To use an alias that includes spaces, surround the entire <short> term with \"\" quotes. If an alias for <short> already exists, it replaces the previous value of <long> with the new one.{Environment.NewLine}`;alias remove <short>` Removes <short> as an alias for anything.{Environment.NewLine}`;alias get` Gets the current list of aliases.{Environment.NewLine}`;alias clear` Clears all aliases.");
                     break;
                 case "getsettings":
                     await ReplyAsync(
