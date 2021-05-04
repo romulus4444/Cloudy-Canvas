@@ -88,11 +88,6 @@ namespace Cloudy_Canvas
                 }
 
                 var parsedMessage = DiscordHelper.CheckAliasesAsync(message.Content, settings);
-                if (parsedMessage == "")
-                {
-                    parsedMessage = "<blank message>";
-                }
-
                 var validCommand = false;
                 foreach (var command in _commands.Commands)
                 {
@@ -105,7 +100,11 @@ namespace Cloudy_Canvas
                     break;
                 }
 
-                if (!validCommand)
+                if (parsedMessage == "")
+                {
+                    parsedMessage = "<blank message>";
+                }
+                else if (!validCommand)
                 {
                     parsedMessage = "<invalid command>";
                 }

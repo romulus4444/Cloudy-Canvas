@@ -665,6 +665,12 @@
         [Summary("Runs on a blank message")]
         public async Task BlankMessageCommandAsync()
         {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            {
+                return;
+            }
+
             await ReplyAsync("Did you need something?");
         }
 
@@ -672,6 +678,12 @@
         [Summary("Runs on an invalid command")]
         public async Task InvalidCommandAsync()
         {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            {
+                return;
+            }
+
             await ReplyAsync("I don't know that command.");
         }
 
