@@ -70,7 +70,7 @@ Manages the active filter.
 
 `;admin filter get` Gets the current active filter.
 
-`;admin filter set <filter ID>` Sets the active filter to `<Filter ID>`. Validates that the filter is useable by the bot.
+`;admin filter set <filter ID>` Sets the active filter to `<Filter ID>`. Validates that the filter is useable by the bot. The spoiler list and redlist are rebuilt after the new filter is set.
  
  ---
  
@@ -90,7 +90,7 @@ Manages the admin role.
 
 ---
 
-Manages the list of channels to ignore commands from.
+Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.
 
 `;admin ignorechannel get` Gets the current list of ignored channels.
 
@@ -102,7 +102,7 @@ Manages the list of channels to ignore commands from.
  
  ---
 
-Manages the list of roles to ignore commands from.
+Manages the list of roles to ignore commands from. Cloudy will not respond to users that have any of these roles.
 
 `;admin ignorerole get` Gets the current list of ignored roles.
 
@@ -114,15 +114,15 @@ Manages the list of roles to ignore commands from.
  
  ---
 
-Manages the list of users to allow commands from.
+Manages the list of users to allow commands from. This overrides the ignorechannel and ignorerole restrictions!
 
-`;admin allowuser get` Gets the current list of allowd users.
+`;admin allowuser get` Gets the current list of allowed users.
 
-`;admin allowuser add <user>` Adds `<user>` to the list of allowd users. Accepts a user ping or plain text.
+`;admin allowuser add <user>` Adds `<user>` to the list of allowed users. Accepts a user ping or plain text.
  
 `;admin allowuser remove <user>` Removes `<user>` from the list of allowed users. Accepts a user ping or plain text.
  
-`;admin allowuser clear` Clears the list of allowd users.
+`;admin allowuser clear` Clears the list of allowed users.
  
  ---
 
@@ -207,9 +207,11 @@ Manages the list of terms users are unable to search for.
  
  ---
 
-`;log <channel> <date>` Posts the log file from `<channel>` and `<date>` into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD.
+`;log <channel> <date>` Posts the log file from `<channel>` and `<date>` into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD. Logs are saved based on date in UTC.
  
  ---
+
+`;echo <message>` Posts `<message>` to the current channel.
 
 `;echo <channel> <message>` Posts `<message>` to a valid `<channel>`. If `<channel>` is invalid, posts to the current channel instead. Accepts a channel ping or plain text.
  
