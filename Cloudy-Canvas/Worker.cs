@@ -87,28 +87,44 @@ namespace Cloudy_Canvas
                     return;
                 }
 
-                var parsedMessage = DiscordHelper.CheckAliasesAsync(message.Content, settings);
-                var validCommand = false;
-                foreach (var command in _commands.Commands)
+                string parsedMessage;
+                var checkCommands = true;
+                if (message.HasMentionPrefix(_client.CurrentUser, ref argPos))
                 {
-                    if (command.Name != parsedMessage.Split(" ")[0])
-                    {
-                        continue;
-                    }
-
-                    validCommand = true;
-                    break;
+                    parsedMessage = "<mention>";
+                    checkCommands = false;
                 }
-
+                else
+                {
+                    parsedMessage = DiscordHelper.CheckAliasesAsync(message.Content, settings);
+                }
+                
                 if (parsedMessage == "")
                 {
                     parsedMessage = "<blank message>";
-                }
-                else if (!validCommand)
-                {
-                    parsedMessage = "<invalid command>";
+                    checkCommands = false;
                 }
 
+                if (checkCommands)
+                {
+                    var validCommand = false;
+                    foreach (var command in _commands.Commands)
+                    {
+                        if (command.Name != parsedMessage.Split(" ")[0])
+                        {
+                            continue;
+                        }
+
+                        validCommand = true;
+                        break;
+                    }
+
+                    if (!validCommand)
+                    {
+                        parsedMessage = "<invalid command>";
+                    }
+                }
+                
                 await _commands.ExecuteAsync(context, parsedMessage, _services.BuildServiceProvider());
             }
         }
