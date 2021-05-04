@@ -99,16 +99,16 @@
 
         public static string CheckAliasesAsync(string message, ServerPreloadedSettings settings)
         {
-            var parsedMessage = message;
+            var parsedMessage = message.Substring(1).TrimStart();
             foreach (var (shortForm, longForm) in settings.aliases)
             {
-                if (message.Contains(settings.prefix + shortForm))
+                if (message.Substring(1).TrimStart().StartsWith(shortForm))
                 {
-                    parsedMessage = message.Replace(shortForm, longForm);
+                    parsedMessage = message.Replace(shortForm, longForm).Substring(1).TrimStart();
                 }
             }
 
-            return parsedMessage.Substring(1).TrimStart();
+            return parsedMessage;
         }
 
         private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
