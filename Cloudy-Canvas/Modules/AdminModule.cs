@@ -574,7 +574,7 @@
 
         [Command("alias")]
         [Summary("Sets an alias")]
-        public async Task AliasCommandAsync(string shortForm = "", [Remainder] string longForm = "")
+        public async Task AliasCommandAsync(string subcommand = "", string shortForm = "", [Remainder] string longForm = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
@@ -583,40 +583,52 @@
             }
 
             var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
-            if (shortForm == "")
+            switch (subcommand)
             {
-                var output = $"__Current aliases:__{Environment.NewLine}";
-                foreach (var (shortFormA, longFormA) in serverPresettings.aliases)
-                {
-                    output += $"`{shortFormA}`: `{longFormA}`{Environment.NewLine}";
-                }
+                case "":
+                    await ReplyAsync("You must enter a subcommand");
+                    break;
+                case "get":
+                    var output = $"__Current aliases:__{Environment.NewLine}";
+                    foreach (var (shortFormA, longFormA) in serverPresettings.aliases)
+                    {
+                        output += $"`{shortFormA}`: `{longFormA}`{Environment.NewLine}";
+                    }
 
-                await ReplyAsync(output);
-                return;
-            }
+                    await ReplyAsync(output);
+                    break;
+                case "add":
+                    if (serverPresettings.aliases.ContainsKey(shortForm))
+                    {
+                        serverPresettings.aliases[shortForm] = longForm;
+                        _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                        await FileHelper.SaveAllPresettingsAsync(_servers);
+                        await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`, replacing what was there before.");
+                    }
+                    else
+                    {
+                        serverPresettings.aliases.Add(shortForm, longForm);
+                        _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                        await FileHelper.SaveAllPresettingsAsync(_servers);
+                        await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`");
+                    }
 
-            if (longForm == "")
-            {
-                serverPresettings.aliases.Remove(shortForm);
-                _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
-                await FileHelper.SaveAllPresettingsAsync(_servers);
-                await ReplyAsync($"`{shortForm}` alias cleared.");
-                return;
-            }
-
-            if (serverPresettings.aliases.ContainsKey(shortForm))
-            {
-                serverPresettings.aliases[shortForm] = longForm;
-                _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
-                await FileHelper.SaveAllPresettingsAsync(_servers);
-                await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`, replacing what was there before.");
-            }
-            else
-            {
-                serverPresettings.aliases.Add(shortForm, longForm);
-                _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
-                await FileHelper.SaveAllPresettingsAsync(_servers);
-                await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`");
+                    break;
+                case "remove":
+                    serverPresettings.aliases.Remove(shortForm);
+                    _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                    await FileHelper.SaveAllPresettingsAsync(_servers);
+                    await ReplyAsync($"`{shortForm}` alias cleared.");
+                    break;
+                case "clear":
+                    serverPresettings.aliases.Clear();
+                    _servers.settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                    await FileHelper.SaveAllPresettingsAsync(_servers);
+                    await ReplyAsync("All aliases cleared.");
+                    break;
+                default:
+                    await ReplyAsync($"Invalid subcommand {subcommand}");
+                    break;
             }
         }
 
@@ -685,6 +697,20 @@
             }
 
             await ReplyAsync("I don't know that command.");
+        }
+
+        [Command("<mention>")]
+        [Summary("Runs on a name ping")]
+        public async Task MentionCommandAsync()
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            {
+                return;
+            }
+
+            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
+            await ReplyAsync($"The current prefix is '{serverPresettings.prefix}'. Type `{serverPresettings.prefix}help` for a list of commands.");
         }
 
         private async Task FilterSetAsync(string filter, ServerSettings settings)
