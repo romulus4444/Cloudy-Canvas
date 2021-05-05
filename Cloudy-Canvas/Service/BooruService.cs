@@ -20,18 +20,29 @@
             _settings = settings.Value;
         }
 
-        public async Task<Tuple<long, bool, List<string>>> GetImageByIdAsync(long imageId, ServerSettings settings)
+        public async Task<Tuple<int?, long, bool, List<string>>> GetImageByIdAsync(long imageId, ServerSettings settings)
         {
             //GET	/api/v1/json/images/:image_id
             const long searchResult = -1;
             var emptyList = new List<string>();
-            var returnResult = new Tuple<long, bool, List<string>>(searchResult, false, emptyList);
+            var returnResult = new Tuple<int?, long, bool, List<string>>(null, searchResult, false, emptyList);
             var safeQuery = "id:" + imageId + ", safe";
-            var results = await _settings.url
+            dynamic results;
+            try
+            {
+                results = await _settings.url
                 .AppendPathSegments("/api/v1/json/search/images")
                 .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.filterId })
                 .GetAsync()
                 .ReceiveJson();
+            }
+            catch (FlurlHttpException ex)
+            {
+                var code = ex.StatusCode;
+                returnResult = new Tuple<int?, long, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4);
+                return returnResult;
+            }
+            
             if (results.total <= 0)
             {
                 return returnResult;
@@ -39,23 +50,35 @@
 
             bool spoiler = results.images[0].spoilered;
             var spoilerList = CheckSpoilerList(results.images[0].tag_ids, settings);
-            returnResult = new Tuple<long, bool, List<string>>(results.images[0].id, spoiler, spoilerList);
+            returnResult = new Tuple<int?, long, bool, List<string>>(null, results.images[0].id, spoiler, spoilerList);
             return (returnResult);
         }
 
-        public async Task<Tuple<long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query, ServerSettings settings)
+        public async Task<Tuple<int?, long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query, ServerSettings settings)
         {
             //GET	/api/v1/json/search/images?q=safe
+            int? code;
             long searchResult = -1;
             long numberOfResults = 0;
             var emptyList = new List<string>();
-            var returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, false, emptyList);
+            var returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, false, emptyList);
             var safeQuery = query + ", safe";
-            var results = await _settings.url
-                .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, filter_id = settings.filterId })
-                .GetAsync()
-                .ReceiveJson();
+            dynamic results;
+            try
+            {
+                results = await _settings.url
+                    .AppendPathSegments("/api/v1/json/search/images")
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, filter_id = settings.filterId })
+                    .GetAsync()
+                    .ReceiveJson();
+            }
+            catch (FlurlHttpException ex)
+            {
+                code = ex.StatusCode;
+                returnResult = new Tuple<int?, long, long, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4, returnResult.Item5);
+                return returnResult;
+            }
+
             numberOfResults = results.total;
             if (numberOfResults <= 0)
             {
@@ -63,31 +86,52 @@
             }
 
             var page = new Random().Next((int)numberOfResults) + 1;
-            results = await _settings.url
-                .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page, filter_id = settings.filterId })
-                .GetAsync()
-                .ReceiveJson();
+            try
+            {
+                results = await _settings.url
+                    .AppendPathSegments("/api/v1/json/search/images")
+                    .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page, filter_id = settings.filterId })
+                    .GetAsync()
+                    .ReceiveJson();
+            }
+            catch (FlurlHttpException ex)
+            {
+                code = ex.StatusCode;
+                returnResult = new Tuple<int?, long, long, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4, returnResult.Item5);
+                return returnResult;
+            }
+            
             searchResult = results.images[0].id;
             bool spoiler = results.images[0].spoilered;
             var spoilerList = CheckSpoilerList(results.images[0].tag_ids, settings);
-            returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, spoilerList);
+            returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, spoiler, spoilerList);
             return (returnResult);
         }
 
-        public async Task<Tuple<long, long, bool, List<string>>> GetFirstRecentImageByQueryAsync(string query, ServerSettings settings)
+        public async Task<Tuple<int?, long, long, bool, List<string>>> GetFirstRecentImageByQueryAsync(string query, ServerSettings settings)
         {
             //GET	/api/v1/json/search/images?q=safe
             long searchResult = -1;
             long numberOfResults = 0;
             var emptyList = new List<string>();
-            var returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, false, emptyList);
+            var returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, false, emptyList);
             var safeQuery = query + ", safe";
-            var results = await _settings.url
-                .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, sf = "first_seen_at", sd = "desc", filter_id = settings.filterId })
-                .GetAsync()
-                .ReceiveJson();
+            dynamic results;
+            try
+            {
+                results = await _settings.url
+                    .AppendPathSegments("/api/v1/json/search/images")
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, sf = "first_seen_at", sd = "desc", filter_id = settings.filterId })
+                    .GetAsync()
+                    .ReceiveJson();
+            }
+            catch (FlurlHttpException ex)
+            {
+                var code = ex.StatusCode;
+                returnResult = new Tuple<int?, long, long, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4, returnResult.Item5);
+                return returnResult;
+            }
+            
             numberOfResults = results.total;
             if (numberOfResults <= 0)
             {
@@ -97,33 +141,58 @@
             searchResult = results.images[0].id;
             bool spoiler = results.images[0].spoilered;
             var spoilerList = CheckSpoilerList(results.images[0].tag_ids, settings);
-            returnResult = new Tuple<long, long, bool, List<string>>(searchResult, numberOfResults, spoiler, spoilerList);
+            returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, spoiler, spoilerList);
             return (returnResult);
         }
 
-        public async Task<long> GetFeaturedImageIdAsync()
+        public async Task<Tuple<int?, long>> GetFeaturedImageIdAsync()
         {
             //GET	/api/v1/json/images/featured
-            var results = await _settings.url
-                .AppendPathSegments("/api/v1/json/images/featured")
-                .GetAsync()
-                .ReceiveJson();
-            var output = results.image.id;
-            return output;
+            long featuredId = 0;
+            var returnResult = new Tuple<int?, long>(null, featuredId);
+            dynamic results;
+            try
+            {
+                results = await _settings.url
+                    .AppendPathSegments("/api/v1/json/images/featured")
+                    .GetAsync()
+                    .ReceiveJson();
+            }
+            catch (FlurlHttpException ex)
+            {
+                var code = ex.StatusCode;
+                returnResult = new Tuple<int?, long>(code, returnResult.Item2);
+                return returnResult;
+            }
+
+            featuredId = results.image.id;
+            returnResult = new Tuple<int?, long>(null, featuredId);
+            return returnResult;
         }
 
-        public async Task<Tuple<List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId, ServerSettings settings)
+        public async Task<Tuple<int?, List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId, ServerSettings settings)
         {
             //GET	/api/v1/json/images/:image_id
             var emptyTagList = new List<string>();
             var emptySpoilerList = new List<string>();
-            var returnResult = new Tuple<List<string>, bool, List<string>>(emptyTagList, false, emptySpoilerList);
+            var returnResult = new Tuple<int?, List<string>, bool, List<string>>(null, emptyTagList, false, emptySpoilerList);
             var safeQuery = "id:" + imageId + ", safe";
-            var results = await _settings.url
-                .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.filterId })
-                .GetAsync()
-                .ReceiveJson();
+            dynamic results;
+            try
+            {
+                results = await _settings.url
+                    .AppendPathSegments("/api/v1/json/search/images")
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.filterId })
+                    .GetAsync()
+                    .ReceiveJson();
+            }
+            catch (FlurlHttpException ex)
+            {
+                var code = ex.StatusCode;
+                returnResult = new Tuple<int?, List<string>, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4);
+                return returnResult;
+            }
+            
             if (results.total <= 0)
             {
                 return returnResult;
@@ -147,7 +216,7 @@
                 return returnResult;
             }
 
-            returnResult = new Tuple<List<string>, bool, List<string>>(tagStrings, spoiler, spoilerList);
+            returnResult = new Tuple<int?, List<string>, bool, List<string>>(null, tagStrings, spoiler, spoilerList);
             return (returnResult);
         }
 
@@ -160,6 +229,7 @@
         public async Task<int> CheckFilterAsync(int filter)
         {
             //GET	/api/v1/json/filters/user
+            const int defaultInt = 0;
             dynamic results = null;
             try
             {
@@ -170,12 +240,12 @@
             }
             catch (FlurlHttpException ex)
             {
-                if (ex.StatusCode == 404)
+                if (ex.StatusCode >= 300)
                 {
-                    return 0;
+                    return defaultInt;
                 }
             }
-            return results != null ? (int)results.filter.id : 0;
+            return results != null ? (int)results.filter.id : defaultInt;
         }
 
         private static List<string> CheckSpoilerList(List<object> tagIds, ServerSettings settings)
@@ -198,22 +268,45 @@
         private async Task<string> GetTagNameByIdAsync(long id)
         {
             //GET	/api/v1/json/search/tags
-            var results = await _settings.url
-                .AppendPathSegments("/api/v1/json/search/tags")
-                .SetQueryParams(new { q = $"id:{id}" })
-                .GetAsync()
-                .ReceiveJson();
-            var output = results.tags[0].name.ToString();
-            return output;
+            dynamic results = null;
+            const string defaultString = "";
+            try
+            {
+                results = await _settings.url
+                    .AppendPathSegments("/api/v1/json/search/tags")
+                    .SetQueryParams(new { q = $"id:{id}" })
+                    .GetAsync()
+                    .ReceiveJson();
+            }
+            catch (FlurlHttpException ex)
+            {
+                if (ex.StatusCode >= 300)
+                {
+                }
+            }
+           
+            return results != null ? results.tags[0].name.ToString() : defaultString;
+            
         }
 
         private async Task GetSpoilerTagsAsync(SocketCommandContext context, ServerSettings settings)
         {
             //GET	/api/v1/json/filters/user
-            var results = await _settings.url
-                .AppendPathSegments($"/api/v1/json/filters/{settings.filterId}")
-                .GetAsync()
-                .ReceiveJson();
+            dynamic results = null;
+            try
+            {
+                results = await _settings.url
+                    .AppendPathSegments($"/api/v1/json/filters/{settings.filterId}")
+                    .GetAsync()
+                    .ReceiveJson();
+            }
+            catch (FlurlHttpException ex)
+            {
+                if (ex.StatusCode >= 300)
+                {
+                }
+            }
+            
             var tagIds = results.filter.spoilered_tag_ids;
             var tagNames = await GetTagNamesAsync(tagIds);
             var combinedTags = new List<Tuple<long, string>>();

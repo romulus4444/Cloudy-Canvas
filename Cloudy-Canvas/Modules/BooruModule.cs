@@ -36,8 +36,13 @@
                 return;
             }
 
-            var (imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings);
-            if (total == 0)
+            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings);
+            if (code >= 300)
+            {
+                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (total == 0)
             {
                 await _logger.Log($"pick: {query}, total: {total}", Context);
                 await ReplyAsync("I could not find any images with that query.");
@@ -87,8 +92,13 @@
                 return;
             }
 
-            var (imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings);
-            if (total == 0)
+            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings);
+            if (code >= 300)
+            {
+                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (total == 0)
             {
                 await _logger.Log($"pickrecent: {query}, total: {total}", Context);
                 await ReplyAsync("I could not find any images with that query.");
@@ -138,8 +148,13 @@
                 return;
             }
 
-            var (imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings);
-            if (imageId == -1)
+            var (code, imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings);
+            if (code >= 300)
+            {
+                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                await _logger.Log($"id: requested {id}, HTTP ERROR {code}", Context);
+            }
+            else if (imageId == -1)
             {
                 await ReplyAsync("I could not find that image.");
                 await _logger.Log($"id: requested {id}, NOT FOUND", Context);
@@ -176,8 +191,13 @@
                 return;
             }
 
-            var (tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings);
-            if (tagList.Count == 0)
+            var (code, tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings);
+            if (code >= 300)
+            {
+                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                await _logger.Log($"tags: requested {id}, HTTP ERROR {code}", Context);
+            }
+            else if (tagList.Count == 0)
             {
                 await ReplyAsync("I could not find that image.");
                 await _logger.Log($"tags: requested {id}, NOT FOUND", Context);
@@ -235,9 +255,17 @@
                 return;
             }
 
-            var featured = await _booru.GetFeaturedImageIdAsync();
-            await _logger.Log("featured", Context);
-            await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
+            var (code, featured) = await _booru.GetFeaturedImageIdAsync();
+            if (code >= 300)
+            {
+                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                await _logger.Log($"featured, HTTP ERROR {code}", Context);
+            }
+            else
+            {
+                await _logger.Log("featured", Context);
+                await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
+            }
         }
 
         [Command("report")]
@@ -257,7 +285,7 @@
             }
             else
             {
-                var (imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId, settings);
+                var (_, imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId, settings);
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");
