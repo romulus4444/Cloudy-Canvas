@@ -188,7 +188,7 @@
             }
 
             await _logger.Log("origin", Context);
-            await ReplyAsync("Here is where I came from, thanks to RavenSunArt! <https://www.deviantart.com/ravensunart> https://imgur.com/a/RB16usb");
+            await ReplyAsync("Here is where I came from, thanks to ConfettiCakez! <https://www.deviantart.com/confetticakez> https://imgur.com/a/XUHhKz1");
         }
 
         [Command("about")]
