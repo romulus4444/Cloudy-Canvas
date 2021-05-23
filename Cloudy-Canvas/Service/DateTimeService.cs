@@ -1,13 +1,13 @@
 using System;
 public interface IDateTimeService
 {
-    DateTime Now();
+    DateTime UtcNow();
 }
 
 public class DateTimeService : IDateTimeService
 {
-    public DateTime Now()
+    public DateTime UtcNow()
     {
-        return DateTime.Now;
+        return DateTime.UtcNow;
     }
 }
