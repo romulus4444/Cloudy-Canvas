@@ -43,6 +43,8 @@ namespace Cloudy_Canvas
                 var config = hostContext.Configuration;
                 services.Configure<DiscordSettings>(config.GetSection(nameof(DiscordSettings)));
                 services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
+                services.AddTransient<IDateTimeService,DateTimeService>();
+                services.AddTransient<MixinsService>();
                 services.AddTransient<BooruService>();
                 services.AddSingleton<LoggingService>();
                 var settings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
