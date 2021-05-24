@@ -12,13 +12,14 @@
 
         public string Transpile(string query)
         {
-            return query.Replace("{{today}}", _dateTime.UtcNow().ToString("yyyy-MM-dd"))
-                        .Replace("{{current_year}}", _dateTime.UtcNow().ToString("yyyy"))
-                        .Replace("{{current_month}}", _dateTime.UtcNow().ToString("MM"))
-                        .Replace("{{current_day}}", _dateTime.UtcNow().ToString("dd"))
-                        .Replace("{{current_hour}}", _dateTime.UtcNow().ToString("HH"))
-                        .Replace("{{current_minute}}", _dateTime.UtcNow().ToString("mm"))
-                        .Replace("{{current_second}}", _dateTime.UtcNow().ToString("ss"))
+            var now = _dateTime.UtcNow();
+            return query.Replace("{{today}}", now.ToString("yyyy-MM-dd"))
+                        .Replace("{{current_year}}", now.ToString("yyyy"))
+                        .Replace("{{current_month}}", now.ToString("MM"))
+                        .Replace("{{current_day}}", now.ToString("dd"))
+                        .Replace("{{current_hour}}", now.ToString("HH"))
+                        .Replace("{{current_minute}}", now.ToString("mm"))
+                        .Replace("{{current_second}}", now.ToString("ss"))
                         ;
         }
     }
