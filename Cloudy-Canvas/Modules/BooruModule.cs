@@ -14,11 +14,13 @@
     {
         private readonly BooruService _booru;
         private readonly LoggingService _logger;
+        private readonly MixinsService _mixins;
 
-        public BooruModule(BooruService booru, LoggingService logger)
+        public BooruModule(BooruService booru, LoggingService logger, MixinsService mixins)
         {
             _booru = booru;
             _logger = logger;
+            _mixins = mixins;
         }
 
         [Command("pick")]
@@ -30,6 +32,8 @@
             {
                 return;
             }
+
+            query = _mixins.Transpile(query);
 
             if (!await CheckBadlistsAsync(query, settings))
             {
@@ -86,6 +90,8 @@
             {
                 return;
             }
+
+            query = _mixins.Transpile(query);
 
             if (!await CheckBadlistsAsync(query, settings))
             {
