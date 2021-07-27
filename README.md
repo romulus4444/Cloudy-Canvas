@@ -242,7 +242,15 @@ Manages the list of terms users are unable to search for.
 
 ---
 
-`;alias <short> <long>` Sets `<short>` as an alias of `<long>`. If that alias exists, replaces the previous value of `<long>`. If `<long>` is blank, clears that alias. If both are blank, posts the entire list of aliases.
+Manages the list of command aliases.
+ 
+`;alias add <short> <long>` Sets <short> as an alias of <long>. If a command starts with <short>, <short> is replaced with <long> and the command is then processed normally. Do not include prefixes in <short> or <long>. Example: `;alias cute pick cute` sets `;cute` to run `;pick cute` instead. To use an alias that includes spaces, surround the entire <short> term with "" quotes. If an alias for <short> already exists, it replaces the previous value of <long> with the new one.
+
+`;alias remove <short>` Removes <short> as an alias for anything.
+
+`;alias get` Gets the current list of aliases.
+
+`;alias clear` Clears all aliases.
  
 ---
 
