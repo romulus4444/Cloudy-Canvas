@@ -38,7 +38,7 @@
             {
                 case "":
                     await ReplyAsync(
-                        $"**__All Commands:__**{Environment.NewLine}**Booru Module:**{Environment.NewLine}`{prefix}pick ...`{Environment.NewLine}`{prefix}pickrecent ...`{Environment.NewLine}`{prefix}id ...`{Environment.NewLine}`{prefix}tags ...`{Environment.NewLine}`{prefix}featured`{Environment.NewLine}`{prefix}getspoilers`{Environment.NewLine}`{prefix}report ...`{Environment.NewLine}**Admin Module:**{Environment.NewLine}`{prefix}setup ...`{Environment.NewLine}`{prefix}admin ...`{Environment.NewLine}`{prefix}yellowlist ...`{Environment.NewLine}`{prefix}log ...`{Environment.NewLine}`{prefix}echo ...`{Environment.NewLine}`{prefix}setprefix ...`{Environment.NewLine}`{prefix}listentobots ...`{Environment.NewLine}`{prefix}alias ...`{Environment.NewLine}`{prefix}getsettings`{Environment.NewLine}`{prefix}refreshlists`{Environment.NewLine}**Info Module:**{Environment.NewLine}`{prefix}origin`{Environment.NewLine}`{prefix}about`{Environment.NewLine}{Environment.NewLine}Use `{prefix}help <command>` for more details on a particular command.{Environment.NewLine}Ping <@{Context.Client.CurrentUser.Id}> with any message if you forget the prefix. Yes, I know you needed to know the prefix to see this message, but try to remember in case someone else asks, ok?");
+                        $"**__All Commands:__**{Environment.NewLine}**Booru Module:**{Environment.NewLine}`{prefix}pick ...`{Environment.NewLine}`{prefix}pickrecent ...`{Environment.NewLine}`{prefix}id ...`{Environment.NewLine}`{prefix}tags ...`{Environment.NewLine}`{prefix}featured`{Environment.NewLine}`{prefix}getspoilers`{Environment.NewLine}`{prefix}report ...`{Environment.NewLine}**Admin Module:**{Environment.NewLine}`{prefix}setup ...`{Environment.NewLine}`{prefix}admin ...`{Environment.NewLine}`{prefix}yellowlist ...`{Environment.NewLine}`{prefix}log ...`{Environment.NewLine}`{prefix}echo ...`{Environment.NewLine}`{prefix}setprefix ...`{Environment.NewLine}`{prefix}listentobots ...`{Environment.NewLine}`{prefix}safemode ...`{Environment.NewLine}`{prefix}alias ...`{Environment.NewLine}`{prefix}getsettings`{Environment.NewLine}`{prefix}refreshlists`{Environment.NewLine}**Info Module:**{Environment.NewLine}`{prefix}origin`{Environment.NewLine}`{prefix}about`{Environment.NewLine}{Environment.NewLine}Use `{prefix}help <command>` for more details on a particular command.{Environment.NewLine}Ping <@{Context.Client.CurrentUser.Id}> with any message if you forget the prefix. Yes, I know you needed to know the prefix to see this message, but try to remember in case someone else asks, ok?");
                     break;
                 case "pick":
                     await ReplyAsync(
@@ -154,6 +154,10 @@
                 case "listentobots":
                     await ReplyAsync(
                         $"`{prefix}listentobots <pos/neg>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Toggles whether or not to run commands posted by other bots. Accepts y/n, yes/no, on/off, or true/false.");
+                    break;
+                case "safemode":
+                    await ReplyAsync(
+                        $"`{prefix}safemode <pos/neg>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Toggles whether or not to automatically append `safe` to all booru queries. Accepts y/n, yes/no, on/off, or true/false.");
                     break;
                 case "alias":
                     await ReplyAsync(

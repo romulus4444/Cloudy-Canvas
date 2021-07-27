@@ -572,6 +572,50 @@
             }
         }
 
+        [Command("safemode")]
+        [Summary("Sets the safemode")]
+        public async Task SafeModeCommandAsync([Summary("yes or no")] string command = "")
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            
+            switch (command.ToLower())
+            {
+                case "":
+                    var not = "";
+                    if (!settings.safeMode)
+                    {
+                        not = " not";
+                    }
+
+                    await ReplyAsync($"Currently{not} in Safe Mode.");
+                    break;
+                case "y":
+                case "yes":
+                case "on":
+                case "true":
+                    await ReplyAsync("Now in Safe Mode.");
+                    settings.safeMode = true;
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
+                    break;
+                case "n":
+                case "no":
+                case "off":
+                case "false":
+                    await ReplyAsync("Now leaving Safe Mode.");
+                    settings.safeMode = false;
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
+                    break;
+                default:
+                    await ReplyAsync("Invalid command.");
+                    break;
+            }
+        }
+
         [Command("alias")]
         [Summary("Sets an alias")]
         public async Task AliasCommandAsync(string subcommand = "", string shortForm = "", [Remainder] string longForm = "")
