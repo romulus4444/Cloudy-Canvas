@@ -41,7 +41,17 @@
             }
 
             var (code, imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings);
-            if (code >= 300)
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
                 await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
@@ -99,7 +109,17 @@
             }
 
             var (code, imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings);
-            if (code >= 300)
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
                 await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
@@ -155,10 +175,20 @@
             }
 
             var (code, imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings);
-            if (code >= 300)
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"id: requested {id}, HTTP ERROR {code}", Context);
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
             }
             else if (imageId == -1)
             {
@@ -198,10 +228,20 @@
             }
 
             var (code, tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings);
-            if (code >= 300)
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"tags: requested {id}, HTTP ERROR {code}", Context);
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
             }
             else if (tagList.Count == 0)
             {
@@ -262,10 +302,20 @@
             }
 
             var (code, featured) = await _booru.GetFeaturedImageIdAsync();
-            if (code >= 300)
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"featured, HTTP ERROR {code}", Context);
+                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
             }
             else
             {

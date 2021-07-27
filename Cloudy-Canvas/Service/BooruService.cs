@@ -26,15 +26,20 @@
             const long searchResult = -1;
             var emptyList = new List<string>();
             var returnResult = new Tuple<int?, long, bool, List<string>>(null, searchResult, false, emptyList);
-            var safeQuery = "id:" + imageId + ", safe";
+            var safeQuery = "id:" + imageId;
+            if (settings.safeMode)
+            {
+                safeQuery += ", safe";
+            }
+
             dynamic results;
             try
             {
                 results = await _settings.url
-                .AppendPathSegments("/api/v1/json/search/images")
-                .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.filterId })
-                .GetAsync()
-                .ReceiveJson();
+                    .AppendPathSegments("/api/v1/json/search/images")
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.filterId })
+                    .GetAsync()
+                    .ReceiveJson();
             }
             catch (FlurlHttpException ex)
             {
@@ -42,7 +47,7 @@
                 returnResult = new Tuple<int?, long, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4);
                 return returnResult;
             }
-            
+
             if (results.total <= 0)
             {
                 return returnResult;
@@ -62,7 +67,12 @@
             long numberOfResults = 0;
             var emptyList = new List<string>();
             var returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, false, emptyList);
-            var safeQuery = query + ", safe";
+            var safeQuery = query;
+            if (settings.safeMode)
+            {
+                safeQuery += ", safe";
+            }
+
             dynamic results;
             try
             {
@@ -100,7 +110,7 @@
                 returnResult = new Tuple<int?, long, long, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4, returnResult.Item5);
                 return returnResult;
             }
-            
+
             searchResult = results.images[0].id;
             bool spoiler = results.images[0].spoilered;
             var spoilerList = CheckSpoilerList(results.images[0].tag_ids, settings);
@@ -115,7 +125,12 @@
             long numberOfResults = 0;
             var emptyList = new List<string>();
             var returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, false, emptyList);
-            var safeQuery = query + ", safe";
+            var safeQuery = query;
+            if (settings.safeMode)
+            {
+                safeQuery += ", safe";
+            }
+
             dynamic results;
             try
             {
@@ -131,7 +146,7 @@
                 returnResult = new Tuple<int?, long, long, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4, returnResult.Item5);
                 return returnResult;
             }
-            
+
             numberOfResults = results.total;
             if (numberOfResults <= 0)
             {
@@ -176,7 +191,12 @@
             var emptyTagList = new List<string>();
             var emptySpoilerList = new List<string>();
             var returnResult = new Tuple<int?, List<string>, bool, List<string>>(null, emptyTagList, false, emptySpoilerList);
-            var safeQuery = "id:" + imageId + ", safe";
+            var safeQuery = "id:" + imageId;
+            if (settings.safeMode)
+            {
+                safeQuery += ", safe";
+            }
+
             dynamic results;
             try
             {
@@ -192,7 +212,7 @@
                 returnResult = new Tuple<int?, List<string>, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4);
                 return returnResult;
             }
-            
+
             if (results.total <= 0)
             {
                 return returnResult;
@@ -245,6 +265,7 @@
                     return defaultInt;
                 }
             }
+
             return results != null ? (int)results.filter.id : defaultInt;
         }
 
@@ -284,9 +305,8 @@
                 {
                 }
             }
-           
+
             return results != null ? results.tags[0].name.ToString() : defaultString;
-            
         }
 
         private async Task GetSpoilerTagsAsync(SocketCommandContext context, ServerSettings settings)
@@ -306,7 +326,7 @@
                 {
                 }
             }
-            
+
             var tagIds = results.filter.spoilered_tag_ids;
             var tagNames = await GetTagNamesAsync(tagIds);
             var combinedTags = new List<Tuple<long, string>>();

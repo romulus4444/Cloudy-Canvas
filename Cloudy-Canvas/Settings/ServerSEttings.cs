@@ -23,6 +23,7 @@
             reportChannel = 0;
             reportRole = 0;
             reportPing = false;
+            safeMode = true;
             ignoredChannels = new List<ulong>();
             ignoredRoles = new List<ulong>();
             allowedUsers = new List<ulong>();
@@ -44,6 +45,7 @@
         public ulong reportChannel { get; set; }
         public ulong reportRole { get; set; }
         public bool reportPing { get; set; }
+        public bool safeMode { get; set; }
         public List<ulong> ignoredChannels { get; set; }
         public List<ulong> ignoredRoles { get; set; }
         public List<ulong> allowedUsers { get; set; }
