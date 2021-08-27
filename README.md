@@ -244,9 +244,9 @@ Manages the list of terms users are unable to search for.
 
 Manages the list of command aliases.
  
-`;alias add <short> <long>` Sets <short> as an alias of <long>. If a command starts with <short>, <short> is replaced with <long> and the command is then processed normally. Do not include prefixes in <short> or <long>. Example: `;alias cute pick cute` sets `;cute` to run `;pick cute` instead. To use an alias that includes spaces, surround the entire <short> term with "" quotes. If an alias for <short> already exists, it replaces the previous value of <long> with the new one.
+`;alias add <short> <long>` Sets `<short>` as an alias of `<long>`. If a command starts with `<short>`, `<short>` is replaced with `<long>` and the command is then processed normally. Do not include prefixes in `<short>` or `<long>`. Example: `;alias cute pick cute` sets `;cute` to run `;pick cute` instead. To use an alias that includes spaces, surround the entire `<short>` term with "" quotes. If an alias for `<short>` already exists, it replaces the previous value of `<long>` with the new one.
 
-`;alias remove <short>` Removes <short> as an alias for anything.
+`;alias remove <short>` Removes `<short>` as an alias for anything.
 
 `;alias get` Gets the current list of aliases.
 
