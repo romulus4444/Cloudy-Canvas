@@ -889,7 +889,7 @@
             var channelRemoveId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
             if (channelRemoveId > 0)
             {
-                for (var x = settings.ignoredChannels.Count - 1; x > 0; x--)
+                for (var x = settings.ignoredChannels.Count - 1; x >= 0; x--)
                 {
                     var channel = settings.ignoredChannels[x];
                     if (channel != channelRemoveId)
@@ -900,6 +900,7 @@
                     settings.ignoredChannels.Remove(channel);
                     await FileHelper.SaveServerSettingsAsync(settings, Context);
                     await ReplyAsync($"Removed <#{channelRemoveId}> from ignore list.");
+                    return;
                 }
 
                 await ReplyAsync($"<#{channelRemoveId}> was not on the list.");
@@ -1015,7 +1016,7 @@
             var roleRemoveId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
             if (roleRemoveId > 0)
             {
-                for (var x = settings.ignoredRoles.Count - 1; x > 0; x--)
+                for (var x = settings.ignoredRoles.Count - 1; x >= 0; x--)
                 {
                     var role = settings.ignoredRoles[x];
                     if (role != roleRemoveId)
@@ -1026,6 +1027,7 @@
                     settings.ignoredRoles.Remove(role);
                     await FileHelper.SaveServerSettingsAsync(settings, Context);
                     await ReplyAsync($"Removed <@&{roleRemoveId}> from ignore list.", allowedMentions: AllowedMentions.None);
+                    return;
                 }
 
                 await ReplyAsync($"<@&{roleRemoveId}> was not on the list.", allowedMentions: AllowedMentions.None);
