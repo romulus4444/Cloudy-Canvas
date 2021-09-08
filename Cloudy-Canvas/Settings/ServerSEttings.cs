@@ -7,7 +7,7 @@
     {
         public ServerSettings()
         {
-            filterId = 175;
+            defaultFilterId = 175;
             adminChannel = 0;
             adminRole = 0;
             spoilerList = new List<Tuple<long, string>>();
@@ -27,9 +27,10 @@
             ignoredChannels = new List<ulong>();
             ignoredRoles = new List<ulong>();
             allowedUsers = new List<ulong>();
+            filteredChannels = new List<Tuple<ulong, int>>();
         }
 
-        public int filterId { get; set; }
+        public int defaultFilterId { get; set; }
         public ulong adminChannel { get; set; }
         public ulong adminRole { get; set; }
         public List<Tuple<long, string>> spoilerList { get; set; }
@@ -49,5 +50,6 @@
         public List<ulong> ignoredChannels { get; set; }
         public List<ulong> ignoredRoles { get; set; }
         public List<ulong> allowedUsers { get; set; }
+        public List<Tuple<ulong, int>> filteredChannels { get; set; }
     }
 }

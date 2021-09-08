@@ -37,7 +37,7 @@
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.filterId })
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.defaultFilterId })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -78,7 +78,7 @@
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, filter_id = settings.filterId })
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, filter_id = settings.defaultFilterId })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -100,7 +100,7 @@
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page, filter_id = settings.filterId })
+                    .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page, filter_id = settings.defaultFilterId })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -136,7 +136,7 @@
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, sf = "first_seen_at", sd = "desc", filter_id = settings.filterId })
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, sf = "first_seen_at", sd = "desc", filter_id = settings.defaultFilterId })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -202,7 +202,7 @@
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.filterId })
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.defaultFilterId })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -316,7 +316,7 @@
             try
             {
                 results = await _settings.url
-                    .AppendPathSegments($"/api/v1/json/filters/{settings.filterId}")
+                    .AppendPathSegments($"/api/v1/json/filters/{settings.defaultFilterId}")
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -344,7 +344,7 @@
         {
             //GET	/api/v1/json/filters/user
             var hiddenTagResults = await _settings.url
-                .AppendPathSegments($"/api/v1/json/filters/{settings.filterId}")
+                .AppendPathSegments($"/api/v1/json/filters/{settings.defaultFilterId}")
                 .GetAsync()
                 .ReceiveJson();
             var hiddenTagIds = hiddenTagResults.filter.hidden_tag_ids;
