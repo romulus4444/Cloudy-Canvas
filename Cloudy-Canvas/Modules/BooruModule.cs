@@ -40,7 +40,7 @@
                 return;
             }
 
-            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings);
+            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings, Context.Channel.Id);
             if (code >= 300 && code < 400)
             {
                 await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
@@ -108,7 +108,7 @@
                 return;
             }
 
-            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings);
+            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings, Context.Channel.Id);
             if (code >= 300 && code < 400)
             {
                 await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
@@ -174,7 +174,7 @@
                 return;
             }
 
-            var (code, imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings);
+            var (code, imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings, Context.Channel.Id);
             if (code >= 300 && code < 400)
             {
                 await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
@@ -227,7 +227,7 @@
                 return;
             }
 
-            var (code, tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings);
+            var (code, tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings, Context.Channel.Id);
             if (code >= 300 && code < 400)
             {
                 await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
@@ -341,7 +341,7 @@
             }
             else
             {
-                var (_, imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId, settings);
+                var (_, imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId, settings, Context.Channel.Id);
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");

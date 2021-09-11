@@ -20,7 +20,7 @@
             _settings = settings.Value;
         }
 
-        public async Task<Tuple<int?, long, bool, List<string>>> GetImageByIdAsync(long imageId, ServerSettings settings)
+        public async Task<Tuple<int?, long, bool, List<string>>> GetImageByIdAsync(long imageId, ServerSettings settings, ulong channelId)
         {
             //GET	/api/v1/json/images/:image_id
             const long searchResult = -1;
@@ -32,12 +32,22 @@
                 safeQuery += ", safe";
             }
 
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            {
+                if (filteredChannel == channelId)
+                {
+                    filterId = filteredId;
+                }
+
+            }
+
             dynamic results;
             try
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.defaultFilterId })
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = filterId })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -59,7 +69,7 @@
             return (returnResult);
         }
 
-        public async Task<Tuple<int?, long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query, ServerSettings settings)
+        public async Task<Tuple<int?, long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query, ServerSettings settings, ulong channelId)
         {
             //GET	/api/v1/json/search/images?q=safe
             int? code;
@@ -73,12 +83,21 @@
                 safeQuery += ", safe";
             }
 
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            {
+                if (filteredChannel == channelId)
+                {
+                    filterId = filteredId;
+                }
+
+            }
             dynamic results;
             try
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, filter_id = settings.defaultFilterId })
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, filter_id = filterId })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -100,7 +119,7 @@
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page, filter_id = settings.defaultFilterId })
+                    .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page, filter_id = filterId })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -118,7 +137,7 @@
             return (returnResult);
         }
 
-        public async Task<Tuple<int?, long, long, bool, List<string>>> GetFirstRecentImageByQueryAsync(string query, ServerSettings settings)
+        public async Task<Tuple<int?, long, long, bool, List<string>>> GetFirstRecentImageByQueryAsync(string query, ServerSettings settings, ulong channelId)
         {
             //GET	/api/v1/json/search/images?q=safe
             long searchResult = -1;
@@ -131,12 +150,22 @@
                 safeQuery += ", safe";
             }
 
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            {
+                if (filteredChannel == channelId)
+                {
+                    filterId = filteredId;
+                }
+
+            }
+
             dynamic results;
             try
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, sf = "first_seen_at", sd = "desc", filter_id = settings.defaultFilterId })
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, sf = "first_seen_at", sd = "desc", filter_id = filterId })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -185,7 +214,7 @@
             return returnResult;
         }
 
-        public async Task<Tuple<int?, List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId, ServerSettings settings)
+        public async Task<Tuple<int?, List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId, ServerSettings settings, ulong channelId)
         {
             //GET	/api/v1/json/images/:image_id
             var emptyTagList = new List<string>();
@@ -197,12 +226,22 @@
                 safeQuery += ", safe";
             }
 
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            {
+                if (filteredChannel == channelId)
+                {
+                    filterId = filteredId;
+                }
+
+            }
+
             dynamic results;
             try
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = settings.defaultFilterId })
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, filter_id = filterId })
                     .GetAsync()
                     .ReceiveJson();
             }
