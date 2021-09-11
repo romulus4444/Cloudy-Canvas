@@ -20,7 +20,7 @@
             _settings = settings.Value;
         }
 
-        public async Task<Tuple<int?, long, bool, List<string>>> GetImageByIdAsync(long imageId, ServerSettings settings, ulong channelId)
+        public async Task<Tuple<int?, long, bool, List<string>>> GetImageByIdAsync(long imageId, ServerSettings settings, int filterId)
         {
             //GET	/api/v1/json/images/:image_id
             const long searchResult = -1;
@@ -30,16 +30,6 @@
             if (settings.safeMode)
             {
                 safeQuery += ", safe";
-            }
-
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
-            {
-                if (filteredChannel == channelId)
-                {
-                    filterId = filteredId;
-                }
-
             }
 
             dynamic results;
@@ -69,7 +59,7 @@
             return (returnResult);
         }
 
-        public async Task<Tuple<int?, long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query, ServerSettings settings, ulong channelId)
+        public async Task<Tuple<int?, long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query, ServerSettings settings, int filterId)
         {
             //GET	/api/v1/json/search/images?q=safe
             int? code;
@@ -83,15 +73,6 @@
                 safeQuery += ", safe";
             }
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
-            {
-                if (filteredChannel == channelId)
-                {
-                    filterId = filteredId;
-                }
-
-            }
             dynamic results;
             try
             {
@@ -137,7 +118,7 @@
             return (returnResult);
         }
 
-        public async Task<Tuple<int?, long, long, bool, List<string>>> GetFirstRecentImageByQueryAsync(string query, ServerSettings settings, ulong channelId)
+        public async Task<Tuple<int?, long, long, bool, List<string>>> GetFirstRecentImageByQueryAsync(string query, ServerSettings settings, int filterId)
         {
             //GET	/api/v1/json/search/images?q=safe
             long searchResult = -1;
@@ -148,16 +129,6 @@
             if (settings.safeMode)
             {
                 safeQuery += ", safe";
-            }
-
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
-            {
-                if (filteredChannel == channelId)
-                {
-                    filterId = filteredId;
-                }
-
             }
 
             dynamic results;
@@ -214,7 +185,7 @@
             return returnResult;
         }
 
-        public async Task<Tuple<int?, List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId, ServerSettings settings, ulong channelId)
+        public async Task<Tuple<int?, List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId, ServerSettings settings, int filterId)
         {
             //GET	/api/v1/json/images/:image_id
             var emptyTagList = new List<string>();
@@ -224,16 +195,6 @@
             if (settings.safeMode)
             {
                 safeQuery += ", safe";
-            }
-
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
-            {
-                if (filteredChannel == channelId)
-                {
-                    filterId = filteredId;
-                }
-
             }
 
             dynamic results;
