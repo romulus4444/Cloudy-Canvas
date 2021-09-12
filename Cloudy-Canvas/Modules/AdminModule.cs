@@ -40,7 +40,7 @@
                 filterId = 175;
             }
 
-            settings.filterId = filterId;
+            settings.defaultFilterId = filterId;
             await ReplyAsync($"Using <https://manebooru.art/filters/{filterId}>");
             await ReplyAsync("Moving in to my new place...");
             if (adminChannelName == "")
@@ -87,7 +87,7 @@
             settings.reportChannel = settings.adminChannel;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync(
-                "Settings saved. Now building the spoiler list and redlist. Please wait until they are completed. This may take a few minutes, depending on how many tags are spoilered or hidden in the filter.");
+                "Settings saved. Now building the spoiler list and redlist. This may take a few minutes, depending on how many tags are spoilered or hidden in the filter. Please wait until they are completed; I will let you know when I am finished.");
             await _booru.RefreshListsAsync(Context, settings);
             await ReplyAsync("The lists have been built. I'm all set! Type `;help admin` for a list of other admin setup commands.");
             await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
@@ -98,7 +98,8 @@
         public async Task AdminCommandAsync(
             [Summary("First subcommand")] string commandOne = "",
             [Summary("Second subcommand")] string commandTwo = "",
-            [Remainder] [Summary("Third subcommand")] string commandThree = "")
+            [Summary("Third subcommand")] string commandThree = "", 
+            [Remainder] [Summary("Fourth subcommand")] int commandFour = 175)
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
@@ -201,6 +202,38 @@
                             settings.ignoredChannels.Clear();
                             await FileHelper.SaveServerSettingsAsync(settings, Context);
                             await ReplyAsync("Ignored channels list cleared.");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context, true);
+                            break;
+                        default:
+                            await ReplyAsync($"Invalid command {commandTwo}");
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
+                            break;
+                    }
+
+                    break;
+                case "filterchannel":
+                    switch (commandTwo)
+                    {
+                        case "":
+                            await ReplyAsync("You must specify a subcommand.");
+                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
+                            break;
+                        case "get":
+                            await FilterChannelGetAsync(settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
+                            break;
+                        case "add":
+                            await FilterChannelAddAsync(commandThree, commandFour, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "remove":
+                            await FilterChannelRemoveAsync(commandThree, settings);
+                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
+                            break;
+                        case "clear":
+                            settings.filteredChannels.Clear();
+                            await FileHelper.SaveServerSettingsAsync(settings, Context);
+                            await ReplyAsync("Channel-specific filters cleared.");
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context, true);
                             break;
                         default:
@@ -572,6 +605,50 @@
             }
         }
 
+        [Command("safemode")]
+        [Summary("Sets the safemode")]
+        public async Task SafeModeCommandAsync([Summary("yes or no")] string command = "")
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            
+            switch (command.ToLower())
+            {
+                case "":
+                    var not = "";
+                    if (!settings.safeMode)
+                    {
+                        not = " not";
+                    }
+
+                    await ReplyAsync($"Currently{not} in Safe Mode.");
+                    break;
+                case "y":
+                case "yes":
+                case "on":
+                case "true":
+                    await ReplyAsync("Now in Safe Mode.");
+                    settings.safeMode = true;
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
+                    break;
+                case "n":
+                case "no":
+                case "off":
+                case "false":
+                    await ReplyAsync("Now leaving Safe Mode.");
+                    settings.safeMode = false;
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
+                    break;
+                default:
+                    await ReplyAsync("Invalid command.");
+                    break;
+            }
+        }
+
         [Command("alias")]
         [Summary("Sets an alias")]
         public async Task AliasCommandAsync(string subcommand = "", string shortForm = "", [Remainder] string longForm = "")
@@ -718,7 +795,7 @@
             var filterId = await _booru.CheckFilterAsync(int.Parse(filter));
             if (filterId > 0)
             {
-                settings.filterId = filterId;
+                settings.defaultFilterId = filterId;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Filter set to {filterId}. Please wait while the spoiler list and redlist are rebuilt.");
                 await _booru.RefreshListsAsync(Context, settings);
@@ -732,7 +809,7 @@
 
         private async Task FilterGetAsync(ServerSettings settings)
         {
-            await ReplyAsync($"The current filter is <https://manebooru.art/filters/{settings.filterId}>");
+            await ReplyAsync($"The current filter is <https://manebooru.art/filters/{settings.defaultFilterId}>");
         }
 
         private async Task AdminChannelSetAsync(string channelName, ServerSettings settings)
@@ -812,7 +889,7 @@
             var channelRemoveId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
             if (channelRemoveId > 0)
             {
-                for (var x = settings.ignoredChannels.Count - 1; x > 0; x--)
+                for (var x = settings.ignoredChannels.Count - 1; x >= 0; x--)
                 {
                     var channel = settings.ignoredChannels[x];
                     if (channel != channelRemoveId)
@@ -823,6 +900,7 @@
                     settings.ignoredChannels.Remove(channel);
                     await FileHelper.SaveServerSettingsAsync(settings, Context);
                     await ReplyAsync($"Removed <#{channelRemoveId}> from ignore list.");
+                    return;
                 }
 
                 await ReplyAsync($"<#{channelRemoveId}> was not on the list.");
@@ -859,12 +937,98 @@
             }
         }
 
+        private async Task FilterChannelGetAsync(ServerSettings settings)
+        {
+            if (settings.filteredChannels.Count > 0)
+            {
+                var output = $"__Channel-Specific Filter List:__{Environment.NewLine}(Any channel not listed here uses the server filter {settings.defaultFilterId}){Environment.NewLine}";
+                foreach (var (channel, filter) in settings.filteredChannels)
+                {
+                    output += $"<#{channel}>: Filter {filter}{Environment.NewLine}";
+                }
+
+                await ReplyAsync(output);
+            }
+            else
+            {
+                await ReplyAsync($"No channel-specific filters are currently set. All channels use the server filter {settings.defaultFilterId}.");
+            }
+        }
+
+        private async Task FilterChannelRemoveAsync(string channelName, ServerSettings settings)
+        {
+            var channelRemoveId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelRemoveId > 0)
+            {
+                for (var x = settings.filteredChannels.Count - 1; x >= 0; x--)
+                {
+                    var channel = settings.filteredChannels[x];
+                    if (channel.Item1 != channelRemoveId)
+                    {
+                        continue;
+                    }
+
+                    settings.filteredChannels.Remove(channel);
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
+                    await ReplyAsync($"Removed <#{channelRemoveId}> from channel-specific filter list.");
+                    return;
+                }
+
+                await ReplyAsync($"<#{channelRemoveId}> was not on the list.");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
+        private async Task FilterChannelAddAsync(string channelName, int filterId, ServerSettings settings)
+        {
+            var channelAddId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
+            if (channelAddId > 0)
+            {
+                var validFilter = await _booru.CheckFilterAsync(filterId);
+                if (validFilter == 0)
+                {
+                    await ReplyAsync($"Invalid filter {filterId}. Please make sure that filter exists and is public. <#{channelAddId}> will not be added to the list at this time.");
+                    return;
+                }
+
+                if (validFilter == settings.defaultFilterId)
+                {
+                    await ReplyAsync("That's the server default filter already.");
+                    return;
+                }
+                foreach (var channel in settings.filteredChannels)
+                {
+                    if (channel.Item1 != channelAddId)
+                    {
+                        continue;
+                    }
+
+                    await ReplyAsync($"Updated the filter for <#{channelAddId}> from {channel.Item2} to {filterId}.");
+                    settings.filteredChannels.Remove(channel);
+                    settings.filteredChannels.Add(new Tuple<ulong, int>(channelAddId, filterId));
+                    await FileHelper.SaveServerSettingsAsync(settings, Context);
+                    return;
+                }
+
+                settings.filteredChannels.Add(new Tuple<ulong, int>(channelAddId, filterId));
+                await FileHelper.SaveServerSettingsAsync(settings, Context);
+                await ReplyAsync($"Set <#{channelAddId}> to use filter {filterId}.");
+            }
+            else
+            {
+                await ReplyAsync($"Invalid channel name #{channelName}.");
+            }
+        }
+
         private async Task IgnoreRoleRemoveAsync(string roleName, ServerSettings settings)
         {
             var roleRemoveId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
             if (roleRemoveId > 0)
             {
-                for (var x = settings.ignoredRoles.Count - 1; x > 0; x--)
+                for (var x = settings.ignoredRoles.Count - 1; x >= 0; x--)
                 {
                     var role = settings.ignoredRoles[x];
                     if (role != roleRemoveId)
@@ -875,6 +1039,7 @@
                     settings.ignoredRoles.Remove(role);
                     await FileHelper.SaveServerSettingsAsync(settings, Context);
                     await ReplyAsync($"Removed <@&{roleRemoveId}> from ignore list.", allowedMentions: AllowedMentions.None);
+                    return;
                 }
 
                 await ReplyAsync($"<@&{roleRemoveId}> was not on the list.", allowedMentions: AllowedMentions.None);
