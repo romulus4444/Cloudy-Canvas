@@ -163,12 +163,12 @@
 
         private static ulong ConvertUserPingToId(string userPing)
         {
-            if (!userPing.Contains("<@") || !userPing.Contains(">"))
+            if (!userPing.Contains("<@!") || !userPing.Contains(">"))
             {
                 return 0;
             }
 
-            var frontTrim = userPing.Substring(2);
+            var frontTrim = userPing.Substring(3);
             var trim = frontTrim.Split('>', 2)[0];
             return ulong.Parse(trim);
         }

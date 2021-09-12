@@ -27,6 +27,7 @@
         [Summary("Selects an image at random")]
         public async Task PickCommandAsync([Remainder] [Summary("Query string")] string query = "*")
         {
+            var checkLists = true;
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
@@ -35,13 +36,38 @@
 
             query = _mixins.Transpile(query);
 
-            if (!await CheckBadlistsAsync(query, settings))
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
             {
-                return;
+                if (filteredChannel != Context.Channel.Id)
+                {
+                    continue;
+                }
+
+                filterId = filteredId;
+                checkLists = false;
             }
 
-            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings);
-            if (code >= 300)
+            if (checkLists)
+            {
+                if (!await CheckBadlistsAsync(query, settings))
+                {
+                    return;
+                }
+            }
+
+            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings, filterId);
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
                 await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
@@ -85,6 +111,7 @@
         [Summary("Selects first image in a search")]
         public async Task PickRecentCommandAsync([Remainder] [Summary("Query string")] string query = "*")
         {
+            var checkLists = true;
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
@@ -93,13 +120,38 @@
 
             query = _mixins.Transpile(query);
 
-            if (!await CheckBadlistsAsync(query, settings))
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
             {
-                return;
+                if (filteredChannel != Context.Channel.Id)
+                {
+                    continue;
+                }
+
+                filterId = filteredId;
+                checkLists = false;
             }
 
-            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings);
-            if (code >= 300)
+            if (checkLists)
+            {
+                if (!await CheckBadlistsAsync(query, settings))
+                {
+                    return;
+                }
+            }
+
+            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings, filterId);
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
                 await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
@@ -143,22 +195,48 @@
         [Summary("Selects an image by image id")]
         public async Task IdCommandAsync([Summary("The image Id")] long id = 4010266)
         {
+            var checkLists = true;
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlistsAsync(id.ToString(), settings))
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
             {
-                return;
+                if (filteredChannel != Context.Channel.Id)
+                {
+                    continue;
+                }
+
+                filterId = filteredId;
+                checkLists = false;
             }
 
-            var (code, imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings);
-            if (code >= 300)
+            if (checkLists)
+            {
+                if (!await CheckBadlistsAsync(id.ToString(), settings))
+                {
+                    return;
+                }
+            }
+
+            var (code, imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings, filterId);
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"id: requested {id}, HTTP ERROR {code}", Context);
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
             }
             else if (imageId == -1)
             {
@@ -186,22 +264,48 @@
         [Summary("Selects a tag list by image Id")]
         public async Task TagsCommandAsync([Summary("The image Id")] long id = 4010266)
         {
+            var checkLists = true;
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            if (!await CheckBadlistsAsync(id.ToString(), settings))
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
             {
-                return;
+                if (filteredChannel != Context.Channel.Id)
+                {
+                    continue;
+                }
+
+                filterId = filteredId;
+                checkLists = false;
             }
 
-            var (code, tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings);
-            if (code >= 300)
+            if (checkLists)
+            {
+                if (!await CheckBadlistsAsync(id.ToString(), settings))
+                {
+                    return;
+                }
+            }
+
+            var (code, tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings, filterId);
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"tags: requested {id}, HTTP ERROR {code}", Context);
+                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
             }
             else if (tagList.Count == 0)
             {
@@ -262,10 +366,20 @@
             }
 
             var (code, featured) = await _booru.GetFeaturedImageIdAsync();
-            if (code >= 300)
+            if (code >= 300 && code < 400)
+            {
+                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 400 && code < 500)
+            {
+                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+            }
+            else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"featured, HTTP ERROR {code}", Context);
+                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
             }
             else
             {
@@ -278,20 +392,38 @@
         [Summary("Reports an image id to the admin channel")]
         public async Task ReportAsync(long reportedImageId, [Remainder] string reason = "")
         {
+            var checkLists = true;
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
             {
                 return;
             }
 
-            var badTerms = BadlistHelper.CheckYellowList(reportedImageId.ToString(), settings);
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            {
+                if (filteredChannel != Context.Channel.Id)
+                {
+                    continue;
+                }
+
+                filterId = filteredId;
+                checkLists = false;
+            }
+
+            var badTerms = "";
+            if (checkLists)
+            {
+                badTerms = BadlistHelper.CheckYellowList(reportedImageId.ToString(), settings);
+            }
+
             if (badTerms != "")
             {
                 await ReplyAsync("That image is already blocked.");
             }
             else
             {
-                var (_, imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId, settings);
+                var (_, imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId, settings, filterId);
                 if (imageId == -1)
                 {
                     await ReplyAsync("I could not find that image.");
@@ -388,6 +520,7 @@
                 {
                     continue;
                 }
+
                 newList.Add(tag);
             }
 
