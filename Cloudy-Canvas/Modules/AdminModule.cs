@@ -987,6 +987,18 @@
             var channelAddId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
             if (channelAddId > 0)
             {
+                var validFilter = await _booru.CheckFilterAsync(filterId);
+                if (validFilter == 0)
+                {
+                    await ReplyAsync($"Invalid filter {filterId}. Please make sure that filter exists and is public. <#{channelAddId}> will not be added to the list at this time.");
+                    return;
+                }
+
+                if (validFilter == settings.defaultFilterId)
+                {
+                    await ReplyAsync("That's the server default filter already.");
+                    return;
+                }
                 foreach (var channel in settings.filteredChannels)
                 {
                     if (channel.Item1 != channelAddId)
