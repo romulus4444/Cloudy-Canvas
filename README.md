@@ -107,7 +107,19 @@ Manages the admin role.
 
 ---
 
-Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.
+ Manages the list of channel-specific filters. NOTE: red and yellow list checks are disabled for any channels on this list! Moderators will need to keep an eye on searches performed here!
+
+`;admin filterchannel get` Gets the current list of channel-specific filters.
+
+`;admin filterchannel add <channel> <filterId>` Sets <channel> to use filter #<filterId>. Validates the filter first. Accepts a channel ping or plain text.
+ 
+`;admin filterchannel remove <channel>` Removes <channel> from the list of channel-specific filters. This channel will now use the default server filter. Accepts a channel ping or plain text.
+ 
+`;admin filterchannel clear` Clears the list of channel-specific filters. All channels will use the default server filter.
+ 
+ ---
+ 
+ Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.
 
 `;admin ignorechannel get` Gets the current list of ignored channels.
 
@@ -239,6 +251,10 @@ Manages the list of terms users are unable to search for.
  ---
 
 `;listentobots <pos/neg>` Toggles whether or not to run commands posted by other bots. Accepts `y/n`, `yes/no`, `on/off`, or `true/false`.
+
+---
+
+`;safemode <pos/neg>` Toggles whether or not to automatically append `safe` to all booru queries. This overrides any channel-specific filters! Accepts `y/n`, `yes/no`, `on/off`, or `true/false`.
 
 ---
 
