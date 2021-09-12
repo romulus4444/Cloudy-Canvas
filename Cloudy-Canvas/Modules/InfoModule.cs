@@ -91,7 +91,7 @@
                             break;
                         case "filterchannel":
                             await ReplyAsync(
-                                $"__{prefix}admin filterchannel Commands:__{Environment.NewLine}*Manages the list of channel-specific filters. NOTE: red and yellow list checks are disabled for any channels on this list!*{Environment.NewLine}`{prefix}admin filterchannel get` Gets the current list of channel-specific filters.{Environment.NewLine}`{prefix}admin filterchannel add <channel> <filterId>` Sets <channel> to use filter #<filterId>. Validates the filter first. Accepts a channel ping or plain text.{Environment.NewLine}`{prefix}admin filterchannel remove <channel>` Removes <channel> from the list of channel-specif filters. This channel will now use the default server filter. Accepts a channel ping or plain text.{Environment.NewLine}`{prefix}admin filterchannel clear` Clears the list of channel-specific filters. All channels will use the default server filter.");
+                                $"__{prefix}admin filterchannel Commands:__{Environment.NewLine}*Manages the list of channel-specific filters. NOTE: red and yellow list checks are disabled for any channels on this list!*{Environment.NewLine}`{prefix}admin filterchannel get` Gets the current list of channel-specific filters.{Environment.NewLine}`{prefix}admin filterchannel add <channel> <filterId>` Sets <channel> to use filter #<filterId>. Validates the filter first. Accepts a channel ping or plain text.{Environment.NewLine}`{prefix}admin filterchannel remove <channel>` Removes <channel> from the list of channel-specific filters. This channel will now use the default server filter. Accepts a channel ping or plain text.{Environment.NewLine}`{prefix}admin filterchannel clear` Clears the list of channel-specific filters. All channels will use the default server filter.");
                             break;
                         case "ignorechannel":
                             await ReplyAsync(
@@ -161,7 +161,7 @@
                     break;
                 case "safemode":
                     await ReplyAsync(
-                        $"`{prefix}safemode <pos/neg>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Toggles whether or not to automatically append `safe` to all booru queries. Accepts y/n, yes/no, on/off, or true/false.");
+                        $"`{prefix}safemode <pos/neg>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Toggles whether or not to automatically append `safe` to all booru queries. This overrides any channel-specific filters! Accepts y/n, yes/no, on/off, or true/false.");
                     break;
                 case "alias":
                     await ReplyAsync(
