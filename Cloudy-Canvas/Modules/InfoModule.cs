@@ -4,7 +4,6 @@
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
-    using Cloudy_Canvas.Settings;
     using Discord;
     using Discord.Commands;
 
@@ -201,7 +200,8 @@
             }
 
             await _logger.Log("origin", Context);
-            await ReplyAsync($"Here is where I came from, thanks to ConfettiCakez!{Environment.NewLine}<https://www.deviantart.com/confetticakez>{Environment.NewLine}https://imgur.com/a/XUHhKz1");
+            await ReplyAsync(
+                $"Here is where I came from, thanks to ConfettiCakez!{Environment.NewLine}<https://www.deviantart.com/confetticakez>{Environment.NewLine}https://imgur.com/a/XUHhKz1");
         }
 
         [Command("about")]

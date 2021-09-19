@@ -36,7 +36,8 @@
             var checkedFilterId = await _booru.CheckFilterAsync(filterId);
             if (checkedFilterId == 0)
             {
-                await ReplyAsync("I could not find that filter; please make sure it exists and is set to public. You may change the filter later with `;admin filter set <filterId>`. Continuing setup with my default filter of 175.");
+                await ReplyAsync(
+                    "I could not find that filter; please make sure it exists and is set to public. You may change the filter later with `;admin filter set <filterId>`. Continuing setup with my default filter of 175.");
                 filterId = 175;
             }
 
@@ -57,6 +58,8 @@
                 settings.adminChannel = channelSetId;
                 await ReplyAsync($"Moved into <#{channelSetId}>!");
                 var adminChannel = Context.Guild.GetTextChannel(settings.adminChannel);
+                _servers.guildList[Context.Guild.Id] = adminChannel.Id;
+                await FileHelper.SaveAllPresettingsAsync(_servers);
                 await adminChannel.SendMessageAsync("Howdy neighbors! I will send important message here now.");
             }
             else
@@ -98,7 +101,7 @@
         public async Task AdminCommandAsync(
             [Summary("First subcommand")] string commandOne = "",
             [Summary("Second subcommand")] string commandTwo = "",
-            [Summary("Third subcommand")] string commandThree = "", 
+            [Summary("Third subcommand")] string commandThree = "",
             [Remainder] [Summary("Fourth subcommand")] int commandFour = 175)
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
@@ -615,7 +618,7 @@
                 return;
             }
 
-            
+
             switch (command.ToLower())
             {
                 case "":
@@ -733,21 +736,15 @@
                 return;
             }
 
-            await _logger.Log($"getsettings: <SUCCESS>", Context);
+            await _logger.Log("getsettings: <SUCCESS>", Context);
         }
 
-        private async Task<string> SettingsGetAsync(SocketCommandContext context, ServerSettings settings)
+        [Command("broadcast")]
+        [Summary("Broadcasts a message to all servers")]
+        [RequireOwner]
+        public async Task BroadcastCommandAsync()
         {
-            await ReplyAsync("Retrieving settings file...");
-            var filepath = FileHelper.SetUpFilepath(FilePathType.Server, "settings", "conf", Context);
-            if (!File.Exists(filepath))
-            {
-                return "<ERROR> File does not exist";
-            }
-
-            var logPostChannel = context.Guild.GetTextChannel(settings.logPostChannel);
-            await logPostChannel.SendFileAsync(filepath, $"{context.Guild.Name}-settings.conf");
-            return "SUCCESS";
+            await ReplyAsync("Message broadcasted to each guild's admin channel.");
         }
 
         [Command("<blank message>")]
@@ -790,6 +787,20 @@
             await ReplyAsync($"The current prefix is '{serverPresettings.prefix}'. Type `{serverPresettings.prefix}help` for a list of commands.");
         }
 
+        private async Task<string> SettingsGetAsync(SocketCommandContext context, ServerSettings settings)
+        {
+            await ReplyAsync("Retrieving settings file...");
+            var filepath = FileHelper.SetUpFilepath(FilePathType.Server, "settings", "conf", Context);
+            if (!File.Exists(filepath))
+            {
+                return "<ERROR> File does not exist";
+            }
+
+            var logPostChannel = context.Guild.GetTextChannel(settings.logPostChannel);
+            await logPostChannel.SendFileAsync(filepath, $"{context.Guild.Name}-settings.conf");
+            return "SUCCESS";
+        }
+
         private async Task FilterSetAsync(string filter, ServerSettings settings)
         {
             var filterId = await _booru.CheckFilterAsync(int.Parse(filter));
@@ -819,6 +830,8 @@
             {
                 settings.adminChannel = channelSetId;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
+                _servers.guildList[Context.Guild.Id] = channelSetId;
+                await FileHelper.SaveAllPresettingsAsync(_servers);
                 await ReplyAsync($"Admin channel set to <#{channelSetId}>");
             }
             else
@@ -941,7 +954,8 @@
         {
             if (settings.filteredChannels.Count > 0)
             {
-                var output = $"__Channel-Specific Filter List:__{Environment.NewLine}(Any channel not listed here uses the server filter {settings.defaultFilterId}){Environment.NewLine}";
+                var output =
+                    $"__Channel-Specific Filter List:__{Environment.NewLine}(Any channel not listed here uses the server filter {settings.defaultFilterId}){Environment.NewLine}";
                 foreach (var (channel, filter) in settings.filteredChannels)
                 {
                     output += $"<#{channel}>: Filter {filter}{Environment.NewLine}";
@@ -990,7 +1004,8 @@
                 var validFilter = await _booru.CheckFilterAsync(filterId);
                 if (validFilter == 0)
                 {
-                    await ReplyAsync($"Invalid filter {filterId}. Please make sure that filter exists and is public. <#{channelAddId}> will not be added to the list at this time.");
+                    await ReplyAsync(
+                        $"Invalid filter {filterId}. Please make sure that filter exists and is public. <#{channelAddId}> will not be added to the list at this time.");
                     return;
                 }
 
@@ -999,6 +1014,7 @@
                     await ReplyAsync("That's the server default filter already.");
                     return;
                 }
+
                 foreach (var channel in settings.filteredChannels)
                 {
                     if (channel.Item1 != channelAddId)
