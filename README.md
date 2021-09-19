@@ -3,7 +3,7 @@ Created April 5th, 2021
 
 A Discord bot for interfacing with the [Manebooru](https://manebooru.art/) imageboard. The discord server can be found at https://discord.gg/K4pq9AnN8F
 
-Written by Raymond Welch ([@Dr. Romulus#4444](https://github.com/romulus4444)) in C# using Discord.net. Special thanks to Ember Heartshine for hosting and HenBasket for testing.
+Written by Raymond Welch ([@Dr. Romulus#4444](https://github.com/romulus4444)) in C# using Discord.net. Special thanks to Ember Heartshine for hosting.
 
 I am currently only considering requests to add Cloudy Canvas to servers that I am in, but feel free to contact me on Discord about it.
 
