@@ -70,7 +70,6 @@ namespace Cloudy_Canvas
         private async Task HandleCommandAsync(SocketMessage messageParam)
         {
             var message = messageParam as SocketUserMessage;
-            var newMessage = messageParam;
             var argPos = 0;
             var context = new SocketCommandContext(_client, message);
             var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
@@ -98,7 +97,7 @@ namespace Cloudy_Canvas
                 {
                     parsedMessage = DiscordHelper.CheckAliasesAsync(message.Content, settings);
                 }
-                
+
                 if (parsedMessage == "")
                 {
                     parsedMessage = "<blank message>";
@@ -124,7 +123,17 @@ namespace Cloudy_Canvas
                         parsedMessage = "<invalid command>";
                     }
                 }
-                
+
+                if (parsedMessage.Split(" ")[0] == "broadcast")
+                {
+                    if (context.User.Id == 221742476153716736) //Dr. Romulus#4444
+                    {
+                        var messagePart = parsedMessage.Split(' ', 2)[1];
+                        await BroadcastAsync(messagePart);
+                        await context.Channel.SendMessageAsync("Message broadcasted to all servers' admin channels.");
+                    }
+                }
+
                 await _commands.ExecuteAsync(context, parsedMessage, _services.BuildServiceProvider());
             }
         }
@@ -133,6 +142,16 @@ namespace Cloudy_Canvas
         {
             _logger.LogInformation(msg.Message);
             return Task.CompletedTask;
+        }
+
+        [RequireOwner]
+        private async Task BroadcastAsync(string message = "")
+        {
+            var guildList = _servers.guildList;
+            foreach (var (guild, adminChannel) in guildList)
+            {
+                await _client.GetGuild(guild).GetTextChannel(adminChannel).SendMessageAsync(message);
+            }
         }
     }
 }

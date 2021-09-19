@@ -12,10 +12,12 @@
     public class InfoModule : ModuleBase<SocketCommandContext>
     {
         private readonly LoggingService _logger;
+        private readonly AllPreloadedSettings _servers;
 
-        public InfoModule(LoggingService logger)
+        public InfoModule(LoggingService logger, AllPreloadedSettings servers)
         {
             _logger = logger;
+            _servers = servers;
         }
 
         [Command("help")]
@@ -201,7 +203,8 @@
             }
 
             await _logger.Log("origin", Context);
-            await ReplyAsync($"Here is where I came from, thanks to ConfettiCakez!{Environment.NewLine}<https://www.deviantart.com/confetticakez>{Environment.NewLine}https://imgur.com/a/XUHhKz1");
+            await ReplyAsync(
+                $"Here is where I came from, thanks to ConfettiCakez!{Environment.NewLine}<https://www.deviantart.com/confetticakez>{Environment.NewLine}https://imgur.com/a/XUHhKz1");
         }
 
         [Command("about")]
@@ -213,10 +216,10 @@
             {
                 return;
             }
-
+            
             await _logger.Log("about", Context);
             await ReplyAsync(
-                $"**__Cloudy Canvas__** <:ccwink:803340572383117372>{Environment.NewLine}Created April 5th, 2021{Environment.NewLine}A Discord bot for interfacing with the <:manebooru:803361798216482878> <https://manebooru.art/> imageboard.{Environment.NewLine}{Environment.NewLine}Written by Raymond Welch (<@221742476153716736>) in C# using Discord.net. Special thanks to Ember Heartshine for hosting and HenBasket for testing.{Environment.NewLine}{Environment.NewLine}**GitHub:** <https://github.com/romulus4444/Cloudy-Canvas>",
+                $"**__Cloudy Canvas__** <:cloudywink:871146664893743155>{Environment.NewLine}<http://cloudycanvas.art/>{Environment.NewLine}Created April 5th, 2021{Environment.NewLine}A Discord bot for interfacing with the <:manebooru:871148109240102942> <https://manebooru.art/> imageboard.{Environment.NewLine}Currently active on {_servers.guildList.Count} servers.{Environment.NewLine}{Environment.NewLine}Written by Raymond Welch (<@221742476153716736>) in C# using Discord.net. Special thanks to Ember Heartshine for hosting.{Environment.NewLine}{Environment.NewLine}**GitHub:** <https://github.com/romulus4444/Cloudy-Canvas>",
                 allowedMentions: AllowedMentions.None);
         }
     }
