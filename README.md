@@ -61,13 +61,13 @@ Example: If today was May 23rd, 2021, then `;pick created_at:{{today}}, lyra` wo
 
 | Template | Info |
 | -------- | ---- |
-| {{today}} | The current day, month, and year using the ISO 8601 standard. |
-| {{current_year}} | The current year. |
-| {{current_month}} | The current month. |
-| {{current_day}} | The current day. |
-| {{current_hour}} | The current hour. |
-| {{current_minute}} | The current minute. |
-| {{current_second}} | The current second. |
+| `{{today}}` | The current day, month, and year using the ISO 8601 standard. |
+| `{{current_year}}` | The current year. |
+| `{{current_month}}` | The current month. |
+| `{{current_day}}` | The current day. |
+| `{{current_hour}}` | The current hour. |
+| `{{current_minute}}` | The current minute. |
+| `{{current_second}}` | The current second. |
 
 ---
 
