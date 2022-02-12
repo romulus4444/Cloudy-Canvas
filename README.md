@@ -56,18 +56,18 @@ Important terms:
 
 ### Mixins:
 
-Use mixins in the `<query>` to introduce values that are calculated when the query is executed.
-Example: If today was May 23rd, 2021, then `;pick created_at:\\{\\{today\\}\\}, lyra` would execute as `;pick created_at:2021-05-23, lyra`. All date values are generatd using UTC ("Zulu") time. [More info](https://manebooru.art/pages/search_syntax#date-range).
+Use mixins (one of the terms below wrapped in double curly braces with no spaces `{ { term } }`) in the `<query>` to introduce values that are calculated when the query is executed.
+Example: If today was May 23rd, 2021, then `;pick created_at:{ { today } }, lyra` (with no spaces between { and }) would execute as `;pick created_at:2021-05-23, lyra`. All date values are generatd using UTC ("Zulu") time. [More info](https://manebooru.art/pages/search_syntax#date-range).
 
-| Template | Info |
+| Term | Info |
 | -------- | ---- |
-| `{{today}}` | The current day, month, and year using the ISO 8601 standard. |
-| `{{current_year}}` | The current year. |
-| `{{current_month}}` | The current month. |
-| `{{current_day}}` | The current day. |
-| `{{current_hour}}` | The current hour. |
-| `{{current_minute}}` | The current minute. |
-| `{{current_second}}` | The current second. |
+| `today` | The current day, month, and year using the ISO 8601 standard. |
+| `current_year` | The current year. |
+| `current_month` | The current month. |
+| `current_day` | The current day. |
+| `current_hour` | The current hour. |
+| `current_minute` | The current minute. |
+| `current_second` | The current second. |
 
 ---
 
