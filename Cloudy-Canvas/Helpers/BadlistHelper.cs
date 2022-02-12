@@ -87,34 +87,6 @@
             return combined;
         }
 
-        public static string CheckRedList(string query, ServerSettings settings)
-        {
-            var queryList = query.ToLower().Split(", ");
-            var parsedList = ParseList(queryList);
-            var matchedTerms = "";
-            foreach (var red in settings.redList)
-            {
-                foreach (var term in parsedList)
-                {
-                    if (term != red.Item2)
-                    {
-                        continue;
-                    }
-
-                    if (matchedTerms == "")
-                    {
-                        matchedTerms += term;
-                    }
-                    else
-                    {
-                        matchedTerms += $", {term}";
-                    }
-                }
-            }
-
-            return matchedTerms;
-        }
-
         private static string[] ParseList(string[] queryList)
         {
             var parsedList = new List<string>();

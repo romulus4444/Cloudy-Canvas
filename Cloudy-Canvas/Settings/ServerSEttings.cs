@@ -15,10 +15,6 @@
             yellowAlertChannel = 0;
             yellowAlertRole = 0;
             yellowPing = false;
-            redList = new List<Tuple<long, string>>();
-            redAlertChannel = 0;
-            redAlertRole = 0;
-            redPing = false;
             logPostChannel = 0;
             reportChannel = 0;
             reportRole = 0;
@@ -38,10 +34,6 @@
         public ulong yellowAlertChannel { get; set; }
         public ulong yellowAlertRole { get; set; }
         public bool yellowPing { get; set; }
-        public List<Tuple<long, string>> redList { get; set; }
-        public ulong redAlertChannel { get; set; }
-        public ulong redAlertRole { get; set; }
-        public bool redPing { get; set; }
         public ulong logPostChannel { get; set; }
         public ulong reportChannel { get; set; }
         public ulong reportRole { get; set; }

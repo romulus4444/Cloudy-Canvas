@@ -227,7 +227,6 @@
         public async Task RefreshListsAsync(SocketCommandContext context, ServerSettings settings)
         {
             await GetSpoilerTagsAsync(context, settings);
-            await GetHiddenTagsAsync(context, settings);
         }
 
         public async Task<int> CheckFilterAsync(int filter)
@@ -321,64 +320,6 @@
             }
 
             settings.spoilerList = combinedTags;
-            await FileHelper.SaveServerSettingsAsync(settings, context);
-        }
-
-        private async Task GetHiddenTagsAsync(SocketCommandContext context, ServerSettings settings)
-        {
-            //GET	/api/v1/json/filters/user
-            var hiddenTagResults = await _settings.url
-                .AppendPathSegments($"/api/v1/json/filters/{settings.defaultFilterId}")
-                .GetAsync()
-                .ReceiveJson();
-            var hiddenTagIds = hiddenTagResults.filter.hidden_tag_ids;
-            var tagIds = new List<object>();
-            foreach (var hiddenTagId in hiddenTagIds)
-            {
-                tagIds.Add(hiddenTagId);
-                var furtherTagResults = await _settings.url
-                    .AppendPathSegments("/api/v1/json/search/tags")
-                    .SetQueryParams(new { q = $"id:{hiddenTagId}" })
-                    .GetAsync()
-                    .ReceiveJson();
-                var aliasedTagSlugs = furtherTagResults.tags[0].aliases;
-                var impliedTagSlugs = furtherTagResults.tags[0].implied_by_tags;
-
-                foreach (var aliasedTagSlug in aliasedTagSlugs)
-                {
-                    string decode = aliasedTagSlug.ToString();
-                    decode = decode.Replace("%", "%25");
-                    var aliasedTagResults = await _settings.url
-                        .AppendPathSegments($"/api/v1/json/tags/{decode}")
-                        .GetAsync()
-                        .ReceiveJson();
-                    var aliasedTagId = aliasedTagResults.tag.id;
-                    tagIds.Add(aliasedTagId);
-                }
-
-                foreach (var impliedTagSlug in impliedTagSlugs)
-                {
-                    string decode = impliedTagSlug.ToString();
-                    decode = decode.Replace("%", "%25");
-                    var impliedTagResults = await _settings.url
-                        .AppendPathSegments($"/api/v1/json/tags/{decode}")
-                        .GetAsync()
-                        .ReceiveJson();
-                    var impliedTagId = impliedTagResults.tag.id;
-                    tagIds.Add(impliedTagId);
-                }
-            }
-
-            var combinedList = new List<Tuple<long, string>>();
-            var tagNames = await GetTagNamesAsync(tagIds);
-            for (var x = 0; x < tagIds.Count; x++)
-            {
-                var combinedTag = new Tuple<long, string>((long)tagIds[x], tagNames[x]);
-                combinedList.Add(combinedTag);
-            }
-
-            var dedupedList = combinedList.Distinct().ToList();
-            settings.redList = dedupedList;
             await FileHelper.SaveServerSettingsAsync(settings, context);
         }
 

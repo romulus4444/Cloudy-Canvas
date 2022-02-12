@@ -64,9 +64,9 @@
             }
             else
             {
-                await ReplyAsync($"I couldn't find a place called #{adminChannelName}.");
+                await ReplyAsync($"I couldn't find a place called #{adminChannelName}. Continuing with this channel <#{Context.Channel.Id}> as the admin channel.");
                 await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <FAIL>, role {adminRoleName} <NOT CHECKED>", Context);
-                return;
+                settings.adminChannel = Context.Channel.Id;
             }
 
             await ReplyAsync("Looking for the bosses...");
@@ -78,19 +78,17 @@
             }
             else
             {
-                await ReplyAsync($"I couldn't find @{adminRoleName}.");
+                await ReplyAsync($"I couldn't find @{adminRoleName}. Plese assign an admin role with ;admin adminrole set role. Continuing without an admin role.");
                 await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL>", Context, true);
-                return;
             }
 
             await ReplyAsync("Setting the remaining admin settings to default values (all alerts will post to the admin channel, and no roles will be pinged)...");
-            settings.redAlertChannel = settings.adminChannel;
             settings.yellowAlertChannel = settings.adminChannel;
             settings.logPostChannel = settings.adminChannel;
             settings.reportChannel = settings.adminChannel;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync(
-                "Settings saved. Now building the spoiler list and redlist. This may take a few minutes, depending on how many tags are spoilered or hidden in the filter. Please wait until they are completed; I will let you know when I am finished.");
+                "Settings saved. Now building the spoiler list. This may take a few minutes, depending on how many tags are spoilered in the filter. Please wait until they are completed; I will let you know when I am finished.");
             await _booru.RefreshListsAsync(Context, settings);
             await ReplyAsync("The lists have been built. I'm all set! Type `;help admin` for a list of other admin setup commands.");
             await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
@@ -353,58 +351,6 @@
                             break;
                         case "clear":
                             await YellowRoleClearAsync(settings);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
-                            break;
-                        default:
-                            await ReplyAsync($"Invalid command {commandTwo}");
-                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
-                            break;
-                    }
-
-                    break;
-                case "redchannel":
-                    switch (commandTwo)
-                    {
-                        case "":
-                            await ReplyAsync("You must specify a subcommand.");
-                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
-                            break;
-                        case "get":
-                            await RedChannelGetAsync(settings);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
-                            break;
-                        case "set":
-                            await RedChannelSetAsync(commandThree, settings);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
-                            break;
-                        case "clear":
-                            await RedChannelClearAsync(settings);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
-                            break;
-                        default:
-                            await ReplyAsync($"Invalid command {commandTwo}");
-                            await _logger.Log($"admin: {commandOne} {commandTwo} <FAIL>", Context);
-                            break;
-                    }
-
-                    break;
-                case "redrole":
-                    switch (commandTwo)
-                    {
-                        case "":
-                            await ReplyAsync("You must specify a subcommand.");
-                            await _logger.Log($"admin: {commandOne} <FAIL>", Context);
-                            break;
-                        case "get":
-                            await RedRoleGetAsync(settings);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
-                            break;
-                        case "set":
-                            await RedRoleSetAsync(commandThree, settings);
-                            await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
-                            break;
-                        case "clear":
-                            await RedRoleClearAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         default:
@@ -808,7 +754,7 @@
             {
                 settings.defaultFilterId = filterId;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
-                await ReplyAsync($"Filter set to {filterId}. Please wait while the spoiler list and redlist are rebuilt.");
+                await ReplyAsync($"Filter set to {filterId}. Please wait while the spoiler list is rebuilt.");
                 await _booru.RefreshListsAsync(Context, settings);
                 await ReplyAsync($"The lists have been refreshed for Filter {filterId}");
             }
@@ -1248,76 +1194,6 @@
             else
             {
                 await ReplyAsync("Yellow alert role not set yet.");
-            }
-        }
-
-        private async Task RedChannelClearAsync(ServerSettings settings)
-        {
-            settings.redAlertChannel = settings.adminChannel;
-            await FileHelper.SaveServerSettingsAsync(settings, Context);
-            await ReplyAsync($"Red alert channel reset to the current admin channel, <#{settings.redAlertChannel}>");
-        }
-
-        private async Task RedChannelSetAsync(string channelName, ServerSettings settings)
-        {
-            var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
-            if (channelSetId > 0)
-            {
-                settings.redAlertChannel = channelSetId;
-                await FileHelper.SaveServerSettingsAsync(settings, Context);
-                await ReplyAsync($"Red alert channel set to <#{channelSetId}>");
-            }
-            else
-            {
-                await ReplyAsync($"Invalid channel name #{channelName}.");
-            }
-        }
-
-        private async Task RedChannelGetAsync(ServerSettings settings)
-        {
-            if (settings.redAlertChannel > 0)
-            {
-                await ReplyAsync($"Red alerts are being posted in <#{settings.redAlertChannel}>");
-            }
-            else
-            {
-                await ReplyAsync("Red alert channel not set yet.");
-            }
-        }
-
-        private async Task RedRoleClearAsync(ServerSettings settings)
-        {
-            settings.redAlertRole = 0;
-            settings.redPing = false;
-            await FileHelper.SaveServerSettingsAsync(settings, Context);
-            await ReplyAsync($"Red alerts will not ping anyone now in <#{settings.redAlertChannel}>");
-        }
-
-        private async Task RedRoleSetAsync(string roleName, ServerSettings settings)
-        {
-            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
-            if (roleSetId > 0)
-            {
-                settings.redAlertRole = roleSetId;
-                settings.redPing = true;
-                await FileHelper.SaveServerSettingsAsync(settings, Context);
-                await ReplyAsync($"Red alerts will now ping <@&{settings.redAlertRole}>", allowedMentions: AllowedMentions.None);
-            }
-            else
-            {
-                await ReplyAsync($"Invalid role name #{roleName}.");
-            }
-        }
-
-        private async Task RedRoleGetAsync(ServerSettings settings)
-        {
-            if (settings.redAlertRole > 0)
-            {
-                await ReplyAsync($"Red alerts will ping <@&{settings.redAlertRole}>", allowedMentions: AllowedMentions.None);
-            }
-            else
-            {
-                await ReplyAsync("Red alert role not set yet.");
             }
         }
 

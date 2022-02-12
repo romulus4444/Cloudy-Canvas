@@ -464,9 +464,9 @@
                 return;
             }
 
-            await ReplyAsync("Refreshing spoiler list and redlist. This may take a few minutes.");
+            await ReplyAsync("Refreshing spoiler list. This may take a few minutes.");
             await _booru.RefreshListsAsync(Context, settings);
-            await ReplyAsync("Spoiler list and redlist refreshed!");
+            await ReplyAsync("Spoiler list refreshed!");
         }
 
         private static string SetupTagListOutput(List<string> tagList)
@@ -541,27 +541,6 @@
         private async Task<bool> CheckBadlistsAsync(string query, ServerSettings settings)
         {
             var yellowTerms = BadlistHelper.CheckYellowList(query, settings);
-            var redTerms = BadlistHelper.CheckRedList(query, settings);
-            if (redTerms != "")
-            {
-                await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
-                await ReplyAsync("You're kidding me, right?");
-                var redChannel = Context.Guild.GetTextChannel(settings.redAlertChannel);
-                if (settings.redPing)
-                {
-                    await redChannel.SendMessageAsync(
-                        $"<@&{settings.redAlertRole}> <@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}");
-                }
-                else
-                {
-                    await redChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}",
-                        allowedMentions: AllowedMentions.None);
-                }
-
-                await Context.Message.DeleteAsync();
-                return false;
-            }
-
             if (yellowTerms != "")
             {
                 await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
