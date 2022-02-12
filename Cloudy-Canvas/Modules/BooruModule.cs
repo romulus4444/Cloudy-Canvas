@@ -365,26 +365,53 @@
                 return;
             }
 
-            var (code, featured) = await _booru.GetFeaturedImageIdAsync();
+            var filterId = settings.defaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            {
+                if (filteredChannel != Context.Channel.Id)
+                {
+                    continue;
+                }
+
+                filterId = filteredId;
+            }
+
+            var (code, featured, spoilered, spoilerList) = await _booru.GetFeaturedImageIdAsync(settings, filterId);
             if (code >= 300 && code < 400)
             {
                 await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+                await _logger.Log($"featured, HTTP ERROR {code}", Context);
             }
             else if (code >= 400 && code < 500)
             {
                 await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+                await _logger.Log($"featured, HTTP ERROR {code}", Context);
             }
             else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+                await _logger.Log($"featured, HTTP ERROR {code}", Context);
+            }
+            else if (featured <= 0)
+            {
+                await _logger.Log($"featured: FILTERED", Context);
+                await ReplyAsync("The Featured Image has been filtered!");
             }
             else
             {
                 await _logger.Log("featured", Context);
-                await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
+                if (spoilered)
+                {
+                    var spoilerStrings = SetupTagListOutput(spoilerList);
+                    var output = $"[Id# {featured}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{featured} ||";
+                    await _logger.Log($"featured: found {featured} SPOILERED {spoilerStrings}", Context);
+                    await ReplyAsync(output);
+                }
+                else
+                {
+                    await _logger.Log($"featured: found {featured}", Context);
+                    await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
+                }
             }
         }
 

@@ -144,11 +144,11 @@
             return (returnResult);
         }
 
-        public async Task<Tuple<int?, long>> GetFeaturedImageIdAsync()
+        public async Task<Tuple<int?, long, bool, List<string>>> GetFeaturedImageIdAsync(ServerSettings settings, int filterId)
         {
             //GET	/api/v1/json/images/featured
             long featuredId = 0;
-            var returnResult = new Tuple<int?, long>(null, featuredId);
+            var returnResult = new Tuple<int?, long, bool, List<string>>(null, featuredId, false, null);
             dynamic results;
             try
             {
@@ -160,13 +160,12 @@
             catch (FlurlHttpException ex)
             {
                 var code = ex.StatusCode;
-                returnResult = new Tuple<int?, long>(code, returnResult.Item2);
+                returnResult = new Tuple<int?, long, bool, List<string>>(code, returnResult.Item2, false, null);
                 return returnResult;
             }
 
             featuredId = results.image.id;
-            returnResult = new Tuple<int?, long>(null, featuredId);
-            return returnResult;
+            return await GetImageByIdAsync(featuredId, settings, filterId);
         }
 
         public async Task<Tuple<int?, List<string>, bool, List<string>>> GetImageTagsIdAsync(long imageId, ServerSettings settings, int filterId)
