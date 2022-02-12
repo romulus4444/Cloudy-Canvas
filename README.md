@@ -57,7 +57,7 @@ Important terms:
 ### Mixins:
 
 Use mixins in the `<query>` to introduce values that are calculated when the query is executed.
-Example: If today was May 23rd, 2021, then `;pick created_at:{{today}}, lyra` would execute as `;pick created_at:2021-05-23, lyra`. All date values are generatd using UTC ("Zulu") time. [More info](https://manebooru.art/pages/search_syntax#date-range).
+Example: If today was May 23rd, 2021, then `;pick created_at:\{\{today\}\}, lyra` would execute as `;pick created_at:2021-05-23, lyra`. All date values are generatd using UTC ("Zulu") time. [More info](https://manebooru.art/pages/search_syntax#date-range).
 
 | Template | Info |
 | -------- | ---- |
