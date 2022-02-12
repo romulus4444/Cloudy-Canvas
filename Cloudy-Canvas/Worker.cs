@@ -42,7 +42,7 @@ namespace Cloudy_Canvas
                     _settings.token);
 
                 await _client.StartAsync();
-                await _client.SetGameAsync("with my paintbrush");
+                await _client.SetGameAsync("https://cloudycanvas.art");
                 await InstallCommandsAsync();
 
                 // Block this task until the program is closed.

@@ -1,9 +1,10 @@
-# Cloudy-Canvas
+# Cloudy Canvas
+
 Created April 5th, 2021
 
-A Discord bot for interfacing with the [Manebooru](https://manebooru.art/) imageboard. The discord server can be found at https://discord.gg/K4pq9AnN8F
+A Discord bot for interfacing with the [Manebooru](https://manebooru.art/) imageboard. The discord server can be found [here](https://discord.gg/K4pq9AnN8F).
 
-Written by Raymond Welch ([@Dr. Romulus#4444](https://github.com/romulus4444)) in C# using Discord.net. Special thanks to Ember Heartshine for hosting and HenBasket for testing.
+Written by Raymond Welch ([@Dr. Romulus#4444](https://github.com/romulus4444)) in C# using Discord.net. Special thanks to Ember Heartshine for hosting.
 
 I am currently only considering requests to add Cloudy Canvas to servers that I am in, but feel free to contact me on Discord about it.
 
@@ -25,15 +26,15 @@ Important terms:
 
 ---
 
-`;pick <query>` Posts a random image from a Manebooru `<query>`, if it is available. If results include any spoilered tags, the post is made in || spoiler bars.
+`;pick <query>` Posts a random image from a Manebooru `<query>`, if it is available. If results include any spoilered tags, the post is made in `||` spoiler bars.
 
 ---
 
-`;pickrecent <query>` Posts the most recently posted image from a Manebooru `<query>`, if it is available. If results include any spoilered tags, the post is made in || spoiler bars.
+`;pickrecent <query>` Posts the most recently posted image from a Manebooru `<query>`, if it is available. If results include any spoilered tags, the post is made in `||` spoiler bars.
 
 ---
 
-`;id <number>` Posts Image #`<number>` from Manebooru, if it is available. If the image includes spoilered tags, the post is made in || spoiler bars.
+`;id <number>` Posts Image #`<number>` from Manebooru, if it is available. If the image includes spoilered tags, the post is made in `||` spoiler bars.
 
 ---
 
@@ -107,7 +108,19 @@ Manages the admin role.
 
 ---
 
-Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.
+ Manages the list of channel-specific filters. NOTE: red and yellow list checks are disabled for any channels on this list! Moderators will need to keep an eye on searches performed here!
+
+`;admin filterchannel get` Gets the current list of channel-specific filters.
+
+`;admin filterchannel add <channel> <filterId>` Sets <channel> to use filter #<filterId>. Validates the filter first. Accepts a channel ping or plain text.
+ 
+`;admin filterchannel remove <channel>` Removes <channel> from the list of channel-specific filters. This channel will now use the default server filter. Accepts a channel ping or plain text.
+ 
+`;admin filterchannel clear` Clears the list of channel-specific filters. All channels will use the default server filter.
+ 
+ ---
+ 
+ Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.
 
 `;admin ignorechannel get` Gets the current list of ignored channels.
 
@@ -239,6 +252,10 @@ Manages the list of terms users are unable to search for.
  ---
 
 `;listentobots <pos/neg>` Toggles whether or not to run commands posted by other bots. Accepts `y/n`, `yes/no`, `on/off`, or `true/false`.
+
+---
+
+`;safemode <pos/neg>` Toggles whether or not to automatically append `safe` to all booru queries. This overrides any channel-specific filters! Accepts `y/n`, `yes/no`, `on/off`, or `true/false`.
 
 ---
 

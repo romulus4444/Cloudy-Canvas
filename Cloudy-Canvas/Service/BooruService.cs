@@ -78,7 +78,7 @@
             {
                 results = await _settings.url
                     .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, filter_id = filterId })
+                    .SetQueryParams(new { key = _settings.token, q = safeQuery, per_page = 1, filter_id = filterId, sf = "random" })
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -92,22 +92,6 @@
             numberOfResults = results.total;
             if (numberOfResults <= 0)
             {
-                return returnResult;
-            }
-
-            var page = new Random().Next((int)numberOfResults) + 1;
-            try
-            {
-                results = await _settings.url
-                    .AppendPathSegments("/api/v1/json/search/images")
-                    .SetQueryParams(new { key = _settings.token, q = query, per_page = 1, page, filter_id = filterId })
-                    .GetAsync()
-                    .ReceiveJson();
-            }
-            catch (FlurlHttpException ex)
-            {
-                code = ex.StatusCode;
-                returnResult = new Tuple<int?, long, long, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4, returnResult.Item5);
                 return returnResult;
             }
 
