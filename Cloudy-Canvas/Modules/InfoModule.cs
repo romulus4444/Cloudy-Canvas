@@ -77,7 +77,7 @@
                     {
                         case "":
                             await ReplyAsync(
-                                $"**__{prefix}admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`{prefix}admin filter ...`{Environment.NewLine}`{prefix}admin adminchannel ...`{Environment.NewLine}`{prefix}admin adminrole ...`{Environment.NewLine}`{prefix}admin filterchannel ...`{Environment.NewLine}`{prefix}admin ignorechannel ...`{Environment.NewLine}`{prefix}admin ignorerole ...`{Environment.NewLine}`{prefix}admin allowuser ...`{Environment.NewLine}`{prefix}admin yellowchannel ...`{Environment.NewLine}`{prefix}admin yellowrole ...`{Environment.NewLine}`{prefix}admin redchannel ...`{Environment.NewLine}`{prefix}admin redrole ...`{Environment.NewLine}`{prefix}admin reportchannel ...`{Environment.NewLine}`{prefix}admin reportrole ...`{Environment.NewLine}`{prefix}admin logchannel ...`{Environment.NewLine}{Environment.NewLine}Use `{prefix}help admin <command>` for more details on a particular command.");
+                                $"**__{prefix}admin Commands:__**{Environment.NewLine}*Only users with the specified admin role may use these commands*{Environment.NewLine}`{prefix}admin filter ...`{Environment.NewLine}`{prefix}admin adminchannel ...`{Environment.NewLine}`{prefix}admin adminrole ...`{Environment.NewLine}`{prefix}admin filterchannel ...`{Environment.NewLine}`{prefix}admin ignorechannel ...`{Environment.NewLine}`{prefix}admin ignorerole ...`{Environment.NewLine}`{prefix}admin allowuser ...`{Environment.NewLine}`{prefix}admin yellowchannel ...`{Environment.NewLine}`{prefix}admin yellowrole ...`{Environment.NewLine}`{prefix}admin reportchannel ...`{Environment.NewLine}`{prefix}admin reportrole ...`{Environment.NewLine}`{prefix}admin logchannel ...`{Environment.NewLine}{Environment.NewLine}Use `{prefix}help admin <command>` for more details on a particular command.");
                             break;
                         case "filter":
                             await ReplyAsync(
@@ -114,14 +114,6 @@
                         case "yellowrole":
                             await ReplyAsync(
                                 $"__{prefix}admin yellowrole Commands:__{Environment.NewLine}*Manages the yellow alert role.*{Environment.NewLine}`{prefix}admin yellowrole get` Gets the current yellow alert role.{Environment.NewLine}`{prefix}admin yellowrole set <role>` Sets the yellow alert role to <role> and turns pinging on. Accepts a role ping or plain text.{Environment.NewLine}`{prefix}admin yellowrole clear` Resets the yellow alert role to no role and turns pinging off.");
-                            break;
-                        case "redchannel":
-                            await ReplyAsync(
-                                $"__{prefix}admin redchannel Commands:__{Environment.NewLine}*Manages the red alert channel.*{Environment.NewLine}`{prefix}admin redchannel get` Gets the current red alert channel.{Environment.NewLine}`{prefix}admin redchannel set <channel>` Sets the red alert channel to <channel>. Accepts a channel ping or plain text.{Environment.NewLine}`{prefix}admin redchannel clear` Resets the red alert channel to the current admin channel.");
-                            break;
-                        case "redrole":
-                            await ReplyAsync(
-                                $"__{prefix}admin redrole Commands:__{Environment.NewLine}*Manages the red alert role.*{Environment.NewLine}`{prefix}admin redrole get` Gets the current red alert role.{Environment.NewLine}`{prefix}admin redrole set <role>` Sets the red alert role to <role> and turns pinging on. Accepts a role ping or plain text.{Environment.NewLine}`{prefix}admin redrole clear` Resets the red alert channel to no role and turns pinging off.");
                             break;
                         case "reportchannel":
                             await ReplyAsync(
@@ -175,7 +167,7 @@
                     break;
                 case "refreshlists":
                     await ReplyAsync(
-                        $"`{prefix}refreshlists`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Rebuilds the spoiler list and redlist from the current active filter. This may take several minutes depending on how many tags are in there.");
+                        $"`{prefix}refreshlists`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Rebuilds the spoiler list from the current active filter. This may take several minutes depending on how many tags are in there.");
                     break;
                 case "origin":
                     await ReplyAsync($"`{prefix}origin`{Environment.NewLine}Posts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.");
@@ -208,7 +200,7 @@
         }
 
         [Command("about")]
-        [Summary("Displays the origin of Cloudy Canvas")]
+        [Summary("Displays information about Cloudy Canvas")]
         public async Task AboutCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
@@ -219,7 +211,7 @@
             
             await _logger.Log("about", Context);
             await ReplyAsync(
-                $"**__Cloudy Canvas__** <:cloudywink:871146664893743155>{Environment.NewLine}<http://cloudycanvas.art/>{Environment.NewLine}Created April 5th, 2021{Environment.NewLine}A Discord bot for interfacing with the <:manebooru:871148109240102942> <https://manebooru.art/> imageboard.{Environment.NewLine}Currently active on {_servers.guildList.Count} servers.{Environment.NewLine}{Environment.NewLine}Written by Raymond Welch (<@221742476153716736>) in C# using Discord.net. Special thanks to Ember Heartshine for hosting.{Environment.NewLine}{Environment.NewLine}**GitHub:** <https://github.com/romulus4444/Cloudy-Canvas>",
+                $"**__Cloudy Canvas__** <:cloudywink:871146664893743155>{Environment.NewLine}<http://cloudycanvas.art/>{Environment.NewLine}Created April 5th, 2021{Environment.NewLine}A Discord bot for interfacing with the <:manebooru:871148109240102942> <https://manebooru.art/> imageboard.{Environment.NewLine}Currently active on {_servers.guildList.Count} servers.{Environment.NewLine}{Environment.NewLine}Written by Raymond Welch (<@221742476153716736>) in C# using Discord.net. Special thanks to Ember Heartshine and CULTPONY.js.{Environment.NewLine}{Environment.NewLine}**GitHub:** <https://github.com/romulus4444/Cloudy-Canvas>",
                 allowedMentions: AllowedMentions.None);
         }
     }
