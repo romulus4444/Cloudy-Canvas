@@ -36,8 +36,8 @@
 
             query = _mixins.Transpile(query);
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -120,8 +120,8 @@
 
             query = _mixins.Transpile(query);
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -202,8 +202,8 @@
                 return;
             }
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -271,8 +271,8 @@
                 return;
             }
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -342,10 +342,10 @@
             }
 
             var output = $"__Spoilered tags:__{Environment.NewLine}";
-            for (var x = 0; x < settings.spoilerList.Count; x++)
+            for (var x = 0; x < settings.SpoilerList.Count; x++)
             {
-                output += $"`{settings.spoilerList[x].Item2}`";
-                if (x < settings.spoilerList.Count - 1)
+                output += $"`{settings.SpoilerList[x].Item2}`";
+                if (x < settings.SpoilerList.Count - 1)
                 {
                     output += ", ";
                 }
@@ -365,26 +365,53 @@
                 return;
             }
 
-            var (code, featured) = await _booru.GetFeaturedImageIdAsync();
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
+            {
+                if (filteredChannel != Context.Channel.Id)
+                {
+                    continue;
+                }
+
+                filterId = filteredId;
+            }
+
+            var (code, featured, spoilered, spoilerList) = await _booru.GetFeaturedImageIdAsync(settings, filterId);
             if (code >= 300 && code < 400)
             {
                 await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+                await _logger.Log($"featured, HTTP ERROR {code}", Context);
             }
             else if (code >= 400 && code < 500)
             {
                 await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+                await _logger.Log($"featured, HTTP ERROR {code}", Context);
             }
             else if (code >= 500)
             {
                 await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"pick: {featured}, HTTP ERROR {code}", Context);
+                await _logger.Log($"featured, HTTP ERROR {code}", Context);
+            }
+            else if (featured <= 0)
+            {
+                await _logger.Log($"featured: FILTERED", Context);
+                await ReplyAsync("The Featured Image has been filtered!");
             }
             else
             {
                 await _logger.Log("featured", Context);
-                await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
+                if (spoilered)
+                {
+                    var spoilerStrings = SetupTagListOutput(spoilerList);
+                    var output = $"[Id# {featured}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{featured} ||";
+                    await _logger.Log($"featured: found {featured} SPOILERED {spoilerStrings}", Context);
+                    await ReplyAsync(output);
+                }
+                else
+                {
+                    await _logger.Log($"featured: found {featured}", Context);
+                    await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
+                }
             }
         }
 
@@ -399,8 +426,8 @@
                 return;
             }
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -414,7 +441,7 @@
             var badTerms = "";
             if (checkLists)
             {
-                badTerms = BadlistHelper.CheckYellowList(reportedImageId.ToString(), settings);
+                badTerms = BadlistHelper.CheckWatchList(reportedImageId.ToString(), settings);
             }
 
             if (badTerms != "")
@@ -438,10 +465,10 @@
 
                     output += $" || <https://manebooru.art/images/{imageId}> ||";
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
-                    var reportChannel = Context.Guild.GetTextChannel(settings.reportChannel);
-                    if (settings.reportPing)
+                    var reportChannel = Context.Guild.GetTextChannel(settings.ReportChannel);
+                    if (settings.ReportPing)
                     {
-                        output = $"<@&{settings.reportRole}> " + output;
+                        output = $"<@&{settings.ReportRole}> " + output;
                         await reportChannel.SendMessageAsync(output);
                     }
                     else
@@ -464,9 +491,9 @@
                 return;
             }
 
-            await ReplyAsync("Refreshing spoiler list and redlist. This may take a few minutes.");
+            await ReplyAsync("Refreshing spoiler list. This may take a few minutes.");
             await _booru.RefreshListsAsync(Context, settings);
-            await ReplyAsync("Spoiler list and redlist refreshed!");
+            await ReplyAsync("Spoiler list refreshed!");
         }
 
         private static string SetupTagListOutput(List<string> tagList)
@@ -540,41 +567,20 @@
 
         private async Task<bool> CheckBadlistsAsync(string query, ServerSettings settings)
         {
-            var yellowTerms = BadlistHelper.CheckYellowList(query, settings);
-            var redTerms = BadlistHelper.CheckRedList(query, settings);
-            if (redTerms != "")
+            var watchTerms = BadlistHelper.CheckWatchList(query, settings);
+            if (watchTerms != "")
             {
-                await _logger.Log($"pick: {query}, REDLISTED {redTerms}", Context, true);
-                await ReplyAsync("You're kidding me, right?");
-                var redChannel = Context.Guild.GetTextChannel(settings.redAlertChannel);
-                if (settings.redPing)
-                {
-                    await redChannel.SendMessageAsync(
-                        $"<@&{settings.redAlertRole}> <@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}");
-                }
-                else
-                {
-                    await redChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a banned term in <#{Context.Channel.Id}> RED TERMS: {redTerms}",
-                        allowedMentions: AllowedMentions.None);
-                }
-
-                await Context.Message.DeleteAsync();
-                return false;
-            }
-
-            if (yellowTerms != "")
-            {
-                await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
+                await _logger.Log($"pick: {query}, YELLOWLISTED {watchTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                var yellowChannel = Context.Guild.GetTextChannel(settings.yellowAlertChannel);
-                if (settings.yellowPing)
+                var watchChannel = Context.Guild.GetTextChannel(settings.WatchAlertChannel);
+                if (settings.WatchPing)
                 {
-                    await yellowChannel.SendMessageAsync(
-                        $"<@&{settings.yellowAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}");
+                    await watchChannel.SendMessageAsync(
+                        $"<@&{settings.WatchAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {watchTerms}");
                 }
                 else
                 {
-                    await yellowChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}",
+                    await watchChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {watchTerms}",
                         allowedMentions: AllowedMentions.None);
                 }
 

@@ -42,7 +42,7 @@ namespace Cloudy_Canvas
                     _settings.token);
 
                 await _client.StartAsync();
-                await _client.SetGameAsync("with my paintbrush");
+                await _client.SetGameAsync("https://cloudycanvas.art");
                 await InstallCommandsAsync();
 
                 // Block this task until the program is closed.
@@ -69,19 +69,23 @@ namespace Cloudy_Canvas
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
         {
+            if (messageParam.Type == MessageType.ThreadCreated)
+            {
+                return;
+            }
+
             var message = messageParam as SocketUserMessage;
             var argPos = 0;
             var context = new SocketCommandContext(_client, message);
-            var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
             var settings = await FileHelper.LoadServerPresettingsAsync(context, _servers);
             if (DevSettings.useDevPrefix)
             {
-                settings.prefix = DevSettings.prefix;
+                settings.Prefix = DevSettings.prefix;
             }
 
-            if (message.HasCharPrefix(settings.prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            if (message.HasCharPrefix(settings.Prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
-                if (!(settings.listenToBots) && message.Author.IsBot)
+                if (!(settings.ListenToBots) && message.Author.IsBot)
                 {
                     return;
                 }
@@ -147,7 +151,7 @@ namespace Cloudy_Canvas
         [RequireOwner]
         private async Task BroadcastAsync(string message = "")
         {
-            var guildList = _servers.guildList;
+            var guildList = _servers.GuildList;
             foreach (var (guild, adminChannel) in guildList)
             {
                 await _client.GetGuild(guild).GetTextChannel(adminChannel).SendMessageAsync(message);
