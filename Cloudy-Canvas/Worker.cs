@@ -69,10 +69,14 @@ namespace Cloudy_Canvas
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
         {
+            if (messageParam.Type == MessageType.ThreadCreated)
+            {
+                return;
+            }
+
             var message = messageParam as SocketUserMessage;
             var argPos = 0;
             var context = new SocketCommandContext(_client, message);
-            var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
             var settings = await FileHelper.LoadServerPresettingsAsync(context, _servers);
             if (DevSettings.useDevPrefix)
             {
