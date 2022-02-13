@@ -11,10 +11,10 @@
             AdminChannel = 0;
             AdminRole = 0;
             SpoilerList = new List<Tuple<long, string>>();
-            YellowList = new List<string>();
-            YellowAlertChannel = 0;
-            YellowAlertRole = 0;
-            YellowPing = false;
+            WatchList = new List<string>();
+            WatchAlertChannel = 0;
+            WatchAlertRole = 0;
+            WatchPing = false;
             LogPostChannel = 0;
             ReportChannel = 0;
             ReportRole = 0;
@@ -30,10 +30,10 @@
         public ulong AdminChannel { get; set; }
         public ulong AdminRole { get; set; }
         public List<Tuple<long, string>> SpoilerList { get; set; }
-        public List<string> YellowList { get; set; }
-        public ulong YellowAlertChannel { get; set; }
-        public ulong YellowAlertRole { get; set; }
-        public bool YellowPing { get; set; }
+        public List<string> WatchList { get; set; }
+        public ulong WatchAlertChannel { get; set; }
+        public ulong WatchAlertRole { get; set; }
+        public bool WatchPing { get; set; }
         public ulong LogPostChannel { get; set; }
         public ulong ReportChannel { get; set; }
         public ulong ReportRole { get; set; }

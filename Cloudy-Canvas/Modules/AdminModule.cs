@@ -83,7 +83,7 @@
             }
 
             await ReplyAsync("Setting the remaining admin settings to default values (all alerts will post to the admin channel, and no roles will be pinged)...");
-            settings.YellowAlertChannel = settings.AdminChannel;
+            settings.WatchAlertChannel = settings.AdminChannel;
             settings.LogPostChannel = settings.AdminChannel;
             settings.ReportChannel = settings.AdminChannel;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
@@ -308,7 +308,7 @@
                     }
 
                     break;
-                case "yellowchannel":
+                case "watchchannel":
                     switch (commandTwo)
                     {
                         case "":
@@ -316,15 +316,15 @@
                             await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
-                            await YellowChannelGetAsync(settings);
+                            await WatchChannelGetAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "set":
-                            await YellowChannelSetAsync(commandThree, settings);
+                            await WatchChannelSetAsync(commandThree, settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
-                            await YellowChannelClearAsync(settings);
+                            await WatchChannelClearAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         default:
@@ -334,7 +334,7 @@
                     }
 
                     break;
-                case "yellowrole":
+                case "watchrole":
                     switch (commandTwo)
                     {
                         case "":
@@ -342,15 +342,15 @@
                             await _logger.Log($"admin: {commandOne} <FAIL>", Context);
                             break;
                         case "get":
-                            await YellowRoleGetAsync(settings);
+                            await WatchRoleGetAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} <SUCCESS>", Context);
                             break;
                         case "set":
-                            await YellowRoleSetAsync(commandThree, settings);
+                            await WatchRoleSetAsync(commandThree, settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         case "clear":
-                            await YellowRoleClearAsync(settings);
+                            await WatchRoleClearAsync(settings);
                             await _logger.Log($"admin: {commandOne} {commandTwo} {commandThree} <SUCCESS>", Context, true);
                             break;
                         default:
@@ -1127,21 +1127,21 @@
             }
         }
 
-        private async Task YellowChannelClearAsync(ServerSettings settings)
+        private async Task WatchChannelClearAsync(ServerSettings settings)
         {
-            settings.YellowAlertChannel = settings.AdminChannel;
+            settings.WatchAlertChannel = settings.AdminChannel;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
-            await ReplyAsync($"Yellow alert channel reset to the current admin channel, <#{settings.YellowAlertChannel}>");
+            await ReplyAsync($"Watch alert channel reset to the current admin channel, <#{settings.WatchAlertChannel}>");
         }
 
-        private async Task YellowChannelSetAsync(string channelName, ServerSettings settings)
+        private async Task WatchChannelSetAsync(string channelName, ServerSettings settings)
         {
             var channelSetId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, Context);
             if (channelSetId > 0)
             {
-                settings.YellowAlertChannel = channelSetId;
+                settings.WatchAlertChannel = channelSetId;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
-                await ReplyAsync($"Yellow alert channel set to <#{channelSetId}>");
+                await ReplyAsync($"Watch alert channel set to <#{channelSetId}>");
             }
             else
             {
@@ -1149,35 +1149,35 @@
             }
         }
 
-        private async Task YellowChannelGetAsync(ServerSettings settings)
+        private async Task WatchChannelGetAsync(ServerSettings settings)
         {
-            if (settings.YellowAlertChannel > 0)
+            if (settings.WatchAlertChannel > 0)
             {
-                await ReplyAsync($"Yellow alerts are being posted in <#{settings.YellowAlertChannel}>");
+                await ReplyAsync($"Watch alerts are being posted in <#{settings.WatchAlertChannel}>");
             }
             else
             {
-                await ReplyAsync("Yellow alert channel not set yet.");
+                await ReplyAsync("Watch alert channel not set yet.");
             }
         }
 
-        private async Task YellowRoleClearAsync(ServerSettings settings)
+        private async Task WatchRoleClearAsync(ServerSettings settings)
         {
-            settings.YellowAlertRole = 0;
-            settings.YellowPing = false;
+            settings.WatchAlertRole = 0;
+            settings.WatchPing = false;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
-            await ReplyAsync($"Yellow alerts will not ping anyone now in <#{settings.YellowAlertChannel}>");
+            await ReplyAsync($"Watch alerts will not ping anyone now in <#{settings.WatchAlertChannel}>");
         }
 
-        private async Task YellowRoleSetAsync(string roleName, ServerSettings settings)
+        private async Task WatchRoleSetAsync(string roleName, ServerSettings settings)
         {
             var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
             if (roleSetId > 0)
             {
-                settings.YellowAlertRole = roleSetId;
-                settings.YellowPing = true;
+                settings.WatchAlertRole = roleSetId;
+                settings.WatchPing = true;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
-                await ReplyAsync($"Yellow alerts will now ping <@&{settings.YellowAlertRole}>", allowedMentions: AllowedMentions.None);
+                await ReplyAsync($"Watch alerts will now ping <@&{settings.WatchAlertRole}>", allowedMentions: AllowedMentions.None);
             }
             else
             {
@@ -1185,15 +1185,15 @@
             }
         }
 
-        private async Task YellowRoleGetAsync(ServerSettings settings)
+        private async Task WatchRoleGetAsync(ServerSettings settings)
         {
-            if (settings.YellowAlertRole > 0)
+            if (settings.WatchAlertRole > 0)
             {
-                await ReplyAsync($"Yellow alerts will ping <@&{settings.YellowAlertRole}>", allowedMentions: AllowedMentions.None);
+                await ReplyAsync($"Watch alerts will ping <@&{settings.WatchAlertRole}>", allowedMentions: AllowedMentions.None);
             }
             else
             {
-                await ReplyAsync("Yellow alert role not set yet.");
+                await ReplyAsync("Watch alert role not set yet.");
             }
         }
 
@@ -1301,7 +1301,7 @@
             }
         }
 
-        [Summary("Submodule for managing the yellowlist")]
+        [Summary("Submodule for managing the watchlist")]
         public class BadlistModule : ModuleBase<SocketCommandContext>
         {
             private readonly LoggingService _logger;
@@ -1311,9 +1311,9 @@
                 _logger = logger;
             }
 
-            [Command("yellowlist")]
-            [Summary("Manages the search term yellowlist")]
-            public async Task YellowListCommandAsync([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
+            [Command("watchlist")]
+            [Summary("Manages the search term watchlist")]
+            public async Task WatchListCommandAsync([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
             {
                 var settings = await FileHelper.LoadServerSettingsAsync(Context);
                 if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
@@ -1325,10 +1325,10 @@
                 {
                     case "":
                         await ReplyAsync("You must specify a subcommand.");
-                        await _logger.Log("yellowlist: <FAIL>", Context);
+                        await _logger.Log("watchlist: <FAIL>", Context);
                         break;
                     case "add":
-                        var (addList, failList) = await BadlistHelper.AddYellowTerm(term, settings, Context);
+                        var (addList, failList) = await BadlistHelper.AddWatchTerm(term, settings, Context);
                         if (failList.Count == 0)
                         {
                             var addOutput = "";
@@ -1347,13 +1347,13 @@
                                 }
                             }
 
-                            await ReplyAsync($"Added {addOutput} to the yellowlist.");
-                            await _logger.Log($"yellowlist: add {addOutput} <SUCCESS>", Context, true);
+                            await ReplyAsync($"Added {addOutput} to the watchlist.");
+                            await _logger.Log($"watchlist: add {addOutput} <SUCCESS>", Context, true);
                         }
                         else if (addList.Count == 0)
                         {
-                            await ReplyAsync("All terms entered are already on the yellowlist.");
-                            await _logger.Log($"yellowlist: add <FAIL> {term}", Context);
+                            await ReplyAsync("All terms entered are already on the watchlist.");
+                            await _logger.Log($"watchlist: add <FAIL> {term}", Context);
                         }
                         else
                         {
@@ -1389,30 +1389,30 @@
                                 }
                             }
 
-                            await ReplyAsync($"Added {addOutput} to the yellowlist, and the yellowlist already contained {failOutput}.");
-                            await _logger.Log($"yellowlist: add {addOutput} <FAIL> {failOutput}", Context);
+                            await ReplyAsync($"Added {addOutput} to the watchlist, and the watchlist already contained {failOutput}.");
+                            await _logger.Log($"watchlist: add {addOutput} <FAIL> {failOutput}", Context);
                         }
 
                         break;
                     case "remove":
-                        var removed = await BadlistHelper.RemoveYellowTerm(term, settings, Context);
+                        var removed = await BadlistHelper.RemoveWatchTerm(term, settings, Context);
                         if (removed)
                         {
-                            await ReplyAsync($"Removed `{term}` from the yellowlist.");
-                            await _logger.Log($"yellowlist: remove {term} <SUCCESS>", Context, true);
+                            await ReplyAsync($"Removed `{term}` from the watchlist.");
+                            await _logger.Log($"watchlist: remove {term} <SUCCESS>", Context, true);
                         }
                         else
                         {
-                            await ReplyAsync($"`{term}` was not on the yellowlist.");
-                            await _logger.Log($"yellowlist: remove {term} <FAIL>", Context);
+                            await ReplyAsync($"`{term}` was not on the watchlist.");
+                            await _logger.Log($"watchlist: remove {term} <FAIL>", Context);
                         }
 
                         break;
                     case "get":
-                        var output = "The yellowlist is currently empty.";
-                        foreach (var item in settings.YellowList)
+                        var output = "The watchlist is currently empty.";
+                        foreach (var item in settings.WatchList)
                         {
-                            if (output == "The yellowlist is currently empty.")
+                            if (output == "The watchlist is currently empty.")
                             {
                                 output = $"`{item}`";
                             }
@@ -1422,18 +1422,18 @@
                             }
                         }
 
-                        await ReplyAsync($"__Yellowlist Terms:__{Environment.NewLine}{output}");
-                        await _logger.Log("yellowlist: get", Context);
+                        await ReplyAsync($"__Watchlist Terms:__{Environment.NewLine}{output}");
+                        await _logger.Log("watchlist: get", Context);
                         break;
                     case "clear":
-                        settings.YellowList.Clear();
+                        settings.WatchList.Clear();
                         await FileHelper.SaveServerSettingsAsync(settings, Context);
-                        await ReplyAsync("Yellowlist cleared");
-                        await _logger.Log("yellowlist: clear", Context, true);
+                        await ReplyAsync("Watchlist cleared");
+                        await _logger.Log("watchlist: clear", Context, true);
                         break;
                     default:
                         await ReplyAsync("Invalid subcommand");
-                        await _logger.Log($"yellowlist: {command} <FAIL>", Context);
+                        await _logger.Log($"watchlist: {command} <FAIL>", Context);
                         break;
                 }
             }

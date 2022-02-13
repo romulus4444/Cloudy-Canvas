@@ -8,18 +8,18 @@
 
     public static class BadlistHelper
     {
-        public static async Task<bool> RemoveYellowTerm(string term, ServerSettings settings, SocketCommandContext context)
+        public static async Task<bool> RemoveWatchTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
             var lower = term.ToLower();
-            for (var x = settings.YellowList.Count - 1; x >= 0; x--)
+            for (var x = settings.WatchList.Count - 1; x >= 0; x--)
             {
-                var yellow = settings.YellowList[x];
-                if (yellow != lower)
+                var watch = settings.WatchList[x];
+                if (watch != lower)
                 {
                     continue;
                 }
 
-                settings.YellowList.Remove(yellow);
+                settings.WatchList.Remove(watch);
                 await FileHelper.SaveServerSettingsAsync(settings, context);
                 return true;
             }
@@ -27,16 +27,16 @@
             return false;
         }
 
-        public static string CheckYellowList(string query, ServerSettings settings)
+        public static string CheckWatchList(string query, ServerSettings settings)
         {
             var queryList = query.ToLower().Split(", ");
             var parsedList = ParseList(queryList);
             var matchedTerms = "";
-            foreach (var yellow in settings.YellowList)
+            foreach (var watch in settings.WatchList)
             {
                 foreach (var term in parsedList)
                 {
-                    if (term != yellow)
+                    if (term != watch)
                     {
                         continue;
                     }
@@ -55,7 +55,7 @@
             return matchedTerms;
         }
 
-        public static async Task<Tuple<List<string>, List<string>>> AddYellowTerm(string term, ServerSettings settings, SocketCommandContext context)
+        public static async Task<Tuple<List<string>, List<string>>> AddWatchTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
             var termList = term.ToLower().Split(", ");
             var failList = new List<string>();
@@ -63,9 +63,9 @@
             foreach (var singleTerm in termList)
             {
                 var failed = false;
-                foreach (var yellow in settings.YellowList)
+                foreach (var watch in settings.WatchList)
                 {
-                    if (yellow != singleTerm)
+                    if (watch != singleTerm)
                     {
                         continue;
                     }
@@ -78,7 +78,7 @@
                     continue;
                 }
 
-                settings.YellowList.Add(singleTerm);
+                settings.WatchList.Add(singleTerm);
                 addList.Add(singleTerm);
             }
 

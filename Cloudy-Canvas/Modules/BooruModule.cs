@@ -441,7 +441,7 @@
             var badTerms = "";
             if (checkLists)
             {
-                badTerms = BadlistHelper.CheckYellowList(reportedImageId.ToString(), settings);
+                badTerms = BadlistHelper.CheckWatchList(reportedImageId.ToString(), settings);
             }
 
             if (badTerms != "")
@@ -567,20 +567,20 @@
 
         private async Task<bool> CheckBadlistsAsync(string query, ServerSettings settings)
         {
-            var yellowTerms = BadlistHelper.CheckYellowList(query, settings);
-            if (yellowTerms != "")
+            var watchTerms = BadlistHelper.CheckWatchList(query, settings);
+            if (watchTerms != "")
             {
-                await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
+                await _logger.Log($"pick: {query}, YELLOWLISTED {watchTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                var yellowChannel = Context.Guild.GetTextChannel(settings.YellowAlertChannel);
-                if (settings.YellowPing)
+                var watchChannel = Context.Guild.GetTextChannel(settings.WatchAlertChannel);
+                if (settings.WatchPing)
                 {
-                    await yellowChannel.SendMessageAsync(
-                        $"<@&{settings.YellowAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}");
+                    await watchChannel.SendMessageAsync(
+                        $"<@&{settings.WatchAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {watchTerms}");
                 }
                 else
                 {
-                    await yellowChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}",
+                    await watchChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {watchTerms}",
                         allowedMentions: AllowedMentions.None);
                 }
 
