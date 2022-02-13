@@ -8,18 +8,18 @@
 
     public static class BadlistHelper
     {
-        public static async Task<bool> RemoveYellowTerm(string term, ServerSettings settings, SocketCommandContext context)
+        public static async Task<bool> RemoveWatchTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
             var lower = term.ToLower();
-            for (var x = settings.yellowList.Count - 1; x >= 0; x--)
+            for (var x = settings.WatchList.Count - 1; x >= 0; x--)
             {
-                var yellow = settings.yellowList[x];
-                if (yellow != lower)
+                var watch = settings.WatchList[x];
+                if (watch != lower)
                 {
                     continue;
                 }
 
-                settings.yellowList.Remove(yellow);
+                settings.WatchList.Remove(watch);
                 await FileHelper.SaveServerSettingsAsync(settings, context);
                 return true;
             }
@@ -27,16 +27,16 @@
             return false;
         }
 
-        public static string CheckYellowList(string query, ServerSettings settings)
+        public static string CheckWatchList(string query, ServerSettings settings)
         {
             var queryList = query.ToLower().Split(", ");
             var parsedList = ParseList(queryList);
             var matchedTerms = "";
-            foreach (var yellow in settings.yellowList)
+            foreach (var watch in settings.WatchList)
             {
                 foreach (var term in parsedList)
                 {
-                    if (term != yellow)
+                    if (term != watch)
                     {
                         continue;
                     }
@@ -55,7 +55,7 @@
             return matchedTerms;
         }
 
-        public static async Task<Tuple<List<string>, List<string>>> AddYellowTerm(string term, ServerSettings settings, SocketCommandContext context)
+        public static async Task<Tuple<List<string>, List<string>>> AddWatchTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
             var termList = term.ToLower().Split(", ");
             var failList = new List<string>();
@@ -63,9 +63,9 @@
             foreach (var singleTerm in termList)
             {
                 var failed = false;
-                foreach (var yellow in settings.yellowList)
+                foreach (var watch in settings.WatchList)
                 {
-                    if (yellow != singleTerm)
+                    if (watch != singleTerm)
                     {
                         continue;
                     }
@@ -78,41 +78,13 @@
                     continue;
                 }
 
-                settings.yellowList.Add(singleTerm);
+                settings.WatchList.Add(singleTerm);
                 addList.Add(singleTerm);
             }
 
             await FileHelper.SaveServerSettingsAsync(settings, context);
             var combined = new Tuple<List<string>, List<string>> (addList, failList);
             return combined;
-        }
-
-        public static string CheckRedList(string query, ServerSettings settings)
-        {
-            var queryList = query.ToLower().Split(", ");
-            var parsedList = ParseList(queryList);
-            var matchedTerms = "";
-            foreach (var red in settings.redList)
-            {
-                foreach (var term in parsedList)
-                {
-                    if (term != red.Item2)
-                    {
-                        continue;
-                    }
-
-                    if (matchedTerms == "")
-                    {
-                        matchedTerms += term;
-                    }
-                    else
-                    {
-                        matchedTerms += $", {term}";
-                    }
-                }
-            }
-
-            return matchedTerms;
         }
 
         private static string[] ParseList(string[] queryList)
