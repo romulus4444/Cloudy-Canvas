@@ -27,7 +27,7 @@
             var emptyList = new List<string>();
             var returnResult = new Tuple<int?, long, bool, List<string>>(null, searchResult, false, emptyList);
             var safeQuery = "id:" + imageId;
-            if (settings.safeMode)
+            if (settings.SafeMode)
             {
                 safeQuery += ", safe";
             }
@@ -68,7 +68,7 @@
             var emptyList = new List<string>();
             var returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, false, emptyList);
             var safeQuery = query;
-            if (settings.safeMode)
+            if (settings.SafeMode)
             {
                 safeQuery += ", safe";
             }
@@ -110,7 +110,7 @@
             var emptyList = new List<string>();
             var returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, false, emptyList);
             var safeQuery = query;
-            if (settings.safeMode)
+            if (settings.SafeMode)
             {
                 safeQuery += ", safe";
             }
@@ -175,7 +175,7 @@
             var emptySpoilerList = new List<string>();
             var returnResult = new Tuple<int?, List<string>, bool, List<string>>(null, emptyTagList, false, emptySpoilerList);
             var safeQuery = "id:" + imageId;
-            if (settings.safeMode)
+            if (settings.SafeMode)
             {
                 safeQuery += ", safe";
             }
@@ -256,7 +256,7 @@
             var tagList = new List<string>();
             foreach (long tagId in tagIds)
             {
-                foreach (var (spoilerTagId, spoilerTagName) in settings.spoilerList)
+                foreach (var (spoilerTagId, spoilerTagName) in settings.SpoilerList)
                 {
                     if (tagId == spoilerTagId)
                     {
@@ -298,7 +298,7 @@
             try
             {
                 results = await _settings.url
-                    .AppendPathSegments($"/api/v1/json/filters/{settings.defaultFilterId}")
+                    .AppendPathSegments($"/api/v1/json/filters/{settings.DefaultFilterId}")
                     .GetAsync()
                     .ReceiveJson();
             }
@@ -318,7 +318,7 @@
                 combinedTags.Add(newItem);
             }
 
-            settings.spoilerList = combinedTags;
+            settings.SpoilerList = combinedTags;
             await FileHelper.SaveServerSettingsAsync(settings, context);
         }
 

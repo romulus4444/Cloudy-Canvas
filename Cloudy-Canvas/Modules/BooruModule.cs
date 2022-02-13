@@ -36,8 +36,8 @@
 
             query = _mixins.Transpile(query);
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -120,8 +120,8 @@
 
             query = _mixins.Transpile(query);
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -202,8 +202,8 @@
                 return;
             }
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -271,8 +271,8 @@
                 return;
             }
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -342,10 +342,10 @@
             }
 
             var output = $"__Spoilered tags:__{Environment.NewLine}";
-            for (var x = 0; x < settings.spoilerList.Count; x++)
+            for (var x = 0; x < settings.SpoilerList.Count; x++)
             {
-                output += $"`{settings.spoilerList[x].Item2}`";
-                if (x < settings.spoilerList.Count - 1)
+                output += $"`{settings.SpoilerList[x].Item2}`";
+                if (x < settings.SpoilerList.Count - 1)
                 {
                     output += ", ";
                 }
@@ -365,8 +365,8 @@
                 return;
             }
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -426,8 +426,8 @@
                 return;
             }
 
-            var filterId = settings.defaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.filteredChannels)
+            var filterId = settings.DefaultFilterId;
+            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
             {
                 if (filteredChannel != Context.Channel.Id)
                 {
@@ -465,10 +465,10 @@
 
                     output += $" || <https://manebooru.art/images/{imageId}> ||";
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
-                    var reportChannel = Context.Guild.GetTextChannel(settings.reportChannel);
-                    if (settings.reportPing)
+                    var reportChannel = Context.Guild.GetTextChannel(settings.ReportChannel);
+                    if (settings.ReportPing)
                     {
-                        output = $"<@&{settings.reportRole}> " + output;
+                        output = $"<@&{settings.ReportRole}> " + output;
                         await reportChannel.SendMessageAsync(output);
                     }
                     else
@@ -572,11 +572,11 @@
             {
                 await _logger.Log($"pick: {query}, YELLOWLISTED {yellowTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
-                var yellowChannel = Context.Guild.GetTextChannel(settings.yellowAlertChannel);
-                if (settings.yellowPing)
+                var yellowChannel = Context.Guild.GetTextChannel(settings.YellowAlertChannel);
+                if (settings.YellowPing)
                 {
                     await yellowChannel.SendMessageAsync(
-                        $"<@&{settings.yellowAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}");
+                        $"<@&{settings.YellowAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {yellowTerms}");
                 }
                 else
                 {

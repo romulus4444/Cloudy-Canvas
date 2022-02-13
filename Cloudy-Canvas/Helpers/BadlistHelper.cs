@@ -11,15 +11,15 @@
         public static async Task<bool> RemoveYellowTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
             var lower = term.ToLower();
-            for (var x = settings.yellowList.Count - 1; x >= 0; x--)
+            for (var x = settings.YellowList.Count - 1; x >= 0; x--)
             {
-                var yellow = settings.yellowList[x];
+                var yellow = settings.YellowList[x];
                 if (yellow != lower)
                 {
                     continue;
                 }
 
-                settings.yellowList.Remove(yellow);
+                settings.YellowList.Remove(yellow);
                 await FileHelper.SaveServerSettingsAsync(settings, context);
                 return true;
             }
@@ -32,7 +32,7 @@
             var queryList = query.ToLower().Split(", ");
             var parsedList = ParseList(queryList);
             var matchedTerms = "";
-            foreach (var yellow in settings.yellowList)
+            foreach (var yellow in settings.YellowList)
             {
                 foreach (var term in parsedList)
                 {
@@ -63,7 +63,7 @@
             foreach (var singleTerm in termList)
             {
                 var failed = false;
-                foreach (var yellow in settings.yellowList)
+                foreach (var yellow in settings.YellowList)
                 {
                     if (yellow != singleTerm)
                     {
@@ -78,7 +78,7 @@
                     continue;
                 }
 
-                settings.yellowList.Add(singleTerm);
+                settings.YellowList.Add(singleTerm);
                 addList.Add(singleTerm);
             }
 

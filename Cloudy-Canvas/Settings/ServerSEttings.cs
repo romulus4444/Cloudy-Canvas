@@ -7,41 +7,41 @@
     {
         public ServerSettings()
         {
-            defaultFilterId = 175;
-            adminChannel = 0;
-            adminRole = 0;
-            spoilerList = new List<Tuple<long, string>>();
-            yellowList = new List<string>();
-            yellowAlertChannel = 0;
-            yellowAlertRole = 0;
-            yellowPing = false;
-            logPostChannel = 0;
-            reportChannel = 0;
-            reportRole = 0;
-            reportPing = false;
-            safeMode = true;
-            ignoredChannels = new List<ulong>();
-            ignoredRoles = new List<ulong>();
-            allowedUsers = new List<ulong>();
-            filteredChannels = new List<Tuple<ulong, int>>();
+            DefaultFilterId = 175;
+            AdminChannel = 0;
+            AdminRole = 0;
+            SpoilerList = new List<Tuple<long, string>>();
+            YellowList = new List<string>();
+            YellowAlertChannel = 0;
+            YellowAlertRole = 0;
+            YellowPing = false;
+            LogPostChannel = 0;
+            ReportChannel = 0;
+            ReportRole = 0;
+            ReportPing = false;
+            SafeMode = true;
+            IgnoredChannels = new List<ulong>();
+            IgnoredRoles = new List<ulong>();
+            AllowedUsers = new List<ulong>();
+            FilteredChannels = new List<Tuple<ulong, int>>();
         }
 
-        public int defaultFilterId { get; set; }
-        public ulong adminChannel { get; set; }
-        public ulong adminRole { get; set; }
-        public List<Tuple<long, string>> spoilerList { get; set; }
-        public List<string> yellowList { get; set; }
-        public ulong yellowAlertChannel { get; set; }
-        public ulong yellowAlertRole { get; set; }
-        public bool yellowPing { get; set; }
-        public ulong logPostChannel { get; set; }
-        public ulong reportChannel { get; set; }
-        public ulong reportRole { get; set; }
-        public bool reportPing { get; set; }
-        public bool safeMode { get; set; }
-        public List<ulong> ignoredChannels { get; set; }
-        public List<ulong> ignoredRoles { get; set; }
-        public List<ulong> allowedUsers { get; set; }
-        public List<Tuple<ulong, int>> filteredChannels { get; set; }
+        public int DefaultFilterId { get; set; }
+        public ulong AdminChannel { get; set; }
+        public ulong AdminRole { get; set; }
+        public List<Tuple<long, string>> SpoilerList { get; set; }
+        public List<string> YellowList { get; set; }
+        public ulong YellowAlertChannel { get; set; }
+        public ulong YellowAlertRole { get; set; }
+        public bool YellowPing { get; set; }
+        public ulong LogPostChannel { get; set; }
+        public ulong ReportChannel { get; set; }
+        public ulong ReportRole { get; set; }
+        public bool ReportPing { get; set; }
+        public bool SafeMode { get; set; }
+        public List<ulong> IgnoredChannels { get; set; }
+        public List<ulong> IgnoredRoles { get; set; }
+        public List<ulong> AllowedUsers { get; set; }
+        public List<Tuple<ulong, int>> FilteredChannels { get; set; }
     }
 }

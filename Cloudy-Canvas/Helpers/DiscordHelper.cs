@@ -43,7 +43,7 @@
                 return true;
             }
 
-            return settings.adminRole == 0 || context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.adminRole);
+            return settings.AdminRole == 0 || context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.AdminRole);
         }
 
         public static bool CanUserRunThisCommand(SocketCommandContext context, ServerSettings settings)
@@ -53,12 +53,12 @@
                 return true;
             }
 
-            if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.adminRole))
+            if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.AdminRole))
             {
                 return true;
             }
 
-            foreach (var allowedUser in settings.allowedUsers)
+            foreach (var allowedUser in settings.AllowedUsers)
             {
                 if (context.User.Id == allowedUser)
                 {
@@ -66,7 +66,7 @@
                 }
             }
 
-            foreach (var ignoredChannel in settings.ignoredChannels)
+            foreach (var ignoredChannel in settings.IgnoredChannels)
             {
                 if (context.Channel.Id == ignoredChannel)
                 {
@@ -74,7 +74,7 @@
                 }
             }
 
-            foreach (var ignoredRole in settings.ignoredRoles)
+            foreach (var ignoredRole in settings.IgnoredRoles)
             {
                 if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == ignoredRole))
                 {
@@ -100,7 +100,7 @@
         public static string CheckAliasesAsync(string message, ServerPreloadedSettings settings)
         {
             var parsedMessage = message.Substring(1).TrimStart();
-            foreach (var (shortForm, longForm) in settings.aliases)
+            foreach (var (shortForm, longForm) in settings.Aliases)
             {
                 if (message.Substring(1).TrimStart().StartsWith(shortForm))
                 {

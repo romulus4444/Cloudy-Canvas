@@ -6,11 +6,11 @@
     {
         public AllPreloadedSettings()
         {
-            settings = new Dictionary<ulong, ServerPreloadedSettings>();
-            guildList = new Dictionary<ulong, ulong>();
+            Settings = new Dictionary<ulong, ServerPreloadedSettings>();
+            GuildList = new Dictionary<ulong, ulong>();
         }
 
-        public Dictionary<ulong, ServerPreloadedSettings> settings { get; set; }
-        public Dictionary<ulong, ulong> guildList { get; set; }
+        public Dictionary<ulong, ServerPreloadedSettings> Settings { get; set; }
+        public Dictionary<ulong, ulong> GuildList { get; set; }
     }
 }
