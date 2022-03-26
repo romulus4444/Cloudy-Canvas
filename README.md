@@ -16,9 +16,7 @@ Important terms:
 
 `active filter` The Manebooru filter that your server uses to filter images in the search results. It is advisable to make your own account on Manebooru, add a new filter, tailor it to your server's needs, and make it public (at the bottom of the page under Advanced Options). You do not need to leave it as your account's active filter, as long as you know the ID (it's in the URL when viewing the filter: `https://manebooru.art/filters/<filter ID>`) and the filter is public.
 
-`yellowlist` A list of terms that the bot will not search for if included in the query. These terms are not prevented from appearing in search results. Use cases include terms like `breasts` that are inappropriate to search for in a SFW server, but is a perfectly okay tag to appear in search results. This list can include image IDs as well. A user searching for a yellow term will generate an alert message sent to the current yellow alert channel.
-
-`redlist` A list of terms built from tags hidden by the active filter, tags that imply those hidden tags, and tags that are aliased to those hidden tags. It is highly advisable to include `banned tags` in your active filter's hidden tags. Red terms will never appear in any Cloudy search result (because they are blocked by the filter). A user searching for a red term will have their search query deleted by Cloudy, and an alert will be sent to the current red alert channel.
+`watchlist` A list of terms that the bot will not search for if included in the query. These terms are not prevented from appearing in search results. Use cases include terms like `breasts` that are inappropriate to search for in a SFW server, but is a perfectly okay tag to appear in search results. This list can include image IDs as well. A user searching for a watch term will generate an alert message sent to the current watch alert channel and pick the watch alert role, if either are set.
 
 ## Commands:
 ### Booru Module:
@@ -50,7 +48,7 @@ Important terms:
 
 ---
 
-`;report <id> <reason>` Alerts the admins about image #`<id>` with an optional `<reason>` for the admins to see. Only use this for images that violate the server rules!
+`;report <id> <reason>` Alerts the admins about image #`<id>` with an optional `<reason>` for the admins to see. Only use this for images that violate the server rules; this is not a report to manebooru itself!
 
 ---
 
@@ -80,7 +78,7 @@ Initial bot setup. Run this before doing anything else when adding Cloudy Canvas
 
 `;setup <filter ID> <admin channel> <admin role>` *(Only a server administrator may use this command)*
 
-Sets `<filter ID>` as the public Manebooru filter to use, `<admin channel>` for important admin output messages, and `<admin role>` as users who are allowed to use admin module commands. Validates that `<Filter ID>` is useable and if not, uses Filter 175 (Cloudy Canvas's default filter). Filters are viewable at `https://manebooru.art/filters/<filter ID>`. All alert channels are defaulted to the admin channel, and all alert roles and pings are turned off. The spoiler list and redlist are then built, which can take several minutes, depending on how many tags in the filter are spoilered or hidden. Please wait until the lists are done being built before running more commands. This is a one-time process, unless manually initiated later.
+Sets `<filter ID>` as the public Manebooru filter to use, `<admin channel>` for important admin output messages, and `<admin role>` as users who are allowed to use admin module commands. Validates that `<Filter ID>` is useable and if not, uses Filter 175 (Cloudy Canvas's default filter). Filters are viewable at `https://manebooru.art/filters/<filter ID>`. All alert channels are defaulted to the admin channel, and all alert roles and pings are turned off. The spoiler list is then built, which can take several minutes, depending on how many tags in the filter are spoilered. Please wait until is done being built before running more commands; Cloudy will tell you when she is ready. This is a one-time process, unless manually initiated later.
 
 ---
 
@@ -88,7 +86,7 @@ Manages the active filter.
 
 `;admin filter get` Gets the current active filter.
 
-`;admin filter set <filter ID>` Sets the active filter to `<Filter ID>`. Validates that the filter is useable by the bot. The spoiler list and redlist are rebuilt after the new filter is set.
+`;admin filter set <filter ID>` Sets the active filter to `<Filter ID>`. Validates that the filter is useable by the bot. The spoiler list is rebuilt after the new filter is set.
  
  ---
  
@@ -108,7 +106,7 @@ Manages the admin role.
 
 ---
 
- Manages the list of channel-specific filters. NOTE: red and yellow list checks are disabled for any channels on this list! Moderators will need to keep an eye on searches performed here!
+ Manages the list of channel-specific filters. NOTE: watchlist checks are disabled for any channels on this list! Moderators will need to keep an eye on searches performed here!
 
 `;admin filterchannel get` Gets the current list of channel-specific filters.
 
@@ -118,7 +116,7 @@ Manages the admin role.
  
 `;admin filterchannel clear` Clears the list of channel-specific filters. All channels will use the default server filter.
  
- ---
+---
  
  Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.
 
@@ -130,7 +128,7 @@ Manages the admin role.
  
 `;admin ignorechannel clear` Clears the list of ignored channels.
  
- ---
+---
 
 Manages the list of roles to ignore commands from. Cloudy will not respond to users that have any of these roles.
 
@@ -142,7 +140,7 @@ Manages the list of roles to ignore commands from. Cloudy will not respond to us
  
 `;admin ignorerole clear` Clears the list of ignored roles.
  
- ---
+---
 
 Manages the list of users to allow commands from. This overrides the ignorechannel and ignorerole restrictions!
 
@@ -154,47 +152,28 @@ Manages the list of users to allow commands from. This overrides the ignorechann
  
 `;admin allowuser clear` Clears the list of allowed users.
  
- ---
+---
 
-Manages the yellow alert channel.
+Manages the watch alert channel.
 
-`;admin yellowchannel get` Gets the current yellow alert channel.
+`;admin watchchannel get` Gets the current watch alert channel.
 
-`;admin yellowchannel set <channel>` Sets the yellow alert channel to `<channel>`. Accepts a channel ping or plain text.
+`;admin watchchannel set <channel>` Sets the watch alert channel to `<channel>`. Accepts a channel ping or plain text.
  
-`;admin yellowchannel clear` Resets the yellow alert channel to the current admin channel.
+`;admin watchchannel clear` Resets the watch alert channel to the current admin channel.
  
- ---
+---
 
-Manages the yellow alert role.
+Manages the watch alert role.
 
-`;admin yellowrole get` Gets the current yellow alert role.
+`;admin watchrole get` Gets the current watch alert role.
 
-`;admin yellowrole set <role>` Sets the yellow alert role to `<role>` and turns pinging on. Accepts a role ping or plain text.
+`;admin watchrole set <role>` Sets the watch alert role to `<role>` and turns pinging on. Accepts a role ping or plain text.
  
-`;admin yellowrole clear` Resets the yellow alert role to no role and turns pinging off.
- 
- ---
+`;admin watchrole clear` Resets the watch alert role to no role and turns pinging off.
 
-Manages the red alert channel.
+---
 
-`;admin redchannel get` Gets the current red alert channel.
-
-`;admin redchannel set <channel>` Sets the red alert channel to `<channel>`. Accepts a channel ping or plain text.
- 
-`;admin redchannel clear` Resets the red alert channel to the current admin channel.
- 
- ---
-
-Manages the red alert role.
-
-`;admin redrole get` Gets the current red alert role.
-
-`;admin redrole set <role>` Sets the red alert role to `<role>` and turns pinging on. Accepts a role ping or plain text.
- 
-`;admin redrole clear` Resets the red alert channel to no role and turns pinging off.
- 
- ---
 Manages the report alert channel.
 
 `;admin reportchannel get` Gets the current report alert channel.
@@ -213,7 +192,7 @@ Manages the report alert role.
  
 `;admin reportrole clear` Resets the report alert channel to no role and turns pinging off.
  
- ---
+---
 
 Manages the log post channel.
 
@@ -223,33 +202,33 @@ Manages the log post channel.
  
 `;admin logchannel clear` Resets the log post channel to the current admin channel.
  
- ---
+---
 
 Manages the list of terms users are unable to search for.
 
-`;yellowlist get` Gets the current list of yellowlisted terms.
+`;watchlist get` Gets the current list of watchlisted terms.
 
-`;yellowlist add <term>` Add `<term>` to the yellowlist. `<term>` may be a comma-separated list.
+`;watchlist add <term>` Add `<term>` to the watchlist. `<term>` may be a comma-separated list.
 
-`;yellowlist remove <term>` Removes `<term>` from the yellowlist.
+`;watchlist remove <term>` Removes `<term>` from the watchlist.
 
-`;yellowlist clear` Clears the yellowlist of all terms.
+`;watchlist clear` Clears the watchlist of all terms.
  
- ---
+---
 
 `;log <channel> <date>` Posts the log file from `<channel>` and `<date>` into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD. Logs are saved based on date in UTC.
  
- ---
+---
 
 `;echo <message>` Posts `<message>` to the current channel.
 
 `;echo <channel> <message>` Posts `<message>` to a valid `<channel>`. If `<channel>` is invalid, posts to the current channel instead. Accepts a channel ping or plain text.
  
- ---
+---
 
 `;setprefix <prefix>` Sets the prefix in front of commands to listen for to `<prefix>`. Accepts a single character.
  
- ---
+---
 
 `;listentobots <pos/neg>` Toggles whether or not to run commands posted by other bots. Accepts `y/n`, `yes/no`, `on/off`, or `true/false`.
 
@@ -271,11 +250,11 @@ Manages the list of command aliases.
  
 ---
 
-`;getsettings` Posts the settings file to the log channel. This includes the redlist.
+`;getsettings` Posts the settings file to the log channel.
 
 ---
 
-`;refreshlists` Rebuilds the spoiler list and redlist from the current active filter. This may take several minutes depending on how many tags are in there.
+`;refreshlists` Rebuilds the spoiler list from the current active filter. This may take several minutes depending on how many tags are in there.
 
 ---
 
