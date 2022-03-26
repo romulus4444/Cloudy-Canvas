@@ -481,21 +481,6 @@
             }
         }
 
-        [Command("refreshlists")]
-        [Summary("Refreshes the spoiler list and redlist")]
-        public async Task RefreshListsCommandAsync()
-        {
-            var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
-            {
-                return;
-            }
-
-            await ReplyAsync("Refreshing spoiler list. This may take a few minutes.");
-            await _booru.RefreshListsAsync(Context, settings);
-            await ReplyAsync("Spoiler list refreshed!");
-        }
-
         private static string SetupTagListOutput(List<string> tagList)
         {
             var sortedList = tagList;
