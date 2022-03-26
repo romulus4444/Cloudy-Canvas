@@ -132,6 +132,12 @@ namespace Cloudy_Canvas
                 {
                     if (context.User.Id == 221742476153716736 || context.User.Id == 95483801584537600) //Dr. Romulus#4444 || CULT PONY#6167
                     {
+                        if (parsedMessage == "broadcast")
+                        {
+                            await context.Channel.SendMessageAsync("Cannot broadcast a blank message!");
+                            return;
+                        }
+
                         var messagePart = parsedMessage.Split(' ', 2)[1];
                         await BroadcastAsync(messagePart);
                         await context.Channel.SendMessageAsync("Message broadcasted to all servers' admin channels.");
@@ -151,11 +157,6 @@ namespace Cloudy_Canvas
         [RequireOwner]
         private async Task BroadcastAsync(string message = "")
         {
-            if (message == "")
-            {
-                return;
-            }
-
             var guildList = _servers.GuildList;
             foreach (var (guild, adminChannel) in guildList)
             {
