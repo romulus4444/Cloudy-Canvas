@@ -466,7 +466,7 @@
                     output += $" || <https://manebooru.art/images/{imageId}> ||";
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
                     var reportChannel = Context.Guild.GetTextChannel(settings.ReportChannel);
-                    if (settings.ReportPing)
+                    if (settings.ReportChannel != 0)
                     {
                         output = $"<@&{settings.ReportRole}> " + output;
                         await reportChannel.SendMessageAsync(output);
@@ -558,7 +558,7 @@
                 await _logger.Log($"pick: {query}, WATCHLISTED {watchTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
                 var watchChannel = Context.Guild.GetTextChannel(settings.WatchAlertChannel);
-                if (settings.WatchPing)
+                if (settings.WatchAlertRole != 0)
                 {
                     await watchChannel.SendMessageAsync(
                         $"<@&{settings.WatchAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}");

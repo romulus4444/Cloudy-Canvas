@@ -1220,7 +1220,6 @@
         private async Task WatchRoleClearAsync(ServerSettings settings)
         {
             settings.WatchAlertRole = 0;
-            settings.WatchPing = false;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync($"Watch alerts will not ping anyone now in <#{settings.WatchAlertChannel}>");
         }
@@ -1231,7 +1230,6 @@
             if (roleSetId > 0)
             {
                 settings.WatchAlertRole = roleSetId;
-                settings.WatchPing = true;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Watch alerts will now ping <@&{settings.WatchAlertRole}>", allowedMentions: AllowedMentions.None);
             }
@@ -1290,7 +1288,6 @@
         private async Task ReportRoleClearAsync(ServerSettings settings)
         {
             settings.ReportRole = 0;
-            settings.ReportPing = false;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync($"Report alerts will not ping anyone now in <#{settings.ReportChannel}>");
         }
@@ -1301,7 +1298,6 @@
             if (roleSetId > 0)
             {
                 settings.ReportRole = roleSetId;
-                settings.ReportPing = true;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Report alerts will now ping <@&{settings.ReportRole}>", allowedMentions: AllowedMentions.None);
             }
