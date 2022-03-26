@@ -570,17 +570,17 @@
             var watchTerms = BadlistHelper.CheckWatchList(query, settings);
             if (watchTerms != "")
             {
-                await _logger.Log($"pick: {query}, YELLOWLISTED {watchTerms}", Context, true);
+                await _logger.Log($"pick: {query}, WATCHLISTED {watchTerms}", Context, true);
                 await ReplyAsync("I'm not gonna go look for that.");
                 var watchChannel = Context.Guild.GetTextChannel(settings.WatchAlertChannel);
                 if (settings.WatchPing)
                 {
                     await watchChannel.SendMessageAsync(
-                        $"<@&{settings.WatchAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {watchTerms}");
+                        $"<@&{settings.WatchAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}");
                 }
                 else
                 {
-                    await watchChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> YELLOW TERMS: {watchTerms}",
+                    await watchChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}",
                         allowedMentions: AllowedMentions.None);
                 }
 
