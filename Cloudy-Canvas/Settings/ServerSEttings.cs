@@ -7,6 +7,7 @@
     {
         public ServerSettings()
         {
+            Name = "";
             DefaultFilterId = 175;
             AdminChannel = 0;
             AdminRole = 0;
@@ -27,6 +28,7 @@
             FilteredChannels = new List<Tuple<ulong, int>>();
         }
 
+        public string Name { get; set; }
         public int DefaultFilterId { get; set; }
         public ulong AdminChannel { get; set; }
         public ulong AdminRole { get; set; }
