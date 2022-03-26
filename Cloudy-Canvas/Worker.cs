@@ -130,7 +130,7 @@ namespace Cloudy_Canvas
 
                 if (parsedMessage.Split(" ")[0] == "broadcast")
                 {
-                    if (context.User.Id == 221742476153716736) //Dr. Romulus#4444
+                    if (context.User.Id == 221742476153716736 || context.User.Id == 95483801584537600) //Dr. Romulus#4444 || CULT PONY#6167
                     {
                         var messagePart = parsedMessage.Split(' ', 2)[1];
                         await BroadcastAsync(messagePart);
@@ -151,6 +151,11 @@ namespace Cloudy_Canvas
         [RequireOwner]
         private async Task BroadcastAsync(string message = "")
         {
+            if (message == "")
+            {
+                return;
+            }
+
             var guildList = _servers.GuildList;
             foreach (var (guild, adminChannel) in guildList)
             {
