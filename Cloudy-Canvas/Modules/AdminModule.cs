@@ -41,6 +41,7 @@
                 filterId = 175;
             }
 
+            settings.Name = Context.Guild.Name;
             settings.DefaultFilterId = filterId;
             await ReplyAsync($"Using <https://manebooru.art/filters/{filterId}>");
             await ReplyAsync("Moving in to my new place...");
@@ -685,6 +686,61 @@
             await _logger.Log("getsettings: <SUCCESS>", Context);
         }
 
+        [Command("refreshlists")]
+        [Summary("Refreshes the spoiler list and server settings")]
+        public async Task RefreshListsCommandAsync()
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
+            var prefix = serverPresettings.Prefix;
+            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            {
+                return;
+            }
+
+            await ReplyAsync("Refreshing spoiler list. This may take a few minutes.");
+            await _booru.RefreshListsAsync(Context, settings);
+            await ReplyAsync("Checking and saving server settings.");
+            if (Context.IsPrivate)
+            {
+                settings.Name = $"{Context.User.Username}#{Context.User.Discriminator}";
+            }
+            else
+            {
+                if (settings.AdminChannel == 0)
+                {
+                    await ReplyAsync($"WARNING! There is no admin channel set! Please set one up now with `{prefix}setup <filter> <adminchannel> <adminrole>`");
+                    await ReplyAsync("Setting the admin channel to the current channel for now. Other alert channels will be set to here as well.");
+                    settings.AdminChannel = Context.Channel.Id;
+                }
+
+                settings.Name = Context.Guild.Name;
+                if (!_servers.GuildList.ContainsKey(Context.Guild.Id))
+                {
+                    _servers.GuildList[Context.Guild.Id] = settings.AdminChannel;
+                    await FileHelper.SaveAllPresettingsAsync(_servers);
+                }
+
+                if (settings.WatchAlertChannel == 0)
+                {
+                    settings.WatchAlertChannel = settings.AdminChannel;
+                }
+
+                if (settings.LogPostChannel == 0)
+                {
+                    settings.LogPostChannel = settings.AdminChannel;
+                }
+
+                if (settings.ReportChannel == 0)
+                {
+                    settings.ReportChannel = settings.AdminChannel;
+                }
+            }
+
+            await FileHelper.SaveServerSettingsAsync(settings, Context);
+            await ReplyAsync("Spoiler list and server settings refreshed!");
+        }
+
         [Command("broadcast")]
         [Summary("Broadcasts a message to all servers")]
         [RequireOwner]
@@ -1164,7 +1220,6 @@
         private async Task WatchRoleClearAsync(ServerSettings settings)
         {
             settings.WatchAlertRole = 0;
-            settings.WatchPing = false;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync($"Watch alerts will not ping anyone now in <#{settings.WatchAlertChannel}>");
         }
@@ -1175,7 +1230,6 @@
             if (roleSetId > 0)
             {
                 settings.WatchAlertRole = roleSetId;
-                settings.WatchPing = true;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Watch alerts will now ping <@&{settings.WatchAlertRole}>", allowedMentions: AllowedMentions.None);
             }
@@ -1234,7 +1288,6 @@
         private async Task ReportRoleClearAsync(ServerSettings settings)
         {
             settings.ReportRole = 0;
-            settings.ReportPing = false;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync($"Report alerts will not ping anyone now in <#{settings.ReportChannel}>");
         }
@@ -1245,7 +1298,6 @@
             if (roleSetId > 0)
             {
                 settings.ReportRole = roleSetId;
-                settings.ReportPing = true;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Report alerts will now ping <@&{settings.ReportRole}>", allowedMentions: AllowedMentions.None);
             }

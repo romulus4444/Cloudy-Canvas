@@ -25,14 +25,14 @@
                 {
                     filepath = Path.Join(filepath, "_userdms");
                     CreateDirectoryIfNotExists(filepath);
-                    filepath = Path.Join(filepath, $"{context.User.Username}");
+                    filepath = Path.Join(filepath, $"{context.User.Id}");
                     CreateDirectoryIfNotExists(filepath);
                 }
                 else
                 {
                     if (context != null)
                     {
-                        filepath = Path.Join(filepath, $"{context.Guild.Name}");
+                        filepath = Path.Join(filepath, $"{context.Guild.Id}");
                         CreateDirectoryIfNotExists(filepath);
 
                         //channel
@@ -40,7 +40,7 @@
                         {
                             if (type == FilePathType.Channel)
                             {
-                                filepath = Path.Join(filepath, $"{context.Channel.Name}");
+                                filepath = Path.Join(filepath, $"{context.Channel.Id}");
                                 CreateDirectoryIfNotExists(filepath);
                             }
                             else
@@ -55,19 +55,12 @@
                 }
             }
 
-            switch (filename)
+            filepath = filename switch
             {
-                case "":
-                    filepath = Path.Join(filepath, $"default.{extension}");
-                    break;
-                case "<date>":
-                    filepath = Path.Join(filepath, $"{DateTime.UtcNow:yyyy-MM-dd}.{extension}");
-                    break;
-                default:
-                    filepath = Path.Join(filepath, $"{filename}.{extension}");
-                    break;
-            }
-
+                "" => Path.Join(filepath, $"default.{extension}"),
+                "<date>" => Path.Join(filepath, $"{DateTime.UtcNow:yyyy-MM-dd}.{extension}"),
+                _ => Path.Join(filepath, $"{filename}.{extension}"),
+            };
             return filepath;
         }
 
