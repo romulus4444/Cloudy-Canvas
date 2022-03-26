@@ -7,6 +7,7 @@
     {
         public ServerSettings()
         {
+            Name = "";
             DefaultFilterId = 175;
             AdminChannel = 0;
             AdminRole = 0;
@@ -15,11 +16,9 @@
             yellowList = new List<string>();
             WatchAlertChannel = 0;
             WatchAlertRole = 0;
-            WatchPing = false;
             LogPostChannel = 0;
             ReportChannel = 0;
             ReportRole = 0;
-            ReportPing = false;
             SafeMode = true;
             IgnoredChannels = new List<ulong>();
             IgnoredRoles = new List<ulong>();
@@ -27,6 +26,7 @@
             FilteredChannels = new List<Tuple<ulong, int>>();
         }
 
+        public string Name { get; set; }
         public int DefaultFilterId { get; set; }
         public ulong AdminChannel { get; set; }
         public ulong AdminRole { get; set; }
@@ -35,11 +35,9 @@
         public List<string> yellowList { get; set; }
         public ulong WatchAlertChannel { get; set; }
         public ulong WatchAlertRole { get; set; }
-        public bool WatchPing { get; set; }
         public ulong LogPostChannel { get; set; }
         public ulong ReportChannel { get; set; }
         public ulong ReportRole { get; set; }
-        public bool ReportPing { get; set; }
         public bool SafeMode { get; set; }
         public List<ulong> IgnoredChannels { get; set; }
         public List<ulong> IgnoredRoles { get; set; }
