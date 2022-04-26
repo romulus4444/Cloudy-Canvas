@@ -4,6 +4,10 @@
     <TargetFramework>net5.0</TargetFramework>
     <UserSecretsId>dotnet-Cloudy_Canvas-C054BD3A-F4E3-4221-81C0-9AE116BDD30F</UserSecretsId>
     <RootNamespace>Cloudy_Canvas</RootNamespace>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
   </PropertyGroup>
 
   <ItemGroup>
