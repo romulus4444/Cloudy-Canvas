@@ -466,14 +466,14 @@
                     output += $" || <https://manebooru.art/images/{imageId}> ||";
                     await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
                     var reportChannel = Context.Guild.GetTextChannel(settings.ReportChannel);
-                    if (settings.ReportChannel != 0)
+                    if (settings.ReportRole != 0)
                     {
                         output = $"<@&{settings.ReportRole}> " + output;
                         await reportChannel.SendMessageAsync(output);
                     }
                     else
                     {
-                        await reportChannel.SendMessageAsync(output, allowedMentions: AllowedMentions.None);
+                        await reportChannel.SendMessageAsync(output);
                     }
 
                     await ReplyAsync("Admins have been notified. Thank you for your report.");
@@ -565,8 +565,7 @@
                 }
                 else
                 {
-                    await watchChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}",
-                        allowedMentions: AllowedMentions.None);
+                    await watchChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}");
                 }
 
                 return false;
