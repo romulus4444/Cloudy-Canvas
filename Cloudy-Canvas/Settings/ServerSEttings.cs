@@ -13,7 +13,6 @@
             AdminRole = 0;
             SpoilerList = new List<Tuple<long, string>>();
             WatchList = new List<string>();
-            yellowList = new List<string>();
             WatchAlertChannel = 0;
             WatchAlertRole = 0;
             LogPostChannel = 0;
@@ -32,7 +31,6 @@
         public ulong AdminRole { get; set; }
         public List<Tuple<long, string>> SpoilerList { get; set; }
         public List<string> WatchList { get; set; }
-        public List<string> yellowList { get; set; }
         public ulong WatchAlertChannel { get; set; }
         public ulong WatchAlertRole { get; set; }
         public ulong LogPostChannel { get; set; }

@@ -79,18 +79,6 @@
                 settings = JsonConvert.DeserializeObject<ServerSettings>(fileContents);
             }
 
-            if (settings.yellowList.Count > 0)
-            {
-                foreach (var item in settings.yellowList)
-                {
-                    settings.WatchList.Add(item);
-                }
-
-                settings.yellowList.Clear();
-                var defaultFileContents = JsonConvert.SerializeObject(settings, Formatting.Indented);
-                await File.WriteAllTextAsync(filepath, defaultFileContents);
-            }
-
             return settings;
         }
 
