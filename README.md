@@ -6,7 +6,7 @@ A Discord bot for interfacing with the [Manebooru](https://manebooru.art/) image
 
 Written by Raymond Welch ([@Dr. Romulus#4444](https://github.com/romulus4444)) in C# using Discord.net and hosted on the Manebooru server. Special thanks to Ember Heartshine and CULTPONY.
 
-I am currently only considering requests to add Cloudy Canvas to servers that I am in, but feel free to contact me on Discord about it.
+Interested in adding Cloudy to your own server? Click [here](https://discord.com/api/oauth2/authorize?client_id=828682017868218445&permissions=515396463680&scope=bot) to add her! Please make sure you run the setup command once you do!
 
 Cloudy Canvas's profile picture was drawn by me and can be found [here](https://manebooru.art/images/4010266).
 
