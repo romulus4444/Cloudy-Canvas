@@ -102,7 +102,7 @@ Manages the admin role.
 
 `;admin adminrole get` Gets the current admin role.
 
-`;admin adminrole set` <role> Sets the admin role to <role>. Accepts a role ping or plain text.
+`;admin adminrole set <role>` Sets the admin role to `<role>`. Accepts a role ping or plain text.
 
 ---
 
@@ -216,7 +216,7 @@ Manages the list of terms users are unable to search for.
  
 ---
 
-`;log <channel> <date>` Posts the log file from `<channel>` and `<date>` into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD. Logs are saved based on date in UTC.
+`;log <channel> <date>` Posts the log file from `<channel>` and `<date>` into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as `YYYY-MM-DD`. Logs are saved based on date in UTC.
  
 ---
 
