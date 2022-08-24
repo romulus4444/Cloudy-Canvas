@@ -99,14 +99,16 @@
 
         public static string CheckAliasesAsync(string message, ServerPreloadedSettings settings)
         {
-            var parsedMessage = message.Substring(1).TrimStart();
+            var command = message[1..].TrimStart();
             foreach (var (shortForm, longForm) in settings.Aliases)
             {
-                if (message.Substring(1).TrimStart().StartsWith(shortForm))
+                if (message[1..].TrimStart().StartsWith(shortForm))
                 {
-                    parsedMessage = message.Replace(shortForm, longForm).Substring(1).TrimStart();
+                    command = message.Replace(shortForm, longForm)[1..].TrimStart();
                 }
             }
+
+            var parsedMessage = command.Split(' ')[0].ToLower() + " " + command.Split(' ')[1];
 
             return parsedMessage;
         }
@@ -156,7 +158,7 @@
                 return 0;
             }
 
-            var frontTrim = channelPing.Substring(2);
+            var frontTrim = channelPing[2..];
             var trim = frontTrim.Split('>', 2)[0];
             return ulong.Parse(trim);
         }
@@ -168,7 +170,7 @@
                 return 0;
             }
 
-            var frontTrim = userPing.Substring(3);
+            var frontTrim = userPing[3..];
             var trim = frontTrim.Split('>', 2)[0];
             return ulong.Parse(trim);
         }
@@ -216,7 +218,7 @@
                 return 0;
             }
 
-            var frontTrim = rolePing.Substring(3);
+            var frontTrim = rolePing[3..];
             var trim = frontTrim.Split('>', 2)[0];
             return ulong.Parse(trim);
         }
