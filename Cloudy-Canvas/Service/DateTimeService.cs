@@ -1,13 +1,17 @@
-using System;
-public interface IDateTimeService
+namespace Cloudy_Canvas.Service
 {
-    DateTime UtcNow();
-}
+    using System;
 
-public class DateTimeService : IDateTimeService
-{
-    public DateTime UtcNow()
+    public interface IDateTimeService
     {
-        return DateTime.UtcNow;
+        DateTime UtcNow();
+    }
+
+    public class DateTimeService : IDateTimeService
+    {
+        public DateTime UtcNow()
+        {
+            return DateTime.UtcNow;
+        }
     }
 }

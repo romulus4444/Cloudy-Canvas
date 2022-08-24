@@ -1,9 +1,9 @@
-using System;
-using Xunit;
-using Cloudy_Canvas.Service;
-
 namespace Cloudy_Canvas.Tests
 {
+    using System;
+    using Cloudy_Canvas.Service;
+    using Xunit;
+
     public class MixinsServiceTests
     {
         [Theory]
@@ -13,9 +13,10 @@ namespace Cloudy_Canvas.Tests
         [InlineData("created_at:{{current_year}}-{{current_month}}-{{current_day}}, Lyra", "created_at:2021-04-23, Lyra")]
         [InlineData("created_at:{{current_year}}-{{current_month}}-{{current_day}}T{{current_hour}}, Lyra", "created_at:2021-04-23T17, Lyra")]
         [InlineData("created_at:{{current_year}}-{{current_month}}-{{current_day}}T{{current_hour}}:{{current_minute}}, Lyra", "created_at:2021-04-23T17:20, Lyra")]
-        [InlineData("created_at:{{current_year}}-{{current_month}}-{{current_day}}T{{current_hour}}:{{current_minute}}:{{current_second}}, Lyra", "created_at:2021-04-23T17:20:07, Lyra")]
-        [InlineData("{{today}}{{today}}", "2021-04-232021-04-23")]//Replaces all 
-        public void TranspileThoery(string query, string expected)
+        [InlineData("created_at:{{current_year}}-{{current_month}}-{{current_day}}T{{current_hour}}:{{current_minute}}:{{current_second}}, Lyra",
+            "created_at:2021-04-23T17:20:07, Lyra")]
+        [InlineData("{{today}}{{today}}", "2021-04-232021-04-23")] //Replaces all 
+        public void TranspileTheory(string query, string expected)
         {
             var helper = new MixinsService(new MockDateTimeService());
             var result = helper.Transpile(query);

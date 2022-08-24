@@ -1,7 +1,6 @@
 ﻿namespace Cloudy_Canvas.Service
 {
     using System;
-    using System.Globalization;
     using System.IO;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
