@@ -74,7 +74,11 @@ namespace Cloudy_Canvas
                 return;
             }
 
-            var message = messageParam as SocketUserMessage;
+            if (messageParam is not SocketUserMessage message)
+            {
+                return;
+            }
+
             var argPos = 0;
             var context = new SocketCommandContext(_client, message);
             var settings = await FileHelper.LoadServerPresettingsAsync(context, _servers);
@@ -130,7 +134,7 @@ namespace Cloudy_Canvas
 
                 if (parsedMessage.Split(" ")[0] == "broadcast")
                 {
-                    if (context.User.Id == 221742476153716736 || context.User.Id == 95483801584537600) //Dr. Romulus#4444 || CULT PONY#6167
+                    if (context.User.Id is 221742476153716736 or 95483801584537600) //Dr. Romulus#4444 || CULT PONY#6167
                     {
                         if (parsedMessage == "broadcast")
                         {

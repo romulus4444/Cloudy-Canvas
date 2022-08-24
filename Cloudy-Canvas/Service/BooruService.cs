@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Settings;
@@ -62,7 +61,6 @@
         public async Task<Tuple<int?, long, long, bool, List<string>>> GetRandomImageByQueryAsync(string query, ServerSettings settings, int filterId)
         {
             //GET	/api/v1/json/search/images?q=safe
-            int? code;
             long searchResult = -1;
             long numberOfResults = 0;
             var emptyList = new List<string>();
@@ -84,7 +82,7 @@
             }
             catch (FlurlHttpException ex)
             {
-                code = ex.StatusCode;
+                var code = ex.StatusCode;
                 returnResult = new Tuple<int?, long, long, bool, List<string>>(code, returnResult.Item2, returnResult.Item3, returnResult.Item4, returnResult.Item5);
                 return returnResult;
             }

@@ -99,18 +99,23 @@
 
         public static string CheckAliasesAsync(string message, ServerPreloadedSettings settings)
         {
-            var command = message[1..].TrimStart();
+            var rawCommand = message[1..].TrimStart();
             foreach (var (shortForm, longForm) in settings.Aliases)
             {
                 if (message[1..].TrimStart().StartsWith(shortForm))
                 {
-                    command = message.Replace(shortForm, longForm)[1..].TrimStart();
+                    rawCommand = message.Replace(shortForm, longForm)[1..].TrimStart();
                 }
             }
 
-            var parsedMessage = command.Split(' ')[0].ToLower() + " " + command.Split(' ')[1];
+            var split = rawCommand.Split(' ', 2);
+            var command = split[0].ToLower();
+            if (split.Length > 1)
+            {
+                command += " " + split[1];
+            }
 
-            return parsedMessage;
+            return command;
         }
 
         private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
