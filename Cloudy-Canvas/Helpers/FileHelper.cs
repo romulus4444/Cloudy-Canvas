@@ -21,7 +21,7 @@
                 filepath = Path.Join(filepath, "servers");
                 CreateDirectoryIfNotExists(filepath);
 
-                if (context != null && context.IsPrivate)
+                if (context is { IsPrivate: true })
                 {
                     filepath = Path.Join(filepath, "_userdms");
                     CreateDirectoryIfNotExists(filepath);

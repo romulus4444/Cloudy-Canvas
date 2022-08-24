@@ -6,7 +6,6 @@
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
     using Cloudy_Canvas.Settings;
-    using Discord;
     using Discord.Commands;
 
     [Summary("Module for interfacing with Manebooru")]
@@ -57,52 +56,57 @@
             }
 
             var (code, imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings, filterId);
-            if (code >= 300 && code < 400)
+            switch (code)
             {
-                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 400 && code < 500)
-            {
-                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 500)
-            {
-                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-            }
-            else if (total == 0)
-            {
-                await _logger.Log($"pick: {query}, total: {total}", Context);
-                await ReplyAsync("I could not find any images with that query.");
-            }
-            else
-            {
-                var totalString = $"[{total} result";
-                if (total == 1)
+                case >= 300 and < 400:
+                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+                    break;
+                case >= 400 and < 500:
+                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+                    break;
+                case >= 500:
+                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+                    break;
+                default:
                 {
-                    totalString += "] ";
-                }
-                else
-                {
-                    totalString += "s] ";
-                }
+                    if (total == 0)
+                    {
+                        await _logger.Log($"pick: {query}, total: {total}", Context);
+                        await ReplyAsync("I could not find any images with that query.");
+                    }
+                    else
+                    {
+                        var totalString = $"[{total} result";
+                        if (total == 1)
+                        {
+                            totalString += "] ";
+                        }
+                        else
+                        {
+                            totalString += "s] ";
+                        }
 
-                totalString += $"[Id# {imageId}] ";
+                        totalString += $"[Id# {imageId}] ";
 
-                if (spoilered)
-                {
-                    var spoilerStrings = SetupTagListOutput(spoilerList);
-                    var output = totalString + $"Spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
-                    await _logger.Log($"pick: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
-                    await ReplyAsync(output);
-                }
-                else
-                {
-                    var output = totalString + $"https://manebooru.art/images/{imageId}";
-                    await _logger.Log($"pick: {query}, total: {total} result: {imageId}", Context);
-                    await ReplyAsync(output);
+                        if (spoilered)
+                        {
+                            var spoilerStrings = SetupTagListOutput(spoilerList);
+                            var output = totalString + $"Spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
+                            await _logger.Log($"pick: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
+                            await ReplyAsync(output);
+                        }
+                        else
+                        {
+                            var output = totalString + $"https://manebooru.art/images/{imageId}";
+                            await _logger.Log($"pick: {query}, total: {total} result: {imageId}", Context);
+                            await ReplyAsync(output);
+                        }
+                    }
+
+                    break;
                 }
             }
         }
@@ -141,52 +145,57 @@
             }
 
             var (code, imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings, filterId);
-            if (code >= 300 && code < 400)
+            switch (code)
             {
-                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 400 && code < 500)
-            {
-                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 500)
-            {
-                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-            }
-            else if (total == 0)
-            {
-                await _logger.Log($"pickrecent: {query}, total: {total}", Context);
-                await ReplyAsync("I could not find any images with that query.");
-            }
-            else
-            {
-                var totalString = $"[{total} result";
-                if (total == 1)
+                case >= 300 and < 400:
+                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+                    break;
+                case >= 400 and < 500:
+                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+                    break;
+                case >= 500:
+                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
+                    break;
+                default:
                 {
-                    totalString += "] ";
-                }
-                else
-                {
-                    totalString += "s] ";
-                }
+                    if (total == 0)
+                    {
+                        await _logger.Log($"pickrecent: {query}, total: {total}", Context);
+                        await ReplyAsync("I could not find any images with that query.");
+                    }
+                    else
+                    {
+                        var totalString = $"[{total} result";
+                        if (total == 1)
+                        {
+                            totalString += "] ";
+                        }
+                        else
+                        {
+                            totalString += "s] ";
+                        }
 
-                totalString += $"[Id# {imageId}] ";
+                        totalString += $"[Id# {imageId}] ";
 
-                if (spoilered)
-                {
-                    var spoilerStrings = SetupTagListOutput(spoilerList);
-                    var output = totalString + $"Spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
-                    await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
-                    await ReplyAsync(output);
-                }
-                else
-                {
-                    var output = totalString + $"https://manebooru.art/images/{imageId}";
-                    await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId}", Context);
-                    await ReplyAsync(output);
+                        if (spoilered)
+                        {
+                            var spoilerStrings = SetupTagListOutput(spoilerList);
+                            var output = totalString + $"Spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
+                            await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
+                            await ReplyAsync(output);
+                        }
+                        else
+                        {
+                            var output = totalString + $"https://manebooru.art/images/{imageId}";
+                            await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId}", Context);
+                            await ReplyAsync(output);
+                        }
+                    }
+
+                    break;
                 }
             }
         }
@@ -223,39 +232,44 @@
             }
 
             var (code, imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings, filterId);
-            if (code >= 300 && code < 400)
+            switch (code)
             {
-                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 400 && code < 500)
-            {
-                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 500)
-            {
-                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-            }
-            else if (imageId == -1)
-            {
-                await ReplyAsync("I could not find that image.");
-                await _logger.Log($"id: requested {id}, NOT FOUND", Context);
-            }
-            else
-            {
-                if (spoilered)
+                case >= 300 and < 400:
+                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+                    break;
+                case >= 400 and < 500:
+                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+                    break;
+                case >= 500:
+                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+                    break;
+                default:
                 {
-                    var spoilerStrings = SetupTagListOutput(spoilerList);
-                    var output = $"[Id# {imageId}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
-                    await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
-                    await ReplyAsync(output);
-                }
-                else
-                {
-                    await _logger.Log($"id: requested {id}, found {imageId}", Context);
-                    await ReplyAsync($"[Id# {imageId}] https://manebooru.art/images/{imageId}");
+                    if (imageId == -1)
+                    {
+                        await ReplyAsync("I could not find that image.");
+                        await _logger.Log($"id: requested {id}, NOT FOUND", Context);
+                    }
+                    else
+                    {
+                        if (spoilered)
+                        {
+                            var spoilerStrings = SetupTagListOutput(spoilerList);
+                            var output = $"[Id# {imageId}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
+                            await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
+                            await ReplyAsync(output);
+                        }
+                        else
+                        {
+                            await _logger.Log($"id: requested {id}, found {imageId}", Context);
+                            await ReplyAsync($"[Id# {imageId}] https://manebooru.art/images/{imageId}");
+                        }
+                    }
+
+                    break;
                 }
             }
         }
@@ -292,42 +306,47 @@
             }
 
             var (code, tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings, filterId);
-            if (code >= 300 && code < 400)
+            switch (code)
             {
-                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 400 && code < 500)
-            {
-                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 500)
-            {
-                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-            }
-            else if (tagList.Count == 0)
-            {
-                await ReplyAsync("I could not find that image.");
-                await _logger.Log($"tags: requested {id}, NOT FOUND", Context);
-            }
-            else
-            {
-                var tagStrings = SetupTagListOutput(tagList);
-                var output = $"Image #{id} has the tags {tagStrings}";
-                if (spoilered)
+                case >= 300 and < 400:
+                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+                    break;
+                case >= 400 and < 500:
+                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+                    break;
+                case >= 500:
+                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
+                    break;
+                default:
                 {
-                    var spoilerStrings = SetupTagListOutput(spoilerList);
-                    output += $" including the spoiler tags {spoilerStrings}";
-                    await _logger.Log($"tags: requested {id}, found {tagStrings} SPOILERED {spoilerStrings}", Context);
-                }
-                else
-                {
-                    await _logger.Log($"tags: requested {id}, found {tagStrings}", Context);
-                }
+                    if (tagList.Count == 0)
+                    {
+                        await ReplyAsync("I could not find that image.");
+                        await _logger.Log($"tags: requested {id}, NOT FOUND", Context);
+                    }
+                    else
+                    {
+                        var tagStrings = SetupTagListOutput(tagList);
+                        var output = $"Image #{id} has the tags {tagStrings}";
+                        if (spoilered)
+                        {
+                            var spoilerStrings = SetupTagListOutput(spoilerList);
+                            output += $" including the spoiler tags {spoilerStrings}";
+                            await _logger.Log($"tags: requested {id}, found {tagStrings} SPOILERED {spoilerStrings}", Context);
+                        }
+                        else
+                        {
+                            await _logger.Log($"tags: requested {id}, found {tagStrings}", Context);
+                        }
 
-                await ReplyAsync(output);
+                        await ReplyAsync(output);
+                    }
+
+                    break;
+                }
             }
         }
 
@@ -377,40 +396,45 @@
             }
 
             var (code, featured, spoilered, spoilerList) = await _booru.GetFeaturedImageIdAsync(settings, filterId);
-            if (code >= 300 && code < 400)
+            switch (code)
             {
-                await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                await _logger.Log($"featured, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 400 && code < 500)
-            {
-                await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                await _logger.Log($"featured, HTTP ERROR {code}", Context);
-            }
-            else if (code >= 500)
-            {
-                await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                await _logger.Log($"featured, HTTP ERROR {code}", Context);
-            }
-            else if (featured <= 0)
-            {
-                await _logger.Log($"featured: FILTERED", Context);
-                await ReplyAsync("The Featured Image has been filtered!");
-            }
-            else
-            {
-                await _logger.Log("featured", Context);
-                if (spoilered)
+                case >= 300 and < 400:
+                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
+                    await _logger.Log($"featured, HTTP ERROR {code}", Context);
+                    break;
+                case >= 400 and < 500:
+                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
+                    await _logger.Log($"featured, HTTP ERROR {code}", Context);
+                    break;
+                case >= 500:
+                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
+                    await _logger.Log($"featured, HTTP ERROR {code}", Context);
+                    break;
+                default:
                 {
-                    var spoilerStrings = SetupTagListOutput(spoilerList);
-                    var output = $"[Id# {featured}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{featured} ||";
-                    await _logger.Log($"featured: found {featured} SPOILERED {spoilerStrings}", Context);
-                    await ReplyAsync(output);
-                }
-                else
-                {
-                    await _logger.Log($"featured: found {featured}", Context);
-                    await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
+                    if (featured <= 0)
+                    {
+                        await _logger.Log("featured: FILTERED", Context);
+                        await ReplyAsync("The Featured Image has been filtered!");
+                    }
+                    else
+                    {
+                        await _logger.Log("featured", Context);
+                        if (spoilered)
+                        {
+                            var spoilerStrings = SetupTagListOutput(spoilerList);
+                            var output = $"[Id# {featured}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{featured} ||";
+                            await _logger.Log($"featured: found {featured} SPOILERED {spoilerStrings}", Context);
+                            await ReplyAsync(output);
+                        }
+                        else
+                        {
+                            await _logger.Log($"featured: found {featured}", Context);
+                            await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
+                        }
+                    }
+
+                    break;
                 }
             }
         }
@@ -483,10 +507,9 @@
 
         private static string SetupTagListOutput(List<string> tagList)
         {
-            var sortedList = tagList;
-            sortedList.Sort();
+            tagList.Sort();
             var newList = new List<string>();
-            foreach (var tag in sortedList)
+            foreach (var tag in tagList)
             {
                 if (tag.StartsWith("artist:"))
                 {
@@ -494,7 +517,7 @@
                 }
             }
 
-            foreach (var tag in sortedList)
+            foreach (var tag in tagList)
             {
                 if (tag.StartsWith("editor:"))
                 {
@@ -502,7 +525,7 @@
                 }
             }
 
-            foreach (var tag in sortedList)
+            foreach (var tag in tagList)
             {
                 if (tag.StartsWith("character:"))
                 {
@@ -510,7 +533,7 @@
                 }
             }
 
-            foreach (var tag in sortedList)
+            foreach (var tag in tagList)
             {
                 if (tag.StartsWith("species:"))
                 {
@@ -518,7 +541,7 @@
                 }
             }
 
-            foreach (var tag in sortedList)
+            foreach (var tag in tagList)
             {
                 if (tag.StartsWith("episode:"))
                 {
@@ -526,7 +549,7 @@
                 }
             }
 
-            foreach (var tag in sortedList)
+            foreach (var tag in tagList)
             {
                 if (tag.StartsWith("artist:") || tag.StartsWith("editor:") || tag.StartsWith("character:") || tag.StartsWith("species:") || tag.StartsWith("episode:"))
                 {
@@ -553,25 +576,25 @@
         private async Task<bool> CheckBadlistsAsync(string query, ServerSettings settings)
         {
             var watchTerms = BadlistHelper.CheckWatchList(query, settings);
-            if (watchTerms != "")
+            if (watchTerms == "")
             {
-                await _logger.Log($"pick: {query}, WATCHLISTED {watchTerms}", Context, true);
-                await ReplyAsync("I'm not gonna go look for that.");
-                var watchChannel = Context.Guild.GetTextChannel(settings.WatchAlertChannel);
-                if (settings.WatchAlertRole != 0)
-                {
-                    await watchChannel.SendMessageAsync(
-                        $"<@&{settings.WatchAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}");
-                }
-                else
-                {
-                    await watchChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}");
-                }
-
-                return false;
+                return true;
             }
 
-            return true;
+            await _logger.Log($"pick: {query}, WATCHLISTED {watchTerms}", Context, true);
+            await ReplyAsync("I'm not gonna go look for that.");
+            var watchChannel = Context.Guild.GetTextChannel(settings.WatchAlertChannel);
+            if (settings.WatchAlertRole != 0)
+            {
+                await watchChannel.SendMessageAsync(
+                    $"<@&{settings.WatchAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}");
+            }
+            else
+            {
+                await watchChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}");
+            }
+
+            return false;
         }
     }
 }
