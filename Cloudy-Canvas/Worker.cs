@@ -37,6 +37,8 @@ namespace Cloudy_Canvas
             try
             {
                 _client = new DiscordSocketClient();
+                var config = new DiscordSocketConfig { GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent };
+                _client = new DiscordSocketClient(config);
                 _client.Log += Log;
                 await _client.LoginAsync(TokenType.Bot,
                     _settings.token);
