@@ -824,17 +824,7 @@
         [Summary("Runs on a name ping")]
         public Task MentionCommandAsync()
         {
-            Task.Run(async () =>
-            {
-                var settings = await FileHelper.LoadServerSettingsAsync(Context);
-                if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
-                {
-                    return;
-                }
-
-                var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
-                await ReplyAsync($"The current prefix is '{serverPresettings.Prefix}'. Type `{serverPresettings.Prefix}help` for a list of commands.");
-            });
+            //removed ping reply, add custom replies here if desired
             return Task.CompletedTask;
         }
 
