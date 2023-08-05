@@ -37,7 +37,10 @@ namespace Cloudy_Canvas
             try
             {
                 _client = new DiscordSocketClient();
-                var config = new DiscordSocketConfig { GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent };
+                var config = new DiscordSocketConfig
+                {
+                    GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.DirectMessages | GatewayIntents.MessageContent
+                };
                 _client = new DiscordSocketClient(config);
                 _client.Log += Log;
                 await _client.LoginAsync(TokenType.Bot,
@@ -156,7 +159,7 @@ namespace Cloudy_Canvas
 
         private Task Log(LogMessage msg)
         {
-            _logger.LogInformation(msg.Message);
+            _logger.LogInformation(msg.ToString());
             return Task.CompletedTask;
         }
 
