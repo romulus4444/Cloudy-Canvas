@@ -32,6 +32,11 @@ namespace Cloudy_Canvas
             _servers = servers;
         }
 
+        private Task ReadyAsync() {
+            _logger.LogInformation("Discord signals ready");
+            return Task.CompletedTask;
+        }
+
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
@@ -44,7 +49,8 @@ namespace Cloudy_Canvas
                 _client = new DiscordSocketClient(config);
                 _client.Log += Log;
                 await _client.LoginAsync(TokenType.Bot,
-                    _settings.token);
+                    _settings.token, true);
+                _client.Ready += ReadyAsync;
 
                 await _client.StartAsync();
                 await _client.SetGameAsync("https://cloudycanvas.art");

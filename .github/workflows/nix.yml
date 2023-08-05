@@ -1,0 +1,28 @@
+name: Nix Flake Check
+
+on:
+  push:
+    branches: [ mane ]
+
+jobs:
+  check:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          lfs: true
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: cachix/cachix-action@v12
+        with:
+          name: nix-community
+          skipPush: true
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - name: Verify Flake Build
+        run: |
+          nix flake check \
+            --option auto-optimise-store true \
+            --option keep-build-log false \
+            --option keep-derivations false \
+            --option min-free 1073741824
+      - name: Flake Build
+        run: nix build .#cloudy-canvas
