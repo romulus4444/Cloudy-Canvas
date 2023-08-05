@@ -12,7 +12,7 @@ on:
       - created
 
 env:
-  DOTNET_VERSION: '5.0.301' # The .NET SDK version to use
+  DOTNET_VERSION: '7.0' # The .NET SDK version to use
 
 jobs:
   tests:
