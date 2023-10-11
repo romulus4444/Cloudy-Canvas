@@ -353,3 +353,10 @@ MigrationBackup/
 BotSettings\**
 /Cloudy-Canvas/BotSettings
 /Cloudy-Canvas/DevSettings
+
+/.envrc
+/.direnv
+**/botsettings/**
+**/appsettings.json
+**/appsettings.*.json
+/result
