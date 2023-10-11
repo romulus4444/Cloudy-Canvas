@@ -36,7 +36,7 @@
             {
                 foreach (var term in parsedList)
                 {
-                    if (term != watch)
+                    if (!term.Contains(watch))
                     {
                         continue;
                     }
@@ -69,6 +69,7 @@
                     {
                         continue;
                     }
+
                     failList.Add(singleTerm);
                     failed = true;
                 }
@@ -83,7 +84,7 @@
             }
 
             await FileHelper.SaveServerSettingsAsync(settings, context);
-            var combined = new Tuple<List<string>, List<string>> (addList, failList);
+            var combined = new Tuple<List<string>, List<string>>(addList, failList);
             return combined;
         }
 
@@ -102,9 +103,10 @@
 
                     parsedString += character;
                 }
+
                 parsedList.Add(parsedString.Trim());
             }
-            
+
             return parsedList.ToArray();
         }
     }

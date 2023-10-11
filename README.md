@@ -4,7 +4,7 @@ Created April 5th, 2021
 
 A Discord bot for interfacing with the [Manebooru](https://manebooru.art/) imageboard. The discord server can be found [here](https://discord.gg/K4pq9AnN8F). If you enjoy this bot and want to help out with hosting and development of the Manebooru platform, please consider my [Patreon](https://www.patreon.com/cloudy_canvas)!
 
-Written by Raymond Welch ([@Dr. Romulus#4444](https://github.com/romulus4444)) in C# using Discord.net and hosted on the Manebooru server. Special thanks to Ember Heartshine and CULTPONY.
+Written by Raymond Welch ([@romulus4444](https://github.com/romulus4444) on Discord) in C# using Discord.net and hosted on the Manebooru server. Special thanks to Ember Heartshine and CULTPONY.
 
 Interested in adding Cloudy to your own server? Click [here](https://discord.com/api/oauth2/authorize?client_id=828682017868218445&permissions=515396463680&scope=bot) to add her! Please make sure you run the setup command once you do!
 
@@ -16,7 +16,7 @@ Important terms:
 
 `active filter` The Manebooru filter that your server uses to filter images in the search results. It is advisable to make your own account on Manebooru, add a new filter, tailor it to your server's needs, and make it public (at the bottom of the page under Advanced Options). You do not need to leave it as your account's active filter, as long as you know the ID (it's in the URL when viewing the filter: `https://manebooru.art/filters/<filter ID>`) and the filter is public.
 
-`watchlist` A list of terms that the bot will not search for if included in the query. These terms are not prevented from appearing in search results. Use cases include terms like `breasts` that are inappropriate to search for in a SFW server, but is a perfectly okay tag to appear in search results. This list can include image IDs as well. A user searching for a watch term will generate an alert message sent to the current watch alert channel and pick the watch alert role, if either are set.
+`watchlist` A list of terms that the bot will not search for if included in the query. These terms are not prevented from appearing in search results. Use cases include terms like `breasts` that are inappropriate to search for in a SFW server, but is a perfectly okay tag to appear in search results. This list can include image IDs as well. A user searching for a watch term will generate an alert message sent to the current watch alert channel and ping the watch alert role, if either are set.
 
 ## Commands:
 ### Booru Module:
@@ -40,7 +40,7 @@ Important terms:
 
 ---
 
-`;featured` Posts the current Featured Image from Manebooru.
+`;featured` Posts the current Manebooru Spotlight featured image.
 
 ---
 

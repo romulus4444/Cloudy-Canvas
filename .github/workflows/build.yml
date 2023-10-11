@@ -12,7 +12,7 @@ on:
       - created
 
 env:
-  DOTNET_VERSION: '5.0.301' # The .NET SDK version to use
+  DOTNET_VERSION: '7.0.x' # The .NET SDK version to use
 
 jobs:
   tests:
@@ -40,36 +40,3 @@ jobs:
         run: dotnet build --configuration Release --no-restore
       - name: Test
         run: dotnet test --no-restore --verbosity normal
-  publish:
-    name: Publish Binary
-    runs-on: ubuntu-latest
-    needs: [tests]
-    steps:
-      - name: Checkout sources
-        uses: actions/checkout@v2
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            Cloudy-Canvas/bin
-            Cloudy-Canvas/obj
-            Cloudy-Canvas.Tests/bin
-            Cloudy-Canvas.Tests/obj
-          key: dotnet-dep-builds
-      - name: Install dependencies
-        run: dotnet restore
-      - name: Publish
-        run: dotnet publish --self-contained -r linux-x64 -c Release -p:PublishReadyToRun=true
-      - name: Upload
-        uses: actions/upload-artifact@v2
-        with:
-          name: Cloudy-Canvas.linux-x64
-          path: |
-            Cloudy-Canvas/bin/Release/net5.0/linux-x64/publish/Cloudy-Canvas
-            Cloudy-Canvas/bin/Release/net5.0/linux-x64/publish/Cloudy-Canvas.pdb
-            Cloudy-Canvas/bin/Release/net5.0/linux-x64/publish/appsettings*.json
-          retention-days: 30
