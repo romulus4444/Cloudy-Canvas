@@ -378,7 +378,7 @@
                     return;
                 }
 
-                var output = $"__Spoilered tags:__{Environment.NewLine}";
+                var output = $"__Spoilered tags for Filter {settings.DefaultFilterId}:__{Environment.NewLine}";
                 for (var x = 0; x < settings.SpoilerList.Count; x++)
                 {
                     output += $"`{settings.SpoilerList[x].Item2}`";
