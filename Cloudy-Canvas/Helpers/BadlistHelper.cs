@@ -36,7 +36,7 @@
             {
                 foreach (var term in parsedList)
                 {
-                    if (!term.Contains(watch))
+                    if (term != watch && term != $"*{watch}*" && term != $"{watch}*" && term != $"*{watch}")
                     {
                         continue;
                     }
