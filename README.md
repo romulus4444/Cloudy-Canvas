@@ -4,7 +4,7 @@ Created April 5th, 2021
 
 A Discord bot for interfacing with the [Manebooru](https://manebooru.art/) imageboard. The discord server can be found [here](https://discord.gg/K4pq9AnN8F). If you enjoy this bot and want to help out with hosting and development of the Manebooru platform, please consider my [Patreon](https://www.patreon.com/cloudy_canvas)!
 
-Written by Raymond Welch ([@romulus4444](https://github.com/romulus4444) on Discord) in C# using Discord.net and hosted on the Manebooru server. Special thanks to Ember Heartshine and CULTPONY.
+Written by ([@romulus4444](https://github.com/romulus4444) on Discord) in C# using Discord.net and hosted on the Manebooru server. Special thanks to Ember Heartshine and CULTPONY.
 
 Interested in adding Cloudy to your own server? Click [here](https://discord.com/api/oauth2/authorize?client_id=828682017868218445&permissions=515396463680&scope=bot) to add her! Please make sure you run the setup command once you do!
 
