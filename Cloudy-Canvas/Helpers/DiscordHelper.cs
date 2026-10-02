@@ -1,5 +1,6 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
+    using System;
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
@@ -9,15 +10,10 @@
 
     public static class DiscordHelper
     {
-        public static async Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
+        public static Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
         {
             var id = ConvertChannelPingToId(channelName);
-            if (id > 0)
-            {
-                return await CheckIfChannelExistsAsync(id, context);
-            }
-
-            return await CheckIfChannelExistsAsync(channelName, context);
+            return Task.FromResult(id > 0 ? CheckIfChannelExists(id, context) : CheckIfChannelExists(channelName, context));
         }
 
         public static ulong GetRoleIdIfAccessAsync(string roleName, SocketCommandContext context)
@@ -109,15 +105,33 @@
             return userList.Count != 1 ? 0 : userList.First().Id;
         }
 
-        public static string CheckAliasesAsync(string message, ServerPreloadedSettings settings)
+        /// <summary>
+        /// Strips the prefix character from <paramref name="message"/> and expands a command alias at the start of what is left.
+        /// An alias only matches a whole leading word (or leading words, for aliases containing spaces) and only the alias itself is
+        /// replaced, never text in the arguments. If several aliases match, the longest one wins. The command word is lower-cased.
+        /// </summary>
+        public static string ResolveAliases(string message, ServerPreloadedSettings settings)
         {
-            var rawCommand = message[1..].TrimStart();
+            var rawCommand = message.Length > 0 ? message[1..].TrimStart() : string.Empty;
+            string bestShort = null;
+            string bestLong = null;
             foreach (var (shortForm, longForm) in settings.Aliases)
             {
-                if (message[1..].TrimStart().StartsWith(shortForm))
+                if (string.IsNullOrWhiteSpace(shortForm) || !StartsWithWholeWords(rawCommand, shortForm))
                 {
-                    rawCommand = message.Replace(shortForm, longForm)[1..].TrimStart();
+                    continue;
                 }
+
+                if (bestShort == null || shortForm.Length > bestShort.Length)
+                {
+                    bestShort = shortForm;
+                    bestLong = longForm;
+                }
+            }
+
+            if (bestShort != null)
+            {
+                rawCommand = (bestLong + rawCommand[bestShort.Length..]).TrimStart();
             }
 
             var split = rawCommand.Split(' ', 2);
@@ -130,36 +144,39 @@
             return command;
         }
 
-        private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
+        private static bool StartsWithWholeWords(string text, string prefix)
         {
-            var cloudyCanvas = await context.Channel.GetUserAsync(context.Client.CurrentUser.Id);
-            if (context.IsPrivate)
-            {
-                return 0;
-            }
-
-            foreach (var channel in context.Guild.TextChannels)
-            {
-                if (channel.Name == channelName && channel.Users.Contains(cloudyCanvas))
-                {
-                    return channel.Id;
-                }
-            }
-
-            return 0;
+            return text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && (text.Length == prefix.Length || char.IsWhiteSpace(text[prefix.Length]));
         }
 
-        private static async Task<ulong> CheckIfChannelExistsAsync(ulong channelId, SocketCommandContext context)
+        private static ulong CheckIfChannelExists(string channelName, SocketCommandContext context)
         {
-            var cloudyCanvas = await context.Channel.GetUserAsync(context.Client.CurrentUser.Id);
-            if (context.IsPrivate)
+            var name = channelName.Trim().TrimStart('#');
+            return FindChannelCloudyCanBeSeen(context, channel => string.Equals(channel.Name, name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static ulong CheckIfChannelExists(ulong channelId, SocketCommandContext context)
+        {
+            return FindChannelCloudyCanBeSeen(context, channel => channel.Id == channelId);
+        }
+
+        /// <summary>
+        /// The id of the first matching text channel in the server that the bot is able to see, or 0. This asks Discord's permission
+        /// model directly; the old check looked for the bot among every member of every channel, which is slow in large servers
+        /// and unreliable when the member cache is incomplete.
+        /// </summary>
+        private static ulong FindChannelCloudyCanBeSeen(SocketCommandContext context, Func<SocketTextChannel, bool> matches)
+        {
+            var me = context.Guild?.CurrentUser;
+            if (context.IsPrivate || me == null)
             {
                 return 0;
             }
 
+            // Channel names aren't unique (the same name can exist in several categories), so keep looking past one the bot can't see.
             foreach (var channel in context.Guild.TextChannels)
             {
-                if (channel.Id == channelId && channel.Users.Contains(cloudyCanvas))
+                if (matches(channel) && me.GetPermissions(channel).ViewChannel)
                 {
                     return channel.Id;
                 }
