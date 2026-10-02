@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
@@ -12,6 +13,8 @@
     [Summary("Module for interfacing with Manebooru")]
     public class BooruModule : BotModuleBase
     {
+        private static readonly string[] TagGroupPrefixes = { "artist:", "editor:", "character:", "species:", "episode:" };
+
         private readonly BooruService _booru;
         private readonly LoggingService _logger;
         private readonly MixinsService _mixins;
@@ -25,351 +28,107 @@
 
         [Command("pick", RunMode = RunMode.Async)]
         [Summary("Selects an image at random")]
-        public async Task PickCommandAsync([Remainder] [Summary("Query string")] string query = "*")
+        public Task PickCommandAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            var checkLists = true;
-            var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
-            {
-                return;
-            }
-
-            query = _mixins.Transpile(query);
-
-            var filterId = settings.DefaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
-            {
-                if (filteredChannel != Context.Channel.Id)
-                {
-                    continue;
-                }
-
-                filterId = filteredId;
-                checkLists = false;
-            }
-
-            if (checkLists)
-            {
-                if (!await CheckBadlistsAsync(query, settings))
-                {
-                    return;
-                }
-            }
-
-            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetRandomImageByQueryAsync(query, settings, filterId);
-            switch (code)
-            {
-                case >= 300 and < 400:
-                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-                    break;
-                case >= 400 and < 500:
-                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-                    break;
-                case >= 500:
-                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-                    break;
-                default:
-                {
-                    if (total == 0)
-                    {
-                        await _logger.Log($"pick: {query}, total: {total}", Context);
-                        await ReplyAsync("I could not find any images with that query.");
-                    }
-                    else
-                    {
-                        var totalString = $"[{total} result";
-                        if (total == 1)
-                        {
-                            totalString += "] ";
-                        }
-                        else
-                        {
-                            totalString += "s] ";
-                        }
-
-                        totalString += $"[Id# {imageId}] ";
-
-                        if (spoilered)
-                        {
-                            var spoilerStrings = SetupTagListOutput(spoilerList);
-                            var output = totalString + $"Spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
-                            await _logger.Log($"pick: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
-                            await ReplyAsync(output);
-                        }
-                        else
-                        {
-                            var output = totalString + $"https://manebooru.art/images/{imageId}";
-                            await _logger.Log($"pick: {query}, total: {total} result: {imageId}", Context);
-                            await ReplyAsync(output);
-                        }
-                    }
-
-                    break;
-                }
-            }
+            return SearchCommandAsync("pick", query, _booru.GetRandomImageByQueryAsync);
         }
 
         [Command("pickrecent", RunMode = RunMode.Async)]
         [Summary("Selects first image in a search")]
-        public async Task PickRecentCommandAsync([Remainder] [Summary("Query string")] string query = "*")
+        public Task PickRecentCommandAsync([Remainder] [Summary("Query string")] string query = "*")
         {
-            var checkLists = true;
-            var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
-            {
-                return;
-            }
-
-            query = _mixins.Transpile(query);
-
-            var filterId = settings.DefaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
-            {
-                if (filteredChannel != Context.Channel.Id)
-                {
-                    continue;
-                }
-
-                filterId = filteredId;
-                checkLists = false;
-            }
-
-            if (checkLists)
-            {
-                if (!await CheckBadlistsAsync(query, settings))
-                {
-                    return;
-                }
-            }
-
-            var (code, imageId, total, spoilered, spoilerList) = await _booru.GetFirstRecentImageByQueryAsync(query, settings, filterId);
-            switch (code)
-            {
-                case >= 300 and < 400:
-                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-                    break;
-                case >= 400 and < 500:
-                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-                    break;
-                case >= 500:
-                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                    await _logger.Log($"pick: {query}, HTTP ERROR {code}", Context);
-                    break;
-                default:
-                {
-                    if (total == 0)
-                    {
-                        await _logger.Log($"pickrecent: {query}, total: {total}", Context);
-                        await ReplyAsync("I could not find any images with that query.");
-                    }
-                    else
-                    {
-                        var totalString = $"[{total} result";
-                        if (total == 1)
-                        {
-                            totalString += "] ";
-                        }
-                        else
-                        {
-                            totalString += "s] ";
-                        }
-
-                        totalString += $"[Id# {imageId}] ";
-
-                        if (spoilered)
-                        {
-                            var spoilerStrings = SetupTagListOutput(spoilerList);
-                            var output = totalString + $"Spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
-                            await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId} SPOILERED {spoilerStrings}", Context);
-                            await ReplyAsync(output);
-                        }
-                        else
-                        {
-                            var output = totalString + $"https://manebooru.art/images/{imageId}";
-                            await _logger.Log($"pickrecent: {query}, total: {total} result: {imageId}", Context);
-                            await ReplyAsync(output);
-                        }
-                    }
-
-                    break;
-                }
-            }
+            return SearchCommandAsync("pickrecent", query, _booru.GetFirstRecentImageByQueryAsync);
         }
 
         [Command("id", RunMode = RunMode.Async)]
         [Summary("Selects an image by image id")]
         public async Task IdCommandAsync([Summary("The image Id")] long id = 4010266)
         {
-            var checkLists = true;
-            var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            var settings = await LoadAllowedSettingsAsync();
+            if (settings == null)
             {
                 return;
             }
 
-            var filterId = settings.DefaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
+            var (filterId, usesChannelFilter) = ResolveFilter(settings);
+            if (!usesChannelFilter && !await CheckBadlistsAsync("id", id.ToString(), settings))
             {
-                if (filteredChannel != Context.Channel.Id)
-                {
-                    continue;
-                }
-
-                filterId = filteredId;
-                checkLists = false;
+                return;
             }
 
-            if (checkLists)
+            var result = await _booru.GetImageByIdAsync(id, settings, filterId);
+            if (await ReplyIfFailedAsync("id", id.ToString(), result))
             {
-                if (!await CheckBadlistsAsync(id.ToString(), settings))
-                {
-                    return;
-                }
+                return;
             }
 
-            var (code, imageId, spoilered, spoilerList) = await _booru.GetImageByIdAsync(id, settings, filterId);
-            switch (code)
+            if (result.Status == BooruStatus.NotFound)
             {
-                case >= 300 and < 400:
-                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-                    break;
-                case >= 400 and < 500:
-                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-                    break;
-                case >= 500:
-                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-                    break;
-                default:
-                {
-                    if (imageId == -1)
-                    {
-                        await ReplyAsync("I could not find that image.");
-                        await _logger.Log($"id: requested {id}, NOT FOUND", Context);
-                    }
-                    else
-                    {
-                        if (spoilered)
-                        {
-                            var spoilerStrings = SetupTagListOutput(spoilerList);
-                            var output = $"[Id# {imageId}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{imageId} ||";
-                            await _logger.Log($"id: requested {id}, found {imageId} SPOILERED {spoilerStrings}", Context);
-                            await ReplyAsync(output);
-                        }
-                        else
-                        {
-                            await _logger.Log($"id: requested {id}, found {imageId}", Context);
-                            await ReplyAsync($"[Id# {imageId}] https://manebooru.art/images/{imageId}");
-                        }
-                    }
-
-                    break;
-                }
+                await ReplyAsync("I could not find that image.");
+                await _logger.Log($"id: requested {id}, NOT FOUND", Context);
+                return;
             }
+
+            await ReplyWithImageAsync("id", $"requested {id}, found {result.ImageId}", result);
         }
 
         [Command("tags", RunMode = RunMode.Async)]
         [Summary("Selects a tag list by image Id")]
         public async Task TagsCommandAsync([Summary("The image Id")] long id = 4010266)
         {
-            var checkLists = true;
-            var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            var settings = await LoadAllowedSettingsAsync();
+            if (settings == null)
             {
                 return;
             }
 
-            var filterId = settings.DefaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
+            var (filterId, usesChannelFilter) = ResolveFilter(settings);
+            if (!usesChannelFilter && !await CheckBadlistsAsync("tags", id.ToString(), settings))
             {
-                if (filteredChannel != Context.Channel.Id)
-                {
-                    continue;
-                }
-
-                filterId = filteredId;
-                checkLists = false;
+                return;
             }
 
-            if (checkLists)
+            var result = await _booru.GetImageTagsIdAsync(id, settings, filterId);
+            if (await ReplyIfFailedAsync("tags", id.ToString(), result))
             {
-                if (!await CheckBadlistsAsync(id.ToString(), settings))
-                {
-                    return;
-                }
+                return;
             }
 
-            var (code, tagList, spoilered, spoilerList) = await _booru.GetImageTagsIdAsync(id, settings, filterId);
-            switch (code)
+            if (result.Status == BooruStatus.NotFound)
             {
-                case >= 300 and < 400:
-                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-                    break;
-                case >= 400 and < 500:
-                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-                    break;
-                case >= 500:
-                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                    await _logger.Log($"pick: {id}, HTTP ERROR {code}", Context);
-                    break;
-                default:
-                {
-                    if (tagList.Count == 0)
-                    {
-                        await ReplyAsync("I could not find that image.");
-                        await _logger.Log($"tags: requested {id}, NOT FOUND", Context);
-                    }
-                    else
-                    {
-                        var tagStrings = SetupTagListOutput(tagList);
-                        var output = $"Image #{id} has the tags {tagStrings}";
-                        if (spoilered)
-                        {
-                            var spoilerStrings = SetupTagListOutput(spoilerList);
-                            output += $" including the spoiler tags {spoilerStrings}";
-                            await _logger.Log($"tags: requested {id}, found {tagStrings} SPOILERED {spoilerStrings}", Context);
-                        }
-                        else
-                        {
-                            await _logger.Log($"tags: requested {id}, found {tagStrings}", Context);
-                        }
-
-                        await ReplyAsync(output);
-                    }
-
-                    break;
-                }
+                await ReplyAsync("I could not find that image.");
+                await _logger.Log($"tags: requested {id}, NOT FOUND", Context);
+                return;
             }
+
+            var tagStrings = SetupTagListOutput(result.Tags);
+            var output = $"Image #{id} has the tags {tagStrings}";
+            if (result.Spoilered)
+            {
+                var spoilerStrings = SetupTagListOutput(result.SpoilerTags);
+                output += $" including the spoiler tags {spoilerStrings}";
+                await _logger.Log($"tags: requested {id}, found {tagStrings} SPOILERED {spoilerStrings}", Context);
+            }
+            else
+            {
+                await _logger.Log($"tags: requested {id}, found {tagStrings}", Context);
+            }
+
+            await ReplyAsync(output);
         }
 
         [Command("getspoilers", RunMode = RunMode.Async)]
         [Summary("Gets the list of spoiler tags")]
         public async Task GetSpoilersCommandAsync()
         {
-            var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            var settings = await LoadAllowedSettingsAsync();
+            if (settings == null)
             {
                 return;
             }
 
             var output = $"__Spoilered tags for Filter {settings.DefaultFilterId}:__{Environment.NewLine}";
-            for (var x = 0; x < settings.SpoilerList.Count; x++)
-            {
-                output += $"`{settings.SpoilerList[x].Name}`";
-                if (x < settings.SpoilerList.Count - 1)
-                {
-                    output += ", ";
-                }
-            }
+            output += string.Join(", ", settings.SpoilerList.Select(tag => $"`{tag.Name}`"));
 
             await _logger.Log("getspoilers", Context);
             await ReplyAsync(output);
@@ -379,65 +138,28 @@
         [Summary("Selects the current Featured Image on Manebooru")]
         public async Task FeaturedCommandAsync()
         {
-            var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            var settings = await LoadAllowedSettingsAsync();
+            if (settings == null)
             {
                 return;
             }
 
-            var filterId = settings.DefaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
+            var (filterId, _) = ResolveFilter(settings);
+            var result = await _booru.GetFeaturedImageIdAsync(settings, filterId);
+            if (await ReplyIfFailedAsync("featured", null, result))
             {
-                if (filteredChannel != Context.Channel.Id)
-                {
-                    continue;
-                }
-
-                filterId = filteredId;
+                return;
             }
 
-            var (code, featured, spoilered, spoilerList) = await _booru.GetFeaturedImageIdAsync(settings, filterId);
-            switch (code)
+            if (result.Status == BooruStatus.NotFound)
             {
-                case >= 300 and < 400:
-                    await ReplyAsync($"Something is giving me the runaround (HTTP {code})");
-                    await _logger.Log($"featured, HTTP ERROR {code}", Context);
-                    break;
-                case >= 400 and < 500:
-                    await ReplyAsync($"I think you may have entered in something incorrectly (HTTP {code})");
-                    await _logger.Log($"featured, HTTP ERROR {code}", Context);
-                    break;
-                case >= 500:
-                    await ReplyAsync($"I'm having trouble accessing the site, please try again later (HTTP {code})");
-                    await _logger.Log($"featured, HTTP ERROR {code}", Context);
-                    break;
-                default:
-                {
-                    if (featured <= 0)
-                    {
-                        await _logger.Log("featured: FILTERED", Context);
-                        await ReplyAsync("The Featured Image has been filtered!");
-                    }
-                    else
-                    {
-                        await _logger.Log("featured", Context);
-                        if (spoilered)
-                        {
-                            var spoilerStrings = SetupTagListOutput(spoilerList);
-                            var output = $"[Id# {featured}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{featured} ||";
-                            await _logger.Log($"featured: found {featured} SPOILERED {spoilerStrings}", Context);
-                            await ReplyAsync(output);
-                        }
-                        else
-                        {
-                            await _logger.Log($"featured: found {featured}", Context);
-                            await ReplyAsync($"[Id# {featured}] https://manebooru.art/images/{featured}");
-                        }
-                    }
-
-                    break;
-                }
+                await _logger.Log("featured: FILTERED", Context);
+                await ReplyAsync("The Featured Image has been filtered!");
+                return;
             }
+
+            await _logger.Log("featured", Context);
+            await ReplyWithImageAsync("featured", $"found {result.ImageId}", result);
         }
 
         [Command("report", RunMode = RunMode.Async)]
@@ -450,135 +172,168 @@
                 return;
             }
 
-            var checkLists = true;
-            var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            var settings = await LoadAllowedSettingsAsync();
+            if (settings == null)
             {
                 return;
             }
 
-            var filterId = settings.DefaultFilterId;
-            foreach (var (filteredChannel, filteredId) in settings.FilteredChannels)
-            {
-                if (filteredChannel != Context.Channel.Id)
-                {
-                    continue;
-                }
-
-                filterId = filteredId;
-                checkLists = false;
-            }
-
-            var badTerms = "";
-            if (checkLists)
-            {
-                badTerms = BadlistHelper.CheckWatchList(reportedImageId.ToString(), settings);
-            }
-
-            if (badTerms != "")
+            var (filterId, usesChannelFilter) = ResolveFilter(settings);
+            if (!usesChannelFilter && BadlistHelper.CheckWatchList(reportedImageId.ToString(), settings) != "")
             {
                 await ReplyAsync("That image is already blocked.");
+                return;
+            }
+
+            var result = await _booru.GetImageByIdAsync(reportedImageId, settings, filterId);
+            if (await ReplyIfFailedAsync("report", reportedImageId.ToString(), result))
+            {
+                return;
+            }
+
+            if (result.Status == BooruStatus.NotFound)
+            {
+                await ReplyAsync("I could not find that image.");
+                return;
+            }
+
+            var reportChannel = Context.Guild.GetTextChannel(settings.ReportChannel);
+            if (reportChannel == null)
+            {
+                await ReplyAsync("I can't find the channel where reports go, so I couldn't pass this on. Please tell an admin.");
+                await _logger.Log($"report: {reportedImageId} <FAIL> report channel {settings.ReportChannel} not found", Context, true);
+                return;
+            }
+
+            var output = $"<@{Context.User.Id}> has reported Image #{reportedImageId}";
+            if (reason != "")
+            {
+                // Backticks are swapped out so the reason can't break out of its code span.
+                output += $" with reason `{reason.Replace('`', '\'')}`";
+            }
+
+            output += $" || <https://manebooru.art/images/{result.ImageId}> ||";
+            await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
+            if (settings.ReportRole != 0)
+            {
+                output = $"<@&{settings.ReportRole}> " + output;
+            }
+
+            await reportChannel.SendMessageAsync(output, allowedMentions: AlertMentions(settings.ReportRole));
+            await ReplyAsync("Admins have been notified. Thank you for your report.");
+        }
+
+        /// <summary>Formats tags as a comma separated list of code spans: artists, editors, characters, species and episodes first.</summary>
+        public static string SetupTagListOutput(IEnumerable<string> tags)
+        {
+            var sorted = tags.ToList();
+            sorted.Sort();
+            var ordered = TagGroupPrefixes
+                .SelectMany(prefix => sorted.Where(tag => tag.StartsWith(prefix)))
+                .Concat(sorted.Where(tag => !TagGroupPrefixes.Any(prefix => tag.StartsWith(prefix))));
+            return string.Join(", ", ordered.Select(tag => $"`{tag}`"));
+        }
+
+        private async Task SearchCommandAsync(string label, string query, Func<string, ServerSettings, int, Task<BooruResult>> search)
+        {
+            var settings = await LoadAllowedSettingsAsync();
+            if (settings == null)
+            {
+                return;
+            }
+
+            query = _mixins.Transpile(query);
+
+            var (filterId, usesChannelFilter) = ResolveFilter(settings);
+            if (!usesChannelFilter && !await CheckBadlistsAsync(label, query, settings))
+            {
+                return;
+            }
+
+            var result = await search(query, settings, filterId);
+            if (await ReplyIfFailedAsync(label, query, result))
+            {
+                return;
+            }
+
+            if (result.Status == BooruStatus.NotFound)
+            {
+                await _logger.Log($"{label}: {query}, total: 0", Context);
+                await ReplyAsync("I could not find any images with that query.");
+                return;
+            }
+
+            var totalString = $"[{result.Total} result{(result.Total == 1 ? string.Empty : "s")}] [Id# {result.ImageId}] ";
+            if (result.Spoilered)
+            {
+                var spoilerStrings = SetupTagListOutput(result.SpoilerTags);
+                var output = totalString + $"Spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{result.ImageId} ||";
+                await _logger.Log($"{label}: {query}, total: {result.Total} result: {result.ImageId} SPOILERED {spoilerStrings}", Context);
+                await ReplyAsync(output);
             }
             else
             {
-                var (_, imageId, _, _) = await _booru.GetImageByIdAsync(reportedImageId, settings, filterId);
-                if (imageId == -1)
-                {
-                    await ReplyAsync("I could not find that image.");
-                }
-                else
-                {
-                    var output = $"<@{Context.User.Id}> has reported Image #{reportedImageId}";
-                    if (reason != "")
-                    {
-                        // Backticks are swapped out so the reason can't break out of its code span.
-                        output += $" with reason `{reason.Replace('`', '\'')}`";
-                    }
-
-                    output += $" || <https://manebooru.art/images/{imageId}> ||";
-                    await _logger.Log($"report: {reportedImageId} <SUCCESS>", Context, true);
-                    var reportChannel = Context.Guild.GetTextChannel(settings.ReportChannel);
-                    if (settings.ReportRole != 0)
-                    {
-                        output = $"<@&{settings.ReportRole}> " + output;
-                    }
-
-                    await reportChannel.SendMessageAsync(output, allowedMentions: AlertMentions(settings.ReportRole));
-
-                    await ReplyAsync("Admins have been notified. Thank you for your report.");
-                }
+                await _logger.Log($"{label}: {query}, total: {result.Total} result: {result.ImageId}", Context);
+                await ReplyAsync(totalString + $"https://manebooru.art/images/{result.ImageId}");
             }
         }
 
-        private static string SetupTagListOutput(List<string> tagList)
+        /// <summary>The reply for a single image found by id or as the featured image.</summary>
+        private async Task ReplyWithImageAsync(string label, string logDetail, BooruResult result)
         {
-            tagList.Sort();
-            var newList = new List<string>();
-            foreach (var tag in tagList)
+            if (result.Spoilered)
             {
-                if (tag.StartsWith("artist:"))
-                {
-                    newList.Add(tag);
-                }
+                var spoilerStrings = SetupTagListOutput(result.SpoilerTags);
+                var output = $"[Id# {result.ImageId}] Result is a spoiler for {spoilerStrings}:{Environment.NewLine}|| https://manebooru.art/images/{result.ImageId} ||";
+                await _logger.Log($"{label}: {logDetail} SPOILERED {spoilerStrings}", Context);
+                await ReplyAsync(output);
             }
-
-            foreach (var tag in tagList)
+            else
             {
-                if (tag.StartsWith("editor:"))
-                {
-                    newList.Add(tag);
-                }
+                await _logger.Log($"{label}: {logDetail}", Context);
+                await ReplyAsync($"[Id# {result.ImageId}] https://manebooru.art/images/{result.ImageId}");
             }
-
-            foreach (var tag in tagList)
-            {
-                if (tag.StartsWith("character:"))
-                {
-                    newList.Add(tag);
-                }
-            }
-
-            foreach (var tag in tagList)
-            {
-                if (tag.StartsWith("species:"))
-                {
-                    newList.Add(tag);
-                }
-            }
-
-            foreach (var tag in tagList)
-            {
-                if (tag.StartsWith("episode:"))
-                {
-                    newList.Add(tag);
-                }
-            }
-
-            foreach (var tag in tagList)
-            {
-                if (tag.StartsWith("artist:") || tag.StartsWith("editor:") || tag.StartsWith("character:") || tag.StartsWith("species:") || tag.StartsWith("episode:"))
-                {
-                    continue;
-                }
-
-                newList.Add(tag);
-            }
-
-            var output = "";
-            for (var x = 0; x < newList.Count; x++)
-            {
-                var spoilerTerm = newList[x];
-                output += $"`{spoilerTerm}`";
-                if (x < newList.Count - 1)
-                {
-                    output += ", ";
-                }
-            }
-
-            return output;
         }
 
-        private async Task<bool> CheckBadlistsAsync(string query, ServerSettings settings)
+        /// <summary>Loads the server's settings, or returns null if this user isn't allowed to run commands here.</summary>
+        private async Task<ServerSettings> LoadAllowedSettingsAsync()
+        {
+            var settings = await FileHelper.LoadServerSettingsAsync(Context);
+            return DiscordHelper.CanUserRunThisCommand(Context, settings) ? settings : null;
+        }
+
+        /// <summary>The filter to use in this channel. A channel with its own filter is not subject to the watchlist.</summary>
+        private (int FilterId, bool UsesChannelFilter) ResolveFilter(ServerSettings settings)
+        {
+            var channelFilter = settings.FilteredChannels.LastOrDefault(filter => filter.ChannelId == Context.Channel.Id);
+            return channelFilter == null ? (settings.DefaultFilterId, false) : (channelFilter.FilterId, true);
+        }
+
+        /// <summary>Tells the user when the site couldn't answer. Returns true if the lookup failed and the command should stop.</summary>
+        private async Task<bool> ReplyIfFailedAsync(string label, string subject, BooruResult result)
+        {
+            if (!result.Failed)
+            {
+                return false;
+            }
+
+            var code = result.HttpCode;
+            var reply = code switch
+            {
+                429 => $"I'm sending too many requests to the site, please try again in a moment (HTTP {code})",
+                >= 300 and < 400 => $"Something is giving me the runaround (HTTP {code})",
+                >= 400 and < 500 => $"I think you may have entered in something incorrectly (HTTP {code})",
+                >= 500 => $"I'm having trouble accessing the site, please try again later (HTTP {code})",
+                _ => "I can't reach the site right now, please try again later.",
+            };
+
+            var what = string.IsNullOrEmpty(subject) ? label : $"{label}: {subject}";
+            await ReplyAsync(reply);
+            await _logger.Log(code != null ? $"{what}, HTTP ERROR {code}" : $"{what}, SITE UNAVAILABLE", Context);
+            return true;
+        }
+
+        private async Task<bool> CheckBadlistsAsync(string label, string query, ServerSettings settings)
         {
             var watchTerms = BadlistHelper.CheckWatchList(query, settings);
             if (watchTerms == "")
@@ -586,7 +341,7 @@
                 return true;
             }
 
-            await _logger.Log($"pick: {query}, WATCHLISTED {watchTerms}", Context, true);
+            await _logger.Log($"{label}: {query}, WATCHLISTED {watchTerms}", Context, true);
             await ReplyAsync("I'm not gonna go look for that.");
 
             // Watchlists can also be set up in DMs, where there is no server (and no alert channel) to notify.

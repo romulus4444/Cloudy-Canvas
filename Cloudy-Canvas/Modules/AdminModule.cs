@@ -37,11 +37,17 @@
         {
             var settings = new ServerSettings();
             ulong channelSetId;
-            var checkedFilterId = await _booru.CheckFilterAsync(filterId);
-            if (checkedFilterId == 0)
+            var filterCheck = await _booru.CheckFilterAsync(filterId);
+            if (filterCheck.Status == BooruStatus.NotFound)
             {
                 await ReplyAsync(
                     "I could not find that filter; please make sure it exists and is set to public. You may change the filter later with `;admin filter set <filterId>`. Continuing setup with my default filter of 175.");
+                filterId = 175;
+            }
+            else if (filterCheck.Status != BooruStatus.Ok)
+            {
+                await ReplyAsync(
+                    "I can't reach Manebooru right now to check that filter. You may change the filter later with `;admin filter set <filterId>`. Continuing setup with my default filter of 175.");
                 filterId = 175;
             }
 
@@ -94,8 +100,16 @@
             await FileHelper.SaveServerSettingsAsync(settings, Context);
             await ReplyAsync(
                 "Settings saved. Now building the spoiler list. This may take a few minutes, depending on how many tags are spoilered in the filter. Please wait until they are completed; I will let you know when I am finished.");
-            await _booru.RefreshListsAsync(Context, settings);
-            await ReplyAsync("The lists have been built. I'm all set! Type `;help admin` for a list of other admin setup commands.");
+            if (await _booru.RefreshListsAsync(Context, settings) == BooruStatus.Ok)
+            {
+                await ReplyAsync("The lists have been built. I'm all set! Type `;help admin` for a list of other admin setup commands.");
+            }
+            else
+            {
+                await ReplyAsync(
+                    "I couldn't reach Manebooru to build the spoiler list, but everything else is set up. Please run `;refreshlists` in a little while to build it. Type `;help admin` for a list of other admin setup commands.");
+            }
+
             await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <SUCCESS>", Context, true);
         }
 
@@ -709,7 +723,12 @@
             }
 
             await ReplyAsync("Refreshing spoiler list. This may take a few minutes.");
-            await _booru.RefreshListsAsync(Context, settings);
+            var refreshed = await _booru.RefreshListsAsync(Context, settings) == BooruStatus.Ok;
+            if (!refreshed)
+            {
+                await ReplyAsync("I couldn't reach Manebooru to refresh the spoiler list, so I kept the old one. Please try again in a little while.");
+            }
+
             await ReplyAsync("Checking and saving server settings.");
             if (Context.IsPrivate)
             {
@@ -748,7 +767,7 @@
             }
 
             await FileHelper.SaveServerSettingsAsync(settings, Context);
-            await ReplyAsync("Spoiler list and server settings refreshed!");
+            await ReplyAsync(refreshed ? "Spoiler list and server settings refreshed!" : "Server settings refreshed!");
         }
 
         [Command("broadcast", RunMode = RunMode.Async)]
@@ -811,18 +830,29 @@
                 return;
             }
 
-            var filterId = await _booru.CheckFilterAsync(requestedFilter);
-            if (filterId > 0)
+            var filterCheck = await _booru.CheckFilterAsync(requestedFilter);
+            if (filterCheck.Status == BooruStatus.Ok)
             {
+                var filterId = filterCheck.FilterId;
                 settings.DefaultFilterId = filterId;
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Filter set to {filterId}. Please wait while the spoiler list is rebuilt.");
-                await _booru.RefreshListsAsync(Context, settings);
-                await ReplyAsync($"The lists have been refreshed for Filter {filterId}");
+                if (await _booru.RefreshListsAsync(Context, settings) == BooruStatus.Ok)
+                {
+                    await ReplyAsync($"The lists have been refreshed for Filter {filterId}");
+                }
+                else
+                {
+                    await ReplyAsync($"The filter is set, but I couldn't reach Manebooru to rebuild the spoiler list. Please run `;refreshlists` in a little while.");
+                }
+            }
+            else if (filterCheck.Status == BooruStatus.NotFound)
+            {
+                await ReplyAsync($"Invalid filter {filter}. Make sure the requested filter exists and is set to public");
             }
             else
             {
-                await ReplyAsync($"Invalid filter {filter}. Make sure the requested filter exists and is set to public");
+                await ReplyAsync("I can't reach Manebooru right now to check that filter. Please try again in a little while.");
             }
         }
 
@@ -1010,14 +1040,21 @@
             if (channelAddId > 0)
             {
                 var validFilter = await _booru.CheckFilterAsync(filterId);
-                if (validFilter == 0)
+                if (validFilter.Status == BooruStatus.NotFound)
                 {
                     await ReplyAsync(
                         $"Invalid filter {filterId}. Please make sure that filter exists and is public. <#{channelAddId}> will not be added to the list at this time.");
                     return;
                 }
 
-                if (validFilter == settings.DefaultFilterId)
+                if (validFilter.Status != BooruStatus.Ok)
+                {
+                    await ReplyAsync(
+                        $"I can't reach Manebooru right now to check filter {filterId}. <#{channelAddId}> will not be added to the list at this time; please try again in a little while.");
+                    return;
+                }
+
+                if (validFilter.FilterId == settings.DefaultFilterId)
                 {
                     await ReplyAsync("That's the server default filter already.");
                     return;

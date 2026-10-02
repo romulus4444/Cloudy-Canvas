@@ -11,12 +11,14 @@ namespace Cloudy_Canvas
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Serilog;
+    using Serilog.Events;
 
     public class Program
     {
         public static int Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration().Enrich.FromLogContext().WriteTo
+            // The HttpClient request log would print the full URL, which includes the Manebooru API key for image searches.
+            Log.Logger = new LoggerConfiguration().MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning).Enrich.FromLogContext().WriteTo
                 .Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}").CreateLogger();
 
             try
@@ -53,7 +55,7 @@ namespace Cloudy_Canvas
                 services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
                 services.AddTransient<IDateTimeService,DateTimeService>();
                 services.AddTransient<MixinsService>();
-                services.AddTransient<BooruService>();
+                services.AddBooruClient();
                 services.AddSingleton<LoggingService>();
                 var settings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
                 services.AddSingleton(settings);
