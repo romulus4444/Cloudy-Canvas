@@ -18,6 +18,10 @@ Important terms:
 
 `watchlist` A list of terms that the bot will not search for if included in the query. These terms are not prevented from appearing in search results. Use cases include terms like `breasts` that are inappropriate to search for in a SFW server, but is a perfectly okay tag to appear in search results. This list can include image IDs as well. A user searching for a watch term will generate an alert message sent to the current watch alert channel and ping the watch alert role, if either are set.
 
+## Running your own copy
+
+Copy `Cloudy-Canvas/appsettings.sample.json` to `Cloudy-Canvas/appsettings.json` (that file is git-ignored; never commit it) and fill in your Discord bot `token` and, optionally, a Manebooru API `token`. Instead of a file you can use environment variables (`DiscordSettings__token`, `ManebooruSettings__token`) or, in development, `dotnet user-secrets`. On NixOS, point `services.cloudy-canvas.environmentFile` at a root-only file containing those variables. `DiscordSettings.BroadcastUserIds` lists the Discord user IDs allowed to use the owner-only `broadcast` command; leave it empty to disable it.
+
 ## Commands:
 ### Booru Module:
 *All searches are subject to the current active filter*
@@ -70,7 +74,7 @@ Example: If today was May 23rd, 2021, then `;pick created_at:{ { today } }, lyra
 ---
 
 ### Admin Module
-*Only users with the specified admin role may use the commands in this module*
+*Only users with the specified admin role (and members with the Administrator permission) may use the commands in this module. Until an admin role is set, only members with the Administrator or Manage Server permission can use them.*
 
 ---
 
@@ -226,7 +230,7 @@ Manages the list of terms users are unable to search for.
  
 ---
 
-`;setprefix <prefix>` Sets the prefix in front of commands to listen for to `<prefix>`. Accepts a single character.
+`;setprefix <prefix>` Sets the prefix in front of commands to listen for to `<prefix>`. Accepts a single punctuation or symbol character (not `@`, `#`, `` ` ``, `<` or `>`). Cloudy stays silent when a message starts with the prefix but isn't one of her commands.
  
 ---
 

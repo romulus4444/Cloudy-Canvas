@@ -2,6 +2,7 @@
 {
     using System;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
     using Discord.Commands;
@@ -45,6 +46,11 @@
                             }
                             else
                             {
+                                if (!IsSafePathSegment(logChannel) || !IsSafePathSegment(date))
+                                {
+                                    throw new ArgumentException("Log channel and date may only contain letters, digits, '-' and '_'.");
+                                }
+
                                 filepath = Path.Join(filepath, $"{logChannel}");
                                 CreateDirectoryIfNotExists(filepath);
                                 filepath = Path.Join(filepath, $"{date}.{extension}");
@@ -141,6 +147,15 @@
             var filepath = SetUpFilepath(FilePathType.Root, "preloadedsettings", "conf");
             var fileContents = JsonConvert.SerializeObject(settings, Formatting.Indented);
             await File.WriteAllTextAsync(filepath, fileContents);
+        }
+
+        /// <summary>
+        /// True if the text is safe to use as a single path component: non-empty and only ASCII letters, digits, '-' or '_'.
+        /// Rejects separators, dots (so no ".."), and anything else that could escape the intended directory.
+        /// </summary>
+        public static bool IsSafePathSegment(string segment)
+        {
+            return !string.IsNullOrEmpty(segment) && segment.All(c => char.IsAsciiLetterOrDigit(c) || c == '-' || c == '_');
         }
 
         private static void CreateDirectoryIfNotExists(string path)

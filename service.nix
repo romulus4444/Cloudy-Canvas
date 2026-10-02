@@ -30,6 +30,16 @@ in
         default = "cloudy-canvas";
         description = "Group to run Cloudy-Canvas under";
       };
+      environmentFile = mkOption {
+        type = types.nullOr types.path;
+        default = null;
+        example = "/run/secrets/cloudy-canvas.env";
+        description = ''
+          File of KEY=value lines loaded as environment variables, for secrets such as
+          DiscordSettings__token and ManebooruSettings__token. Keep it outside the Nix store
+          (e.g. managed by agenix or sops-nix) and readable only by root.
+        '';
+      };
     };
   };
 
@@ -50,6 +60,8 @@ in
           WorkingDirectory = cfg.workDir;
           ExecStart = "${cfg.package}/bin/Cloudy-Canvas";
           Restart = "on-failure";
+        } // lib.optionalAttrs (cfg.environmentFile != null) {
+          EnvironmentFile = cfg.environmentFile;
         };
       };
       users.users = mkIf (cfg.user == "cloudy-canvas") {

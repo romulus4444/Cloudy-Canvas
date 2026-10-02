@@ -139,13 +139,15 @@ namespace Cloudy_Canvas
 
                     if (!validCommand)
                     {
-                        parsedMessage = "<invalid command>";
+                        // Stay quiet on unknown commands so the bot doesn't answer every message that happens to start with the prefix
+                        // (other bots on the server often share it).
+                        return;
                     }
                 }
 
                 if (parsedMessage.Split(" ")[0] == "broadcast")
                 {
-                    if (context.User.Id is 221742476153716736 or 95483801584537600) //Dr. Romulus#4444 || CULT PONY#6167
+                    if (_settings.BroadcastUserIds.Contains(context.User.Id))
                     {
                         if (parsedMessage == "broadcast")
                         {
@@ -169,13 +171,20 @@ namespace Cloudy_Canvas
             return Task.CompletedTask;
         }
 
-        [RequireOwner]
+        // Callers must have already checked the user against DiscordSettings.BroadcastUserIds.
         private async Task BroadcastAsync(string message = "")
         {
             var guildList = _servers.GuildList;
             foreach (var (guild, adminChannel) in guildList)
             {
-                await _client.GetGuild(guild).GetTextChannel(adminChannel).SendMessageAsync(message);
+                var channel = _client.GetGuild(guild)?.GetTextChannel(adminChannel);
+                if (channel == null)
+                {
+                    _logger.LogWarning("Broadcast skipped: admin channel {Channel} in guild {Guild} is unavailable", adminChannel, guild);
+                    continue;
+                }
+
+                await channel.SendMessageAsync(message, allowedMentions: AllowedMentions.None);
             }
         }
     }

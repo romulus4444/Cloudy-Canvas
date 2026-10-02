@@ -6,10 +6,11 @@
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
     using Cloudy_Canvas.Settings;
+    using Discord;
     using Discord.Commands;
 
     [Summary("Module for interfacing with Manebooru")]
-    public class BooruModule : ModuleBase<SocketCommandContext>
+    public class BooruModule : BotModuleBase
     {
         private readonly BooruService _booru;
         private readonly LoggingService _logger;
@@ -510,7 +511,8 @@
                         var output = $"<@{Context.User.Id}> has reported Image #{reportedImageId}";
                         if (reason != "")
                         {
-                            output += $" with reason `{reason}`";
+                            // Backticks are swapped out so the reason can't break out of its code span.
+                            output += $" with reason `{reason.Replace('`', '\'')}`";
                         }
 
                         output += $" || <https://manebooru.art/images/{imageId}> ||";
@@ -519,12 +521,9 @@
                         if (settings.ReportRole != 0)
                         {
                             output = $"<@&{settings.ReportRole}> " + output;
-                            await reportChannel.SendMessageAsync(output);
                         }
-                        else
-                        {
-                            await reportChannel.SendMessageAsync(output);
-                        }
+
+                        await reportChannel.SendMessageAsync(output, allowedMentions: AlertMentions(settings.ReportRole));
 
                         await ReplyAsync("Admins have been notified. Thank you for your report.");
                     }
@@ -612,17 +611,22 @@
             await _logger.Log($"pick: {query}, WATCHLISTED {watchTerms}", Context, true);
             await ReplyAsync("I'm not gonna go look for that.");
             var watchChannel = Context.Guild.GetTextChannel(settings.WatchAlertChannel);
+            var alert = $"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}";
             if (settings.WatchAlertRole != 0)
             {
-                await watchChannel.SendMessageAsync(
-                    $"<@&{settings.WatchAlertRole}> <@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}");
-            }
-            else
-            {
-                await watchChannel.SendMessageAsync($"<@{Context.User.Id}> searched for a naughty term in <#{Context.Channel.Id}> WATCH TERMS: {watchTerms}");
+                alert = $"<@&{settings.WatchAlertRole}> " + alert;
             }
 
+            await watchChannel.SendMessageAsync(alert, allowedMentions: AlertMentions(settings.WatchAlertRole));
             return false;
+        }
+
+        /// <summary>Allowed mentions for an alert: the configured alert role (if any) may be pinged, nothing else.</summary>
+        private static AllowedMentions AlertMentions(ulong roleId)
+        {
+            return roleId == 0
+                ? AllowedMentions.None
+                : new AllowedMentions(AllowedMentionTypes.Roles) { RoleIds = new List<ulong> { roleId } };
         }
     }
 }
