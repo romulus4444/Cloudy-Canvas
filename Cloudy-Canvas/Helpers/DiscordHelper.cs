@@ -1,9 +1,11 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
     using Discord.Commands;
+    using Discord.WebSocket;
 
     public static class DiscordHelper
     {
@@ -16,18 +18,6 @@
             }
 
             return await CheckIfChannelExistsAsync(channelName, context);
-        }
-
-        public static string ConvertChannelPingToName(string channelPing, SocketCommandContext context)
-        {
-            var id = ConvertChannelPingToId(channelPing);
-            if (id <= 0)
-            {
-                return "<ERROR> Invalid channel";
-            }
-
-            var channel = context.Guild.GetTextChannel(id);
-            return channel == null ? "<ERROR> Invalid channel" : channel.Name;
         }
 
         public static ulong GetRoleIdIfAccessAsync(string roleName, SocketCommandContext context)
@@ -43,7 +33,24 @@
                 return true;
             }
 
-            return settings.AdminRole == 0 || context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.AdminRole);
+            if (context.User is not SocketGuildUser user)
+            {
+                return false;
+            }
+
+            // Server administrators can always use the bot's admin commands.
+            if (user.GuildPermissions.Administrator)
+            {
+                return true;
+            }
+
+            // Fail closed: until an admin role has been configured, only members who can manage the server count as admins.
+            if (settings.AdminRole == 0)
+            {
+                return user.GuildPermissions.ManageGuild;
+            }
+
+            return user.Roles.Any(x => x.Id == settings.AdminRole);
         }
 
         public static bool CanUserRunThisCommand(SocketCommandContext context, ServerSettings settings)
@@ -53,7 +60,12 @@
                 return true;
             }
 
-            if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.AdminRole))
+            if (context.User is not SocketGuildUser guildUser)
+            {
+                return false;
+            }
+
+            if (guildUser.Roles.Any(x => x.Id == settings.AdminRole))
             {
                 return true;
             }
@@ -76,7 +88,7 @@
 
             foreach (var ignoredRole in settings.IgnoredRoles)
             {
-                if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == ignoredRole))
+                if (guildUser.Roles.Any(x => x.Id == ignoredRole))
                 {
                     return false;
                 }
@@ -156,28 +168,34 @@
             return 0;
         }
 
-        private static ulong ConvertChannelPingToId(string channelPing)
+        /// <summary>Returns the channel id from a <c>&lt;#id&gt;</c> mention, or 0 if the text is not a valid channel mention.</summary>
+        public static ulong ConvertChannelPingToId(string channelPing)
         {
-            if (!channelPing.Contains("<#") || !channelPing.Contains(">"))
-            {
-                return 0;
-            }
-
-            var frontTrim = channelPing[2..];
-            var trim = frontTrim.Split('>', 2)[0];
-            return ulong.Parse(trim);
+            return ParseMention(channelPing, "<#");
         }
 
-        private static ulong ConvertUserPingToId(string userPing)
+        /// <summary>Returns the user id from a <c>&lt;@id&gt;</c> or legacy <c>&lt;@!id&gt;</c> mention, or 0 if the text is not a valid user mention.</summary>
+        public static ulong ConvertUserPingToId(string userPing)
         {
-            if (!userPing.Contains("<@!") || !userPing.Contains(">"))
+            var id = ParseMention(userPing, "<@!");
+            return id > 0 ? id : ParseMention(userPing, "<@");
+        }
+
+        private static ulong ParseMention(string text, string prefix)
+        {
+            if (text == null)
             {
                 return 0;
             }
 
-            var frontTrim = userPing[3..];
-            var trim = frontTrim.Split('>', 2)[0];
-            return ulong.Parse(trim);
+            var trimmed = text.Trim();
+            if (!trimmed.StartsWith(prefix) || !trimmed.EndsWith('>'))
+            {
+                return 0;
+            }
+
+            var digits = trimmed[prefix.Length..^1];
+            return ulong.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var id) ? id : 0;
         }
 
         private static ulong CheckIfRoleExistsAsync(string roleName, SocketCommandContext context)
@@ -216,16 +234,10 @@
             return 0;
         }
 
-        private static ulong ConvertRolePingToId(string rolePing)
+        /// <summary>Returns the role id from a <c>&lt;@&amp;id&gt;</c> mention, or 0 if the text is not a valid role mention.</summary>
+        public static ulong ConvertRolePingToId(string rolePing)
         {
-            if (!rolePing.Contains("<@&") || !rolePing.Contains(">"))
-            {
-                return 0;
-            }
-
-            var frontTrim = rolePing[3..];
-            var trim = frontTrim.Split('>', 2)[0];
-            return ulong.Parse(trim);
+            return ParseMention(rolePing, "<@&");
         }
     }
 }

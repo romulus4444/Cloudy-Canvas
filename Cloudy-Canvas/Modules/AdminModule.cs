@@ -1,6 +1,7 @@
 ﻿namespace Cloudy_Canvas.Modules
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
@@ -10,11 +11,14 @@
     using Discord.Commands;
 
     [Summary("Module for managing admin functions")]
-    public class AdminModule : ModuleBase<SocketCommandContext>
+    public class AdminModule : BotModuleBase
     {
         private readonly LoggingService _logger;
         private readonly BooruService _booru;
         private readonly AllPreloadedSettings _servers;
+
+        // ;echo may mention users and roles, but never @everyone / @here.
+        private static readonly AllowedMentions EchoMentions = new(AllowedMentionTypes.Users | AllowedMentionTypes.Roles);
 
         public AdminModule(LoggingService logger, BooruService booru, AllPreloadedSettings servers)
         {
@@ -81,7 +85,7 @@
                 }
                 else
                 {
-                    await ReplyAsync($"I couldn't find @{adminRoleName}. Plese assign an admin role with ;admin adminrole set role. Continuing without an admin role.");
+                    await ReplyAsync($"I couldn't find @{adminRoleName}. Please assign an admin role with ;admin adminrole set role. Continuing without an admin role; until one is set, only members with the Administrator or Manage Server permission can use admin commands.");
                     await _logger.Log($"setup: filterId: {filterId}, channel {adminChannelName} <SUCCESS>, role {adminRoleName} <FAIL>", Context, true);
                 }
 
@@ -487,7 +491,7 @@
 
                     if (channel != null)
                     {
-                        await channel.SendMessageAsync(message);
+                        await channel.SendMessageAsync(message, allowedMentions: EchoMentions);
                         await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context, true);
                         return;
                     }
@@ -498,7 +502,7 @@
                     return;
                 }
 
-                await ReplyAsync($"{channelName} {message}");
+                await ReplyAsync($"{channelName} {message}", allowedMentions: EchoMentions);
                 await _logger.Log($"echo: {channelName} {message} <SUCCESS>", Context, true);
             });
             return Task.CompletedTask;
@@ -513,6 +517,12 @@
                 var settings = await FileHelper.LoadServerSettingsAsync(Context);
                 if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
                 {
+                    return;
+                }
+
+                if (!IsValidPrefix(prefix))
+                {
+                    await ReplyAsync("The prefix must be a single punctuation or symbol character (not `@`, `#`, `` ` ``, `<` or `>`).");
                     return;
                 }
 
@@ -803,29 +813,21 @@
             return Task.CompletedTask;
         }
 
-        [Command("<invalid command>")]
-        [Summary("Runs on an invalid command")]
-        public Task InvalidCommandAsync()
-        {
-            Task.Run(async () =>
-            {
-                var settings = await FileHelper.LoadServerSettingsAsync(Context);
-                if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
-                {
-                    return;
-                }
-
-                await ReplyAsync("I don't know that command.");
-            });
-            return Task.CompletedTask;
-        }
-
         [Command("<mention>")]
         [Summary("Runs on a name ping")]
         public Task MentionCommandAsync()
         {
             //removed ping reply, add custom replies here if desired
             return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// A prefix must be punctuation or a symbol; letters, digits and whitespace would make normal chat trigger the bot,
+        /// and Discord's mention/markup characters would clash with formatting.
+        /// </summary>
+        public static bool IsValidPrefix(char prefix)
+        {
+            return (char.IsPunctuation(prefix) || char.IsSymbol(prefix)) && "@#`<>".IndexOf(prefix) < 0;
         }
 
         private async Task<string> SettingsGetAsync(SocketCommandContext context, ServerSettings settings)
@@ -844,7 +846,13 @@
 
         private async Task FilterSetAsync(string filter, ServerSettings settings)
         {
-            var filterId = await _booru.CheckFilterAsync(int.Parse(filter));
+            if (!int.TryParse(filter, NumberStyles.None, CultureInfo.InvariantCulture, out var requestedFilter))
+            {
+                await ReplyAsync($"Invalid filter {filter}. A filter is identified by its number.");
+                return;
+            }
+
+            var filterId = await _booru.CheckFilterAsync(requestedFilter);
             if (filterId > 0)
             {
                 settings.DefaultFilterId = filterId;
@@ -1393,7 +1401,7 @@
         }
 
         [Summary("Submodule for managing the watchlist")]
-        public class BadlistModule : ModuleBase<SocketCommandContext>
+        public class BadlistModule : BotModuleBase
         {
             private readonly LoggingService _logger;
 
@@ -1531,7 +1539,7 @@
         }
 
         [Summary("Submodule for retreiving log files")]
-        public class LogModule : ModuleBase<SocketCommandContext>
+        public class LogModule : BotModuleBase
         {
             private readonly LoggingService _logger;
 
@@ -1585,11 +1593,16 @@
 
             private async Task<string> LogGetAsync(string channelName, string date, SocketCommandContext context, ServerSettings settings)
             {
-                await ReplyAsync($"Retrieving log from {channelName} on {date}...");
-                var confirmedName = DiscordHelper.ConvertChannelPingToName(channelName, context);
-                if (confirmedName.Contains("<ERROR>"))
+                if (!DateTime.TryParseExact(date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out _) || !FileHelper.IsSafePathSegment(date))
                 {
-                    return confirmedName;
+                    return "<ERROR> Invalid date. Dates must be formatted as YYYY-MM-DD.";
+                }
+
+                var channelId = await DiscordHelper.GetChannelIdIfAccessAsync(channelName, context);
+                var channel = channelId > 0 ? context.Guild.GetTextChannel(channelId) : null;
+                if (channel == null)
+                {
+                    return "<ERROR> Invalid channel";
                 }
 
                 if (settings.LogPostChannel <= 0)
@@ -1597,14 +1610,17 @@
                     return "<ERROR> Log post channel not set.";
                 }
 
-                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "log", context, confirmedName, date);
+                await ReplyAsync($"Retrieving log from {channel.Name} on {date}...");
+
+                // Logs are stored per channel id, in a folder that can only be inside this server's own directory.
+                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "log", context, channelId.ToString(), date);
                 if (!File.Exists(filepath))
                 {
                     return "<ERROR> File does not exist";
                 }
 
                 var logPostChannel = context.Guild.GetTextChannel(settings.LogPostChannel);
-                await logPostChannel.SendFileAsync(filepath, $"{confirmedName}-{date}.log");
+                await logPostChannel.SendFileAsync(filepath, $"{channel.Name}-{date}.log");
                 return "SUCCESS";
             }
         }

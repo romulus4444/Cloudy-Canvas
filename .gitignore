@@ -360,3 +360,5 @@ BotSettings\**
 **/appsettings.json
 **/appsettings.*.json
 /result
+# Keep the sample config tracked; real appsettings*.json files hold secrets and stay local
+!**/appsettings.sample.json

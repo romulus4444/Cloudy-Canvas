@@ -25,11 +25,7 @@
             const long searchResult = -1;
             var emptyList = new List<string>();
             var returnResult = new Tuple<int?, long, bool, List<string>>(null, searchResult, false, emptyList);
-            var safeQuery = "id:" + imageId;
-            if (settings.SafeMode)
-            {
-                safeQuery += ", safe";
-            }
+            var safeQuery = QueryHelper.ApplySafeMode("id:" + imageId, settings.SafeMode);
 
             dynamic results;
             try
@@ -65,11 +61,7 @@
             long numberOfResults = 0;
             var emptyList = new List<string>();
             var returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, false, emptyList);
-            var safeQuery = query;
-            if (settings.SafeMode)
-            {
-                safeQuery += ", safe";
-            }
+            var safeQuery = QueryHelper.ApplySafeMode(query, settings.SafeMode);
 
             dynamic results;
             try
@@ -107,11 +99,7 @@
             long numberOfResults = 0;
             var emptyList = new List<string>();
             var returnResult = new Tuple<int?, long, long, bool, List<string>>(null, searchResult, numberOfResults, false, emptyList);
-            var safeQuery = query;
-            if (settings.SafeMode)
-            {
-                safeQuery += ", safe";
-            }
+            var safeQuery = QueryHelper.ApplySafeMode(query, settings.SafeMode);
 
             dynamic results;
             try
@@ -172,11 +160,7 @@
             var emptyTagList = new List<string>();
             var emptySpoilerList = new List<string>();
             var returnResult = new Tuple<int?, List<string>, bool, List<string>>(null, emptyTagList, false, emptySpoilerList);
-            var safeQuery = "id:" + imageId;
-            if (settings.SafeMode)
-            {
-                safeQuery += ", safe";
-            }
+            var safeQuery = QueryHelper.ApplySafeMode("id:" + imageId, settings.SafeMode);
 
             dynamic results;
             try

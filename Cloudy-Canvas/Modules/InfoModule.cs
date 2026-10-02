@@ -9,7 +9,7 @@
     using Discord.Commands;
 
     [Summary("Module for providing information")]
-    public class InfoModule : ModuleBase<SocketCommandContext>
+    public class InfoModule : BotModuleBase
     {
         private readonly LoggingService _logger;
         private readonly AllPreloadedSettings _servers;
@@ -148,7 +148,7 @@
                         break;
                     case "setprefix":
                         await ReplyAsync(
-                            $"`{prefix}setprefix <prefix>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Sets the prefix in front of commands to listen for to <prefix>. Accepts a single character.");
+                            $"`{prefix}setprefix <prefix>`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Sets the prefix in front of commands to listen for to <prefix>. Accepts a single punctuation or symbol character (not @, #, <, > or a backtick).");
                         break;
                     case "listentobots":
                         await ReplyAsync(
