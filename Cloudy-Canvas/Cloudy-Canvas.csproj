@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <UserSecretsId>dotnet-Cloudy_Canvas-C054BD3A-F4E3-4221-81C0-9AE116BDD30F</UserSecretsId>
     <RootNamespace>Cloudy_Canvas</RootNamespace>
     <PublishReadyToRun>false</PublishReadyToRun>
