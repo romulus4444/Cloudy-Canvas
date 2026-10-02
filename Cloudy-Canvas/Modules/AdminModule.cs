@@ -747,7 +747,7 @@
                 await ReplyAsync("Checking and saving server settings.");
                 if (Context.IsPrivate)
                 {
-                    settings.Name = $"{Context.User.Username}#{Context.User.Discriminator}";
+                    settings.Name = $"{Context.User.Username}";
                 }
                 else
                 {

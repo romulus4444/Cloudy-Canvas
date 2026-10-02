@@ -127,7 +127,7 @@
 
             var settings = new ServerPreloadedSettings();
             var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
-            var name = context.IsPrivate ? context.User.Username + "#" + context.User.Discriminator : context.Guild.Name;
+            var name = context.IsPrivate ? context.User.Username : context.Guild.Name;
             settings.Name = name;
             if (allPresettings.Settings.ContainsKey(serverId))
             {
