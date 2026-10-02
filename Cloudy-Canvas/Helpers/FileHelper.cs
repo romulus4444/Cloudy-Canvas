@@ -6,10 +6,14 @@
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
     using Discord.Commands;
-    using Newtonsoft.Json;
 
     public static class FileHelper
     {
+        // Per-server settings are re-read if someone edits the file by hand. The presettings object is shared with the
+        // dependency-injection container and other components, so it must stay the same instance.
+        private static readonly JsonFileStore<ServerSettings> ServerSettingsStore = new(true);
+        private static readonly JsonFileStore<AllPreloadedSettings> PresettingsStore = new(false);
+
         public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null, string logChannel = "", string date = "")
         {
             //Root
@@ -73,44 +77,19 @@
         public static async Task<ServerSettings> LoadServerSettingsAsync(SocketCommandContext context)
         {
             var filepath = SetUpFilepath(FilePathType.Server, "settings", "conf", context);
-            var settings = new ServerSettings();
-            if (!File.Exists(filepath))
-            {
-                var defaultFileContents = JsonConvert.SerializeObject(settings, Formatting.Indented);
-                await File.WriteAllTextAsync(filepath, defaultFileContents);
-            }
-            else
-            {
-                var fileContents = await File.ReadAllTextAsync(filepath);
-                settings = JsonConvert.DeserializeObject<ServerSettings>(fileContents);
-            }
-
-            return settings;
+            return await ServerSettingsStore.LoadAsync(filepath);
         }
 
         public static async Task SaveServerSettingsAsync(ServerSettings settings, SocketCommandContext context)
         {
             var filepath = SetUpFilepath(FilePathType.Server, "settings", "conf", context);
-            var fileContents = JsonConvert.SerializeObject(settings, Formatting.Indented);
-            await File.WriteAllTextAsync(filepath, fileContents);
+            await ServerSettingsStore.SaveAsync(filepath, settings);
         }
 
         public static async Task<AllPreloadedSettings> LoadAllPresettingsAsync()
         {
-            var servers = new AllPreloadedSettings();
             var filepath = SetUpFilepath(FilePathType.Root, "preloadedsettings", "conf");
-            if (!File.Exists(filepath))
-            {
-                var defaultFileContents = JsonConvert.SerializeObject(servers, Formatting.Indented);
-                await File.WriteAllTextAsync(filepath, defaultFileContents);
-            }
-            else
-            {
-                var fileContents = await File.ReadAllTextAsync(filepath);
-                servers = JsonConvert.DeserializeObject<AllPreloadedSettings>(fileContents);
-            }
-
-            return servers;
+            return await PresettingsStore.LoadAsync(filepath);
         }
 
         public static async Task<ServerPreloadedSettings> LoadServerPresettingsAsync(SocketCommandContext context, AllPreloadedSettings allPresettingsInput = null)
@@ -152,8 +131,7 @@
         public static async Task SaveAllPresettingsAsync(AllPreloadedSettings settings)
         {
             var filepath = SetUpFilepath(FilePathType.Root, "preloadedsettings", "conf");
-            var fileContents = JsonConvert.SerializeObject(settings, Formatting.Indented);
-            await File.WriteAllTextAsync(filepath, fileContents);
+            await PresettingsStore.SaveAsync(filepath, settings);
         }
 
         /// <summary>
