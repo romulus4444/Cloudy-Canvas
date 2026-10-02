@@ -129,14 +129,21 @@
             var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
             var name = context.IsPrivate ? context.User.Username : context.Guild.Name;
             settings.Name = name;
-            if (allPresettings.Settings.ContainsKey(serverId))
+            if (allPresettings.Settings.TryGetValue(serverId, out var existing))
             {
-                settings = allPresettings.Settings[serverId];
+                settings = existing;
             }
             else
             {
-                allPresettings.Settings.Add(serverId, settings);
-                await SaveAllPresettingsAsync(allPresettings);
+                // Another command may have created the entry at the same time; keep whichever got there first.
+                if (allPresettings.Settings.TryAdd(serverId, settings))
+                {
+                    await SaveAllPresettingsAsync(allPresettings);
+                }
+                else
+                {
+                    settings = allPresettings.Settings[serverId];
+                }
             }
 
             return settings;

@@ -117,13 +117,17 @@ namespace Cloudy_Canvas
 
             var argPos = 0;
             var context = new SocketCommandContext(_client, message);
-            var settings = await FileHelper.LoadServerPresettingsAsync(context, _servers);
-            if (DevSettings.useDevPrefix)
+
+            // Look the server up without creating an entry: most messages are not commands and must not touch the settings file.
+            // A server we haven't seen yet simply uses the defaults until it runs its first command.
+            var serverId = context.IsPrivate ? context.User.Id : context.Guild.Id;
+            if (!_servers.Settings.TryGetValue(serverId, out var settings))
             {
-                settings.Prefix = DevSettings.prefix;
+                settings = new ServerPreloadedSettings();
             }
 
-            if (message.HasCharPrefix(settings.Prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            var prefix = DevSettings.useDevPrefix ? DevSettings.prefix : settings.Prefix;
+            if (message.HasCharPrefix(prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
                 if (!(settings.ListenToBots) && message.Author.IsBot)
                 {
@@ -184,6 +188,11 @@ namespace Cloudy_Canvas
                         await BroadcastAsync(messagePart);
                         await context.Channel.SendMessageAsync("Message broadcasted to all servers' admin channels.");
                     }
+                }
+
+                if (!_servers.Settings.ContainsKey(serverId))
+                {
+                    await FileHelper.LoadServerPresettingsAsync(context, _servers);
                 }
 
                 await _commands.ExecuteAsync(context, parsedMessage, _services);
