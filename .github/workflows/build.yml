@@ -20,20 +20,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/checkout@v4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            Cloudy-Canvas/bin
-            Cloudy-Canvas/obj
-            Cloudy-Canvas.Tests/bin
-            Cloudy-Canvas.Tests/obj
-          key: dotnet-dep-builds
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
       - name: Install dependencies
         run: dotnet restore
       - name: Build
