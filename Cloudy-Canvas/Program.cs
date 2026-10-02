@@ -2,11 +2,6 @@ namespace Cloudy_Canvas
 {
     using System;
     using Cloudy_Canvas.Helpers;
-    using Cloudy_Canvas.Service;
-    using Cloudy_Canvas.Settings;
-    using Discord;
-    using Discord.Commands;
-    using Discord.WebSocket;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -50,25 +45,8 @@ namespace Cloudy_Canvas
                 }
             }).ConfigureServices((hostContext, services) =>
             {
-                var config = hostContext.Configuration;
-                services.Configure<DiscordSettings>(config.GetSection(nameof(DiscordSettings)));
-                services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
-                services.Configure<LogRetentionSettings>(config.GetSection("LogRetention"));
-                services.AddTransient<IDateTimeService,DateTimeService>();
-                services.AddTransient<MixinsService>();
-                services.AddBooruClient();
-                services.AddSingleton<LoggingService>();
-                services.AddSingleton<CooldownService>();
-                var settings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
-                services.AddSingleton(settings);
-                services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
-                {
-                    GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.DirectMessages | GatewayIntents.MessageContent,
-                }));
-                services.AddSingleton(new CommandService());
-
-                services.AddHostedService<Worker>();
-                services.AddHostedService<LogRetentionService>();
+                var presettings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
+                services.AddCloudyCanvas(hostContext.Configuration, presettings);
             });
     }
 }
