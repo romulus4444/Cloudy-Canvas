@@ -1026,7 +1026,7 @@
                 for (var x = settings.FilteredChannels.Count - 1; x >= 0; x--)
                 {
                     var channel = settings.FilteredChannels[x];
-                    if (channel.Item1 != channelRemoveId)
+                    if (channel.ChannelId != channelRemoveId)
                     {
                         continue;
                     }
@@ -1066,19 +1066,19 @@
 
                 foreach (var channel in settings.FilteredChannels)
                 {
-                    if (channel.Item1 != channelAddId)
+                    if (channel.ChannelId != channelAddId)
                     {
                         continue;
                     }
 
-                    await ReplyAsync($"Updated the filter for <#{channelAddId}> from {channel.Item2} to {filterId}.");
+                    await ReplyAsync($"Updated the filter for <#{channelAddId}> from {channel.FilterId} to {filterId}.");
                     settings.FilteredChannels.Remove(channel);
-                    settings.FilteredChannels.Add(new Tuple<ulong, int>(channelAddId, filterId));
+                    settings.FilteredChannels.Add(new ChannelFilter(channelAddId, filterId));
                     await FileHelper.SaveServerSettingsAsync(settings, Context);
                     return;
                 }
 
-                settings.FilteredChannels.Add(new Tuple<ulong, int>(channelAddId, filterId));
+                settings.FilteredChannels.Add(new ChannelFilter(channelAddId, filterId));
                 await FileHelper.SaveServerSettingsAsync(settings, Context);
                 await ReplyAsync($"Set <#{channelAddId}> to use filter {filterId}.");
             }

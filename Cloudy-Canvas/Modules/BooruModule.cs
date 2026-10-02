@@ -382,7 +382,7 @@
                 var output = $"__Spoilered tags for Filter {settings.DefaultFilterId}:__{Environment.NewLine}";
                 for (var x = 0; x < settings.SpoilerList.Count; x++)
                 {
-                    output += $"`{settings.SpoilerList[x].Item2}`";
+                    output += $"`{settings.SpoilerList[x].Name}`";
                     if (x < settings.SpoilerList.Count - 1)
                     {
                         output += ", ";

@@ -293,10 +293,10 @@
 
             var tagIds = results.filter.spoilered_tag_ids;
             var tagNames = await GetTagNamesAsync(tagIds);
-            var combinedTags = new List<Tuple<long, string>>();
+            var combinedTags = new List<SpoilerTag>();
             for (var x = 0; x < tagIds.Count; x++)
             {
-                var newItem = new Tuple<long, string>((long)tagIds[x], tagNames[x].ToString());
+                var newItem = new SpoilerTag((long)tagIds[x], tagNames[x].ToString());
                 combinedTags.Add(newItem);
             }
 

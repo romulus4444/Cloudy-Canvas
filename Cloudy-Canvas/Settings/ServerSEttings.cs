@@ -1,6 +1,5 @@
 ﻿namespace Cloudy_Canvas.Settings
 {
-    using System;
     using System.Collections.Generic;
 
     public class ServerSettings
@@ -11,7 +10,7 @@
             DefaultFilterId = 175;
             AdminChannel = 0;
             AdminRole = 0;
-            SpoilerList = new List<Tuple<long, string>>();
+            SpoilerList = new List<SpoilerTag>();
             WatchList = new List<string>();
             WatchAlertChannel = 0;
             WatchAlertRole = 0;
@@ -22,14 +21,14 @@
             IgnoredChannels = new List<ulong>();
             IgnoredRoles = new List<ulong>();
             AllowedUsers = new List<ulong>();
-            FilteredChannels = new List<Tuple<ulong, int>>();
+            FilteredChannels = new List<ChannelFilter>();
         }
 
         public string Name { get; set; }
         public int DefaultFilterId { get; set; }
         public ulong AdminChannel { get; set; }
         public ulong AdminRole { get; set; }
-        public List<Tuple<long, string>> SpoilerList { get; set; }
+        public List<SpoilerTag> SpoilerList { get; set; }
         public List<string> WatchList { get; set; }
         public ulong WatchAlertChannel { get; set; }
         public ulong WatchAlertRole { get; set; }
@@ -40,6 +39,6 @@
         public List<ulong> IgnoredChannels { get; set; }
         public List<ulong> IgnoredRoles { get; set; }
         public List<ulong> AllowedUsers { get; set; }
-        public List<Tuple<ulong, int>> FilteredChannels { get; set; }
+        public List<ChannelFilter> FilteredChannels { get; set; }
     }
 }
