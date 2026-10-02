@@ -39,7 +39,7 @@
             {
                 if (!fileEntry)
                 {
-                    logMessage += $"DM with @{context.User.Username}#{context.User.Discriminator} ({context.User.Id})";
+                    logMessage += $"DM with @{context.User.Username} ({context.User.Id})";
                 }
 
                 if (!fileEntry && !header)
@@ -66,7 +66,7 @@
 
                 if (!header)
                 {
-                    logMessage += $"@{context.User.Username}#{context.User.Discriminator} ({context.User.Id}), ";
+                    logMessage += $"@{context.User.Username} ({context.User.Id}), ";
                     logMessage += message;
                 }
             }

@@ -1,4 +1,4 @@
-name: Test and Publish
+name: Build and Test
 
 on:
   push:
@@ -7,12 +7,12 @@ on:
   pull_request:
       branches:
         - mane
-  release:
-    types:
-      - created
+
+permissions:
+  contents: read
 
 env:
-  DOTNET_VERSION: '7.0.x' # The .NET SDK version to use
+  DOTNET_VERSION: '10.0.x' # The .NET SDK version to use
 
 jobs:
   tests:
@@ -28,8 +28,8 @@ jobs:
           cache: true
           cache-dependency-path: '**/packages.lock.json'
       - name: Install dependencies
-        run: dotnet restore
+        run: dotnet restore --locked-mode
       - name: Build
         run: dotnet build --configuration Release --no-restore
       - name: Test
-        run: dotnet test --no-restore --verbosity normal
+        run: dotnet test --configuration Release --no-build --verbosity normal

@@ -17,8 +17,8 @@
             pname = "Cloudy-Canvas";
             version = "0.0.1";
             src = ./Cloudy-Canvas;
-            dotnet-sdk = pkgs.dotnet-sdk_7;
-            dotnet-runtime = pkgs.dotnet-runtime_7;
+            dotnet-sdk = pkgs.dotnet-sdk_10;
+            dotnet-runtime = pkgs.dotnet-runtime_10;
             selfContainedBuild = true;
             buildType = "Release";
             runtimeDeps = with pkgs; [
@@ -54,7 +54,7 @@
           in
           pkgs.mkShell {
             buildInputs = with pkgs; [
-              dotnet-sdk_7
+              dotnet-sdk_10
             ];
           };
       });
