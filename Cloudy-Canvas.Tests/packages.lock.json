@@ -448,8 +448,8 @@
       },
       "Newtonsoft.Json": {
         "type": "Transitive",
-        "resolved": "13.0.3",
-        "contentHash": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ=="
+        "resolved": "13.0.4",
+        "contentHash": "pdgNNMai3zv51W5aq268sujXUyx7SNdE2bj1wZcWjAQrKMFZV260lbqYop1d2GM67JI1huLRwxo9ZqnfF/lC6A=="
       },
       "NuGet.Frameworks": {
         "type": "Transitive",
@@ -623,7 +623,7 @@
           "Flurl.Http": "[3.2.4, )",
           "Microsoft.Extensions.Hosting": "[10.0.12, )",
           "Microsoft.Extensions.Hosting.WindowsServices": "[10.0.12, )",
-          "Newtonsoft.Json": "[13.0.3, )",
+          "Newtonsoft.Json": "[13.0.4, )",
           "Serilog.AspNetCore": "[7.0.0, )"
         }
       }
