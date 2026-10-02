@@ -53,6 +53,7 @@ namespace Cloudy_Canvas
                 var config = hostContext.Configuration;
                 services.Configure<DiscordSettings>(config.GetSection(nameof(DiscordSettings)));
                 services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
+                services.Configure<LogRetentionSettings>(config.GetSection("LogRetention"));
                 services.AddTransient<IDateTimeService,DateTimeService>();
                 services.AddTransient<MixinsService>();
                 services.AddBooruClient();
@@ -66,6 +67,7 @@ namespace Cloudy_Canvas
                 services.AddSingleton(new CommandService());
 
                 services.AddHostedService<Worker>();
+                services.AddHostedService<LogRetentionService>();
             });
     }
 }
