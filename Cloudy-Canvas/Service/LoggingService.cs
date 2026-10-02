@@ -1,7 +1,6 @@
 ﻿namespace Cloudy_Canvas.Service
 {
     using System;
-    using System.IO;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
     using Discord.Commands;
@@ -9,9 +8,9 @@
 
     public class LoggingService
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger<LoggingService> _logger;
 
-        public LoggingService(ILogger<Worker> logger)
+        public LoggingService(ILogger<LoggingService> logger)
         {
             _logger = logger;
         }
@@ -24,7 +23,7 @@
             }
 
             var logMessage = PrepareMessageForLogging(message, context);
-            _logger.LogInformation(logMessage);
+            _logger.LogInformation("{Entry}", logMessage);
         }
 
         private static string PrepareMessageForLogging(string message, SocketCommandContext context, bool fileEntry = false, bool header = false)
@@ -82,13 +81,9 @@
         private static async Task AppendToFileAsync(string message, SocketCommandContext context)
         {
             var filepath = FileHelper.SetUpFilepath(FilePathType.Channel, "<date>", "log", context);
-            if (!File.Exists(filepath))
-            {
-                await File.WriteAllTextAsync(filepath, PrepareMessageForLogging(message, context, false, true));
-            }
-
-            var logMessage = PrepareMessageForLogging(message, context, true);
-            await File.AppendAllTextAsync(filepath, logMessage);
+            var header = PrepareMessageForLogging(message, context, false, true);
+            var entry = PrepareMessageForLogging(message, context, true);
+            await LogFile.AppendAsync(filepath, header, entry);
         }
     }
 }
