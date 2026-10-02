@@ -28,6 +28,8 @@ Cloudy keeps per-channel command logs (usernames, user IDs and the queries peopl
 ### Booru Module:
 *All searches are subject to the current active filter*
 
+*To go easy on Manebooru, each user can run one lookup command (`;pick`, `;pickrecent`, `;id`, `;tags`, `;featured` or `;report`) every two seconds. If Manebooru can't be reached, Cloudy says so rather than reporting "no results".*
+
 ---
 
 `;pick <query>` Posts a random image from a Manebooru `<query>`, if it is available. If results include any spoilered tags, the post is made in `||` spoiler bars.
