@@ -139,7 +139,7 @@ namespace Cloudy_Canvas
                 }
                 else
                 {
-                    parsedMessage = DiscordHelper.CheckAliasesAsync(message.Content, settings);
+                    parsedMessage = DiscordHelper.ResolveAliases(message.Content, settings);
                 }
 
                 if (parsedMessage == "")

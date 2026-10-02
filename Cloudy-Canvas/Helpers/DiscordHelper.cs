@@ -1,5 +1,6 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
+    using System;
     using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
@@ -109,15 +110,33 @@
             return userList.Count != 1 ? 0 : userList.First().Id;
         }
 
-        public static string CheckAliasesAsync(string message, ServerPreloadedSettings settings)
+        /// <summary>
+        /// Strips the prefix character from <paramref name="message"/> and expands a command alias at the start of what is left.
+        /// An alias only matches a whole leading word (or leading words, for aliases containing spaces) and only the alias itself is
+        /// replaced, never text in the arguments. If several aliases match, the longest one wins. The command word is lower-cased.
+        /// </summary>
+        public static string ResolveAliases(string message, ServerPreloadedSettings settings)
         {
-            var rawCommand = message[1..].TrimStart();
+            var rawCommand = message.Length > 0 ? message[1..].TrimStart() : string.Empty;
+            string bestShort = null;
+            string bestLong = null;
             foreach (var (shortForm, longForm) in settings.Aliases)
             {
-                if (message[1..].TrimStart().StartsWith(shortForm))
+                if (string.IsNullOrWhiteSpace(shortForm) || !StartsWithWholeWords(rawCommand, shortForm))
                 {
-                    rawCommand = message.Replace(shortForm, longForm)[1..].TrimStart();
+                    continue;
                 }
+
+                if (bestShort == null || shortForm.Length > bestShort.Length)
+                {
+                    bestShort = shortForm;
+                    bestLong = longForm;
+                }
+            }
+
+            if (bestShort != null)
+            {
+                rawCommand = (bestLong + rawCommand[bestShort.Length..]).TrimStart();
             }
 
             var split = rawCommand.Split(' ', 2);
@@ -128,6 +147,11 @@
             }
 
             return command;
+        }
+
+        private static bool StartsWithWholeWords(string text, string prefix)
+        {
+            return text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && (text.Length == prefix.Length || char.IsWhiteSpace(text[prefix.Length]));
         }
 
         private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
