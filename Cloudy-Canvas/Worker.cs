@@ -76,6 +76,7 @@ namespace Cloudy_Canvas
 
             _client.Log += Log;
             _commands.Log += Log;
+            _commands.CommandExecuted += CommandExecutedAsync;
             _client.Ready += ReadyAsync;
 
             // Commands are installed before connecting so no message can arrive while the module list is still empty.
@@ -94,6 +95,26 @@ namespace Cloudy_Canvas
             catch (OperationCanceledException)
             {
                 // Normal shutdown.
+            }
+        }
+
+        // Commands run asynchronously (RunMode.Async), so ExecuteAsync returns before they finish. This is where their failures
+        // arrive; CommandService has already logged any exception, so all that is left is to tell the user.
+        private async Task CommandExecutedAsync(Optional<CommandInfo> command, ICommandContext context, IResult result)
+        {
+            var reply = CommandErrorReplies.For(result);
+            if (reply == null)
+            {
+                return;
+            }
+
+            try
+            {
+                await context.Channel.SendMessageAsync(reply, allowedMentions: AllowedMentions.None);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not send the error reply for command {Command}", command.IsSpecified ? command.Value.Name : "(unknown)");
             }
         }
 
