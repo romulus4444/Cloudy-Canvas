@@ -15,15 +15,20 @@
     {
         private static readonly string[] TagGroupPrefixes = { "artist:", "editor:", "character:", "species:", "episode:" };
 
+        // Each of these commands costs a request to Manebooru, so one user can only run them this often.
+        private static readonly TimeSpan CommandCooldown = TimeSpan.FromSeconds(2);
+
         private readonly BooruService _booru;
         private readonly LoggingService _logger;
         private readonly MixinsService _mixins;
+        private readonly CooldownService _cooldown;
 
-        public BooruModule(BooruService booru, LoggingService logger, MixinsService mixins)
+        public BooruModule(BooruService booru, LoggingService logger, MixinsService mixins, CooldownService cooldown)
         {
             _booru = booru;
             _logger = logger;
             _mixins = mixins;
+            _cooldown = cooldown;
         }
 
         [Command("pick", RunMode = RunMode.Async)]
@@ -121,7 +126,7 @@
         [Summary("Gets the list of spoiler tags")]
         public async Task GetSpoilersCommandAsync()
         {
-            var settings = await LoadAllowedSettingsAsync();
+            var settings = await LoadAllowedSettingsAsync(callsBooru: false);
             if (settings == null)
             {
                 return;
@@ -295,11 +300,33 @@
             }
         }
 
-        /// <summary>Loads the server's settings, or returns null if this user isn't allowed to run commands here.</summary>
-        private async Task<ServerSettings> LoadAllowedSettingsAsync()
+        /// <summary>
+        /// Loads the server's settings, or returns null if the command should stop: the user isn't allowed to run commands here, or
+        /// (for commands that call the booru) they ran one too recently.
+        /// </summary>
+        private async Task<ServerSettings> LoadAllowedSettingsAsync(bool callsBooru = true)
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            return DiscordHelper.CanUserRunThisCommand(Context, settings) ? settings : null;
+            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            {
+                return null;
+            }
+
+            if (callsBooru)
+            {
+                var cooldown = _cooldown.Check(Context.User.Id, CommandCooldown);
+                if (!cooldown.Allowed)
+                {
+                    if (cooldown.ShouldNotify)
+                    {
+                        await ReplyAsync("Slow down a little, I'll be ready again in a moment.");
+                    }
+
+                    return null;
+                }
+            }
+
+            return settings;
         }
 
         /// <summary>The filter to use in this channel. A channel with its own filter is not subject to the watchlist.</summary>

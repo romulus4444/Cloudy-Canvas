@@ -58,6 +58,7 @@ namespace Cloudy_Canvas
                 services.AddTransient<MixinsService>();
                 services.AddBooruClient();
                 services.AddSingleton<LoggingService>();
+                services.AddSingleton<CooldownService>();
                 var settings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
                 services.AddSingleton(settings);
                 services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
