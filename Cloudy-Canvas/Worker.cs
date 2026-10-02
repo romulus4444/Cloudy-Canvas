@@ -9,7 +9,6 @@ namespace Cloudy_Canvas
     using Discord;
     using Discord.Commands;
     using Discord.WebSocket;
-    using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
@@ -17,65 +16,91 @@ namespace Cloudy_Canvas
     public class Worker : BackgroundService
     {
         private readonly ILogger<Worker> _logger;
-        private readonly IServiceCollection _services;
+        private readonly IHostApplicationLifetime _lifetime;
+        private readonly IServiceProvider _services;
         private readonly DiscordSettings _settings;
+        private readonly DiscordSocketClient _client;
         private readonly CommandService _commands;
         private readonly AllPreloadedSettings _servers;
-        private DiscordSocketClient _client;
 
-        public Worker(ILogger<Worker> logger, IServiceCollection services, IOptions<DiscordSettings> settings, AllPreloadedSettings servers)
+        public Worker(
+            ILogger<Worker> logger,
+            IHostApplicationLifetime lifetime,
+            IServiceProvider services,
+            IOptions<DiscordSettings> settings,
+            DiscordSocketClient client,
+            CommandService commands,
+            AllPreloadedSettings servers)
         {
             _logger = logger;
-            _commands = new CommandService();
-            _settings = settings.Value;
+            _lifetime = lifetime;
             _services = services;
+            _settings = settings.Value;
+            _client = client;
+            _commands = commands;
             _servers = servers;
         }
 
-        private Task ReadyAsync() {
-            _logger.LogInformation("Discord signals ready");
-            return Task.CompletedTask;
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("Disconnecting from Discord");
+            await _client.StopAsync();
+            await base.StopAsync(cancellationToken);
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             try
             {
-                _client = new DiscordSocketClient();
-                var config = new DiscordSocketConfig
-                {
-                    GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.DirectMessages | GatewayIntents.MessageContent
-                };
-                _client = new DiscordSocketClient(config);
-                _client.Log += Log;
-                await _client.LoginAsync(TokenType.Bot,
-                    _settings.token, true);
-                _client.Ready += ReadyAsync;
-
-                await _client.StartAsync();
-                await _client.SetGameAsync("https://cloudycanvas.art");
-                await InstallCommandsAsync();
-
-                // Block this task until the program is closed.
-                await Task.Delay(-1);
-
-
-                while (!stoppingToken.IsCancellationRequested)
-                {
-                    _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-                    await Task.Delay(1000, stoppingToken);
-                }
+                await RunAsync(stoppingToken);
             }
-            finally
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                await _client.StopAsync();
+                // The host only logs a failed background service and stops with exit code 0; record the failure so the process
+                // exits non-zero and the service manager (systemd Restart=on-failure) can act on it.
+                _logger.LogCritical(ex, "The Discord worker failed; shutting down");
+                Environment.ExitCode = 1;
+                _lifetime.StopApplication();
             }
         }
 
-        private async Task InstallCommandsAsync()
+        private async Task RunAsync(CancellationToken stoppingToken)
         {
+            // Discord.Net only warns about an empty token and then retries a doomed connection forever; fail fast instead
+            // so the host exits with an error and the service manager can report/restart it.
+            if (string.IsNullOrWhiteSpace(_settings.token))
+            {
+                throw new InvalidOperationException(
+                    "No Discord bot token is configured. Set DiscordSettings:token (appsettings.json, user secrets or the DiscordSettings__token environment variable).");
+            }
+
+            _client.Log += Log;
+            _commands.Log += Log;
+            _client.Ready += ReadyAsync;
+
+            // Commands are installed before connecting so no message can arrive while the module list is still empty.
+            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services);
             _client.MessageReceived += HandleCommandAsync;
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly(), _services.BuildServiceProvider());
+
+            await _client.LoginAsync(TokenType.Bot, _settings.token, true);
+            await _client.StartAsync();
+            await _client.SetGameAsync("https://cloudycanvas.art");
+
+            // Run until the host asks us to stop.
+            try
+            {
+                await Task.Delay(Timeout.Infinite, stoppingToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Normal shutdown.
+            }
+        }
+
+        private Task ReadyAsync()
+        {
+            _logger.LogInformation("Discord signals ready");
+            return Task.CompletedTask;
         }
 
         private async Task HandleCommandAsync(SocketMessage messageParam)
@@ -161,13 +186,23 @@ namespace Cloudy_Canvas
                     }
                 }
 
-                await _commands.ExecuteAsync(context, parsedMessage, _services.BuildServiceProvider());
+                await _commands.ExecuteAsync(context, parsedMessage, _services);
             }
         }
 
         private Task Log(LogMessage msg)
         {
-            _logger.LogInformation(msg.ToString());
+            var level = msg.Severity switch
+            {
+                LogSeverity.Critical => LogLevel.Critical,
+                LogSeverity.Error => LogLevel.Error,
+                LogSeverity.Warning => LogLevel.Warning,
+                LogSeverity.Info => LogLevel.Information,
+                LogSeverity.Verbose => LogLevel.Debug,
+                _ => LogLevel.Trace,
+            };
+
+            _logger.Log(level, msg.Exception, "{Source}: {Message}", msg.Source, msg.Message);
             return Task.CompletedTask;
         }
 

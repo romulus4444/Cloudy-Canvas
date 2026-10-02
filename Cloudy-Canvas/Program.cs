@@ -4,6 +4,9 @@ namespace Cloudy_Canvas
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
     using Cloudy_Canvas.Settings;
+    using Discord;
+    using Discord.Commands;
+    using Discord.WebSocket;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -11,7 +14,7 @@ namespace Cloudy_Canvas
 
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             Log.Logger = new LoggerConfiguration().Enrich.FromLogContext().WriteTo
                 .Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}").CreateLogger();
@@ -20,10 +23,15 @@ namespace Cloudy_Canvas
             {
                 Log.Information("Starting up");
                 CreateHostBuilder(args).Build().Run();
+
+                // Run() returns normally even when the worker failed; the worker records that in Environment.ExitCode.
+                return Environment.ExitCode;
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "Application start-up failed");
+                // A non-zero exit code lets systemd / the Windows service manager see the failure (and restart on it).
+                Log.Fatal(ex, "Application terminated unexpectedly");
+                return 1;
             }
             finally
             {
@@ -49,7 +57,11 @@ namespace Cloudy_Canvas
                 services.AddSingleton<LoggingService>();
                 var settings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
                 services.AddSingleton(settings);
-                services.AddSingleton(services);
+                services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+                {
+                    GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.DirectMessages | GatewayIntents.MessageContent,
+                }));
+                services.AddSingleton(new CommandService());
 
                 services.AddHostedService<Worker>();
             });
