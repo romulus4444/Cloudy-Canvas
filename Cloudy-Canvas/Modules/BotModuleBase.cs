@@ -19,9 +19,10 @@ namespace Cloudy_Canvas.Modules
             MessageReference messageReference = null,
             MessageComponent components = null,
             ISticker[] stickers = null,
-            Embed[] embeds = null)
+            Embed[] embeds = null,
+            MessageFlags flags = MessageFlags.None)
         {
-            return base.ReplyAsync(message, isTTS, embed, options, allowedMentions ?? AllowedMentions.None, messageReference, components, stickers, embeds);
+            return base.ReplyAsync(message, isTTS, embed, options, allowedMentions ?? AllowedMentions.None, messageReference, components, stickers, embeds, flags);
         }
     }
 }
