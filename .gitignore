@@ -46,6 +46,7 @@ Generated\ Files/
 # NUnit
 *.VisualState.xml
 TestResult.xml
+[Tt]est[Rr]esults/
 nunit-*.xml
 
 # Build Results of an ATL Project
@@ -352,7 +353,6 @@ MigrationBackup/
 # Locally stored settings and logs
 BotSettings\**
 /Cloudy-Canvas/BotSettings
-/Cloudy-Canvas/DevSettings
 
 /.envrc
 /.direnv
@@ -360,3 +360,5 @@ BotSettings\**
 **/appsettings.json
 **/appsettings.*.json
 /result
+# Keep the sample config tracked; real appsettings*.json files hold secrets and stay local
+!**/appsettings.sample.json

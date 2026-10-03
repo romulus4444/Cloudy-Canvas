@@ -1,7 +1,6 @@
 ﻿namespace Cloudy_Canvas.Service
 {
     using System;
-    using System.IO;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
     using Discord.Commands;
@@ -9,86 +8,38 @@
 
     public class LoggingService
     {
-        private readonly ILogger<Worker> _logger;
+        private readonly ILogger<LoggingService> _logger;
 
-        public LoggingService(ILogger<Worker> logger)
+        public LoggingService(ILogger<LoggingService> logger)
         {
             _logger = logger;
         }
 
         public async Task Log(string message, SocketCommandContext context, bool file = false)
         {
+            var source = SourceOf(context);
             if (file)
             {
-                await AppendToFileAsync(message, context);
+                await AppendToFileAsync(message, source, context);
             }
 
-            var logMessage = PrepareMessageForLogging(message, context);
-            _logger.LogInformation(logMessage);
+            _logger.LogInformation("{Entry}", LogLine.Format(source, message, DateTime.UtcNow));
         }
 
-        private static string PrepareMessageForLogging(string message, SocketCommandContext context, bool fileEntry = false, bool header = false)
+        private static LogSource SourceOf(SocketCommandContext context)
         {
-            var logMessage = "";
-            if (!header)
-            {
-                logMessage += $"[{DateTime.UtcNow:s}] ";
-            }
-
-            if (context.IsPrivate)
-            {
-                if (!fileEntry)
-                {
-                    logMessage += $"DM with @{context.User.Username}#{context.User.Discriminator} ({context.User.Id})";
-                }
-
-                if (!fileEntry && !header)
-                {
-                    logMessage += ", ";
-                }
-
-                if (!header)
-                {
-                    logMessage += message;
-                }
-            }
-            else
-            {
-                if (!fileEntry)
-                {
-                    logMessage += $"server: {context.Guild.Name} ({context.Guild.Id}) #{context.Channel.Name} ({context.Channel.Id})";
-                }
-
-                if (!fileEntry && !header)
-                {
-                    logMessage += " ";
-                }
-
-                if (!header)
-                {
-                    logMessage += $"@{context.User.Username}#{context.User.Discriminator} ({context.User.Id}), ";
-                    logMessage += message;
-                }
-            }
-
-            if (fileEntry || header)
-            {
-                logMessage += Environment.NewLine;
-            }
-
-            return logMessage;
+            return context.IsPrivate
+                ? new LogSource(true, context.User.Username, context.User.Id, string.Empty, 0, string.Empty, 0)
+                : new LogSource(false, context.User.Username, context.User.Id, context.Guild.Name, context.Guild.Id, context.Channel.Name, context.Channel.Id);
         }
 
-        private static async Task AppendToFileAsync(string message, SocketCommandContext context)
+        private static async Task AppendToFileAsync(string message, LogSource source, SocketCommandContext context)
         {
             var filepath = FileHelper.SetUpFilepath(FilePathType.Channel, "<date>", "log", context);
-            if (!File.Exists(filepath))
-            {
-                await File.WriteAllTextAsync(filepath, PrepareMessageForLogging(message, context, false, true));
-            }
-
-            var logMessage = PrepareMessageForLogging(message, context, true);
-            await File.AppendAllTextAsync(filepath, logMessage);
+            var now = DateTime.UtcNow;
+            var header = LogLine.Format(source, message, now, false, true);
+            var entry = LogLine.Format(source, message, now, true);
+            await LogFile.AppendAsync(filepath, header, entry);
         }
     }
 }

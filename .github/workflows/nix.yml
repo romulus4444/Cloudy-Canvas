@@ -3,20 +3,26 @@ name: Nix Flake Check
 on:
   push:
     branches: [ mane ]
+  pull_request:
+    branches: [ mane ]
 
 jobs:
   check:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v3
-        with:
-          lfs: true
-      - uses: DeterminateSystems/nix-installer-action@main
-      - uses: cachix/cachix-action@v12
+      - uses: actions/checkout@v7
+      - uses: DeterminateSystems/nix-installer-action@v23
+      - uses: cachix/cachix-action@v17
         with:
           name: nix-community
           skipPush: true
-      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@v15
+      - name: Enable KVM
+        # The flake's checks include a NixOS VM test of service.nix, which needs hardware virtualisation.
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
       - name: Verify Flake Build
         run: |
           nix flake check \

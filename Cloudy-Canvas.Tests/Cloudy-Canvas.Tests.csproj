@@ -1,22 +1,28 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <RootNamespace>Cloudy_Canvas.Tests</RootNamespace>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.7.0" />
-    <PackageReference Include="xunit" Version="2.5.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.5.0">
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="4.0.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="coverlet.collector" Version="6.0.0">
+    <PackageReference Include="coverlet.collector" Version="10.1.0">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Cloudy-Canvas\Cloudy-Canvas.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- The sample configuration is checked against the real settings classes by SampleConfigurationTests. -->
+    <None Include="..\Cloudy-Canvas\appsettings.sample.json" Link="appsettings.sample.json" CopyToOutputDirectory="PreserveNewest" />
+    <!-- What ;help says, word for word; see HelpSnapshotTests. -->
+    <None Update="Helpers\help-snapshot.txt" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

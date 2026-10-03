@@ -1,29 +1,36 @@
 namespace Cloudy_Canvas
 {
     using System;
+    using System.Globalization;
     using Cloudy_Canvas.Helpers;
-    using Cloudy_Canvas.Service;
     using Cloudy_Canvas.Settings;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
     using Serilog;
+    using Serilog.Events;
 
     public class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
-            Log.Logger = new LoggerConfiguration().Enrich.FromLogContext().WriteTo
-                .Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}").CreateLogger();
+            // The HttpClient request log would print the full URL, which includes the Manebooru API key for image searches.
+            Log.Logger = new LoggerConfiguration().MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning).Enrich.FromLogContext().WriteTo
+                .Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}", formatProvider: CultureInfo.InvariantCulture).CreateLogger();
 
             try
             {
                 Log.Information("Starting up");
                 CreateHostBuilder(args).Build().Run();
+
+                // Run() returns normally even when the worker failed; the worker records that in Environment.ExitCode.
+                return Environment.ExitCode;
             }
             catch (Exception ex)
             {
-                Log.Fatal(ex, "Application start-up failed");
+                // A non-zero exit code lets systemd / the Windows service manager see the failure (and restart on it).
+                Log.Fatal(ex, "Application terminated unexpectedly");
+                return 1;
             }
             finally
             {
@@ -40,18 +47,12 @@ namespace Cloudy_Canvas
                 }
             }).ConfigureServices((hostContext, services) =>
             {
-                var config = hostContext.Configuration;
-                services.Configure<DiscordSettings>(config.GetSection(nameof(DiscordSettings)));
-                services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
-                services.AddTransient<IDateTimeService,DateTimeService>();
-                services.AddTransient<MixinsService>();
-                services.AddTransient<BooruService>();
-                services.AddSingleton<LoggingService>();
-                var settings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
-                services.AddSingleton(settings);
-                services.AddSingleton(services);
+                // The storage location has to be known before anything is read from it. A blank value stops the start-up with a clear message.
+                var storage = hostContext.Configuration.GetSection("Storage").Get<StorageSettings>() ?? new StorageSettings();
+                FileHelper.UseRootPath(storage.RootPath);
 
-                services.AddHostedService<Worker>();
+                var presettings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
+                services.AddCloudyCanvas(hostContext.Configuration, presettings);
             });
     }
 }

@@ -1,115 +1,216 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
+    using System;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
     using Discord.Commands;
+    using Discord;
+    using Discord.WebSocket;
+    using Serilog;
 
     public static class DiscordHelper
     {
-        public static async Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
+        private static readonly MemberRoleCache MemberCache = new(TimeSpan.FromSeconds(30));
+
+        /// <summary>
+        /// Resolves a channel given as a mention, a bare id or a name to the id of a channel in this server that the bot can see (0 if none).
+        /// A text made only of digits that isn't the id of a channel is still tried as a channel name.
+        /// </summary>
+        public static Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
         {
-            var id = ConvertChannelPingToId(channelName);
-            if (id > 0)
+            channelName = CleanInput(channelName);
+            var mention = ConvertChannelPingToId(channelName);
+            if (mention > 0)
             {
-                return await CheckIfChannelExistsAsync(id, context);
+                return Task.FromResult(CheckIfChannelExists(mention, context));
             }
 
-            return await CheckIfChannelExistsAsync(channelName, context);
-        }
-
-        public static string ConvertChannelPingToName(string channelPing, SocketCommandContext context)
-        {
-            var id = ConvertChannelPingToId(channelPing);
-            if (id <= 0)
+            var bareId = ParseSnowflake(channelName);
+            if (bareId > 0)
             {
-                return "<ERROR> Invalid channel";
+                var found = CheckIfChannelExists(bareId, context);
+                if (found > 0)
+                {
+                    return Task.FromResult(found);
+                }
             }
 
-            var channel = context.Guild.GetTextChannel(id);
-            return channel == null ? "<ERROR> Invalid channel" : channel.Name;
+            return Task.FromResult(CheckIfChannelExists(channelName, context));
         }
 
-        public static ulong GetRoleIdIfAccessAsync(string roleName, SocketCommandContext context)
+        /// <summary>
+        /// Resolves a role given as a mention, a bare id or a name to the id of a role in this server (0 if none).
+        /// A text made only of digits that isn't the id of a role is still tried as a role name.
+        /// An id the bot hasn't cached (a role made moments ago) is checked with Discord before being called invalid.
+        /// </summary>
+        public static async Task<ulong> GetRoleIdAsync(string roleName, SocketCommandContext context)
         {
-            var id = ConvertRolePingToId(roleName);
-            return id > 0 ? CheckIfRoleExistsAsync(id, context) : CheckIfRoleExistsAsync(roleName, context);
+            roleName = CleanInput(roleName);
+            var mention = ConvertRolePingToId(roleName);
+            if (mention > 0)
+            {
+                return await FindRoleByIdAsync(mention, context);
+            }
+
+            var bareId = ParseSnowflake(roleName);
+            if (bareId > 0)
+            {
+                var found = await FindRoleByIdAsync(bareId, context);
+                if (found > 0)
+                {
+                    return found;
+                }
+            }
+
+            return CheckIfRoleExists(roleName, context);
         }
 
-        public static bool DoesUserHaveAdminRoleAsync(SocketCommandContext context, ServerSettings settings)
+        private static async Task<ulong> FindRoleByIdAsync(ulong roleId, SocketCommandContext context)
+        {
+            var cached = CheckIfRoleExists(roleId, context);
+            if (cached > 0 || context.IsPrivate)
+            {
+                return cached;
+            }
+
+            try
+            {
+                var guild = await context.Client.Rest.GetGuildAsync(context.Guild.Id);
+                return guild?.GetRole(roleId)?.Id ?? 0;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Could not ask Discord whether role {Role} exists in {Guild}", roleId, context.Guild.Id);
+                return 0;
+            }
+        }
+
+        public static async Task<bool> IsBotAdminAsync(SocketCommandContext context, ServerSettings settings)
         {
             if (context.IsPrivate)
             {
                 return true;
             }
 
-            return settings.AdminRole == 0 || context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.AdminRole);
+            if (context.User is not SocketGuildUser)
+            {
+                return false;
+            }
+
+            var member = await GetGuildMemberAsync(context);
+            return AccessPolicy.IsBotAdmin(member.RoleIds, member.Permissions, settings);
         }
 
-        public static bool CanUserRunThisCommand(SocketCommandContext context, ServerSettings settings)
+        public static async Task<bool> CanUserRunCommandsAsync(SocketCommandContext context, ServerSettings settings)
         {
             if (context.IsPrivate)
             {
                 return true;
             }
 
-            if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == settings.AdminRole))
+            if (context.User is not SocketGuildUser guildUser)
             {
-                return true;
+                return false;
             }
 
-            foreach (var allowedUser in settings.AllowedUsers)
-            {
-                if (context.User.Id == allowedUser)
-                {
-                    return true;
-                }
-            }
-
-            foreach (var ignoredChannel in settings.IgnoredChannels)
-            {
-                if (context.Channel.Id == ignoredChannel)
-                {
-                    return false;
-                }
-            }
-
-            foreach (var ignoredRole in settings.IgnoredRoles)
-            {
-                if (context.Guild.GetUser(context.User.Id).Roles.Any(x => x.Id == ignoredRole))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            var member = await GetGuildMemberAsync(context);
+            return AccessPolicy.CanRunCommands(guildUser.Id, context.Channel.Id, member.RoleIds, settings);
         }
 
-        public static async Task<ulong> GeUserIdFromPingOrIfOnlySearchResultAsync(string userName, SocketCommandContext context)
+        /// <summary>
+        /// The member's current roles and permissions, straight from Discord (cached for 30 seconds).
+        /// The member held in the socket cache can't be trusted for this: the bot doesn't have the GuildMembers intent, so it is never
+        /// told when a member's roles change, and Discord.Net keeps whatever roles it first saw. A role granted or revoked after the
+        /// member first spoke (an ignored role, the bot's admin role) would otherwise not count until the bot restarted.
+        /// If Discord can't be reached this falls back to the cached member rather than failing the command.
+        /// </summary>
+        public static async Task<GuildMember> GetGuildMemberAsync(SocketCommandContext context)
         {
+            var guild = context.Guild;
+            var cachedUser = (SocketGuildUser)context.User;
+            var now = DateTime.UtcNow;
+            if (MemberCache.TryGet(guild.Id, cachedUser.Id, now, out var known))
+            {
+                return known;
+            }
+
+            try
+            {
+                var fresh = await context.Client.Rest.GetGuildUserAsync(guild.Id, cachedUser.Id);
+                if (fresh != null)
+                {
+                    var roleIds = fresh.RoleIds.ToList();
+                    var permissions = guild.OwnerId == cachedUser.Id
+                        ? GuildPermissions.All
+                        : AccessPolicy.CombinePermissions(
+                            roleIds.Select(id => guild.GetRole(id)?.Permissions.RawValue ?? 0).Append(guild.EveryoneRole.Permissions.RawValue));
+                    var member = new GuildMember(roleIds, permissions);
+                    MemberCache.Set(guild.Id, cachedUser.Id, now, member);
+                    return member;
+                }
+            }
+            catch (Exception ex)
+            {
+                // Not cached, so the next command tries Discord again.
+                Log.Warning(ex, "Could not fetch the current roles of {User} in {Guild}; using the cached ones", cachedUser.Id, guild.Id);
+            }
+
+            return new GuildMember(cachedUser.Roles.Select(role => role.Id).ToList(), cachedUser.GuildPermissions);
+        }
+
+        public static async Task<ulong> GetUserIdAsync(string userName, SocketCommandContext context)
+        {
+            userName = CleanInput(userName);
             var userId = ConvertUserPingToId(userName);
             if (userId > 0)
             {
                 return userId;
             }
 
+            // A bare id is taken as it is, the same as a mention: the member may not be cached, or may have left (and still need removing).
+            var bareId = ParseSnowflake(userName);
+            if (bareId > 0)
+            {
+                return bareId;
+            }
+
             var userList = await context.Guild.SearchUsersAsync(userName);
             return userList.Count != 1 ? 0 : userList.First().Id;
         }
 
-        public static string CheckAliasesAsync(string message, ServerPreloadedSettings settings)
+        /// <summary>
+        /// Strips the prefix character from <paramref name="message"/> and expands a command alias at the start of what is left.
+        /// An alias only matches a whole leading word (or leading words, for aliases containing spaces) and only the alias itself is
+        /// replaced, never text in the arguments. If several aliases match, the longest one wins. The command word is lower-cased.
+        /// </summary>
+        public static string ResolveAliases(string message, ServerPreloadedSettings settings)
         {
-            var rawCommand = message[1..].TrimStart();
+            var rawCommand = message.Length > 0 ? message[1..].TrimStart() : string.Empty;
+            string bestShort = null;
+            string bestLong = null;
             foreach (var (shortForm, longForm) in settings.Aliases)
             {
-                if (message[1..].TrimStart().StartsWith(shortForm))
+                if (string.IsNullOrWhiteSpace(shortForm) || !StartsWithWholeWords(rawCommand, shortForm))
                 {
-                    rawCommand = message.Replace(shortForm, longForm)[1..].TrimStart();
+                    continue;
+                }
+
+                if (bestShort == null || shortForm.Length > bestShort.Length)
+                {
+                    bestShort = shortForm;
+                    bestLong = longForm;
                 }
             }
 
+            if (bestShort != null)
+            {
+                rawCommand = (bestLong + rawCommand[bestShort.Length..]).TrimStart();
+            }
+
             var split = rawCommand.Split(' ', 2);
-            var command = split[0].ToLower();
+            var command = split[0].ToLowerInvariant();
             if (split.Length > 1)
             {
                 command += " " + split[1];
@@ -118,17 +219,39 @@
             return command;
         }
 
-        private static async Task<ulong> CheckIfChannelExistsAsync(string channelName, SocketCommandContext context)
+        private static bool StartsWithWholeWords(string text, string prefix)
         {
-            var cloudyCanvas = await context.Channel.GetUserAsync(context.Client.CurrentUser.Id);
-            if (context.IsPrivate)
+            return text.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) && (text.Length == prefix.Length || char.IsWhiteSpace(text[prefix.Length]));
+        }
+
+        private static ulong CheckIfChannelExists(string channelName, SocketCommandContext context)
+        {
+            var name = CleanInput(channelName).TrimStart('#');
+            return FindChannelCloudyCanBeSeen(context, channel => string.Equals(CleanInput(channel.Name), name, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private static ulong CheckIfChannelExists(ulong channelId, SocketCommandContext context)
+        {
+            return FindChannelCloudyCanBeSeen(context, channel => channel.Id == channelId);
+        }
+
+        /// <summary>
+        /// The id of the first matching text channel in the server that the bot is able to see, or 0. This asks Discord's permission
+        /// model directly; the old check looked for the bot among every member of every channel, which is slow in large servers
+        /// and unreliable when the member cache is incomplete.
+        /// </summary>
+        private static ulong FindChannelCloudyCanBeSeen(SocketCommandContext context, Func<SocketTextChannel, bool> matches)
+        {
+            var me = context.Guild?.CurrentUser;
+            if (context.IsPrivate || me == null)
             {
                 return 0;
             }
 
+            // Channel names aren't unique (the same name can exist in several categories), so keep looking past one the bot can't see.
             foreach (var channel in context.Guild.TextChannels)
             {
-                if (channel.Name == channelName && channel.Users.Contains(cloudyCanvas))
+                if (matches(channel) && me.GetPermissions(channel).ViewChannel)
                 {
                     return channel.Id;
                 }
@@ -137,59 +260,91 @@
             return 0;
         }
 
-        private static async Task<ulong> CheckIfChannelExistsAsync(ulong channelId, SocketCommandContext context)
+        /// <summary>The prefix to listen for in a server: the configured override if there is one, otherwise the server's own.</summary>
+        public static char EffectivePrefix(char serverPrefix, char? prefixOverride)
         {
-            var cloudyCanvas = await context.Channel.GetUserAsync(context.Client.CurrentUser.Id);
+            return prefixOverride ?? serverPrefix;
+        }
+
+        /// <summary>
+        /// A prefix must be punctuation or a symbol; letters, digits and whitespace would make normal chat trigger the bot,
+        /// and Discord's mention/markup characters would clash with formatting.
+        /// </summary>
+        public static bool IsValidPrefix(char prefix)
+        {
+            return (char.IsPunctuation(prefix) || char.IsSymbol(prefix)) && "@#`<>".IndexOf(prefix) < 0;
+        }
+
+        /// <summary>
+        /// The text without the invisible formatting characters (zero-width spaces, word joiners and the like) that copying a name out of
+        /// Discord or a web page often brings along, and without surrounding spaces. A name pasted with one never matched anything.
+        /// </summary>
+        public static string CleanInput(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return text ?? string.Empty;
+            }
+
+            return string.Concat(text.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.Format)).Trim();
+        }
+
+        /// <summary>
+        /// Returns the id when the text is a bare Discord id (what you get from "Copy ID" with Developer Mode on): 17 to 20 digits.
+        /// Anything else, including short numbers that are more likely a name or a typo, gives 0.
+        /// </summary>
+        public static ulong ParseSnowflake(string text)
+        {
+            var trimmed = text?.Trim();
+            if (string.IsNullOrEmpty(trimmed) || trimmed.Length is < 17 or > 20 || !trimmed.All(char.IsAsciiDigit))
+            {
+                return 0;
+            }
+
+            return ulong.TryParse(trimmed, NumberStyles.None, CultureInfo.InvariantCulture, out var id) ? id : 0;
+        }
+
+        /// <summary>Returns the channel id from a <c>&lt;#id&gt;</c> mention, or 0 if the text is not a valid channel mention.</summary>
+        public static ulong ConvertChannelPingToId(string channelPing)
+        {
+            return ParseMention(channelPing, "<#");
+        }
+
+        /// <summary>Returns the user id from a <c>&lt;@id&gt;</c> or legacy <c>&lt;@!id&gt;</c> mention, or 0 if the text is not a valid user mention.</summary>
+        public static ulong ConvertUserPingToId(string userPing)
+        {
+            var id = ParseMention(userPing, "<@!");
+            return id > 0 ? id : ParseMention(userPing, "<@");
+        }
+
+        private static ulong ParseMention(string text, string prefix)
+        {
+            if (text == null)
+            {
+                return 0;
+            }
+
+            var trimmed = text.Trim();
+            if (!trimmed.StartsWith(prefix, StringComparison.Ordinal) || !trimmed.EndsWith('>'))
+            {
+                return 0;
+            }
+
+            var digits = trimmed[prefix.Length..^1];
+            return ulong.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var id) ? id : 0;
+        }
+
+        private static ulong CheckIfRoleExists(string roleName, SocketCommandContext context)
+        {
             if (context.IsPrivate)
             {
                 return 0;
             }
 
-            foreach (var channel in context.Guild.TextChannels)
-            {
-                if (channel.Id == channelId && channel.Users.Contains(cloudyCanvas))
-                {
-                    return channel.Id;
-                }
-            }
-
-            return 0;
-        }
-
-        private static ulong ConvertChannelPingToId(string channelPing)
-        {
-            if (!channelPing.Contains("<#") || !channelPing.Contains(">"))
-            {
-                return 0;
-            }
-
-            var frontTrim = channelPing[2..];
-            var trim = frontTrim.Split('>', 2)[0];
-            return ulong.Parse(trim);
-        }
-
-        private static ulong ConvertUserPingToId(string userPing)
-        {
-            if (!userPing.Contains("<@!") || !userPing.Contains(">"))
-            {
-                return 0;
-            }
-
-            var frontTrim = userPing[3..];
-            var trim = frontTrim.Split('>', 2)[0];
-            return ulong.Parse(trim);
-        }
-
-        private static ulong CheckIfRoleExistsAsync(string roleName, SocketCommandContext context)
-        {
-            if (context.IsPrivate)
-            {
-                return 0;
-            }
-
+            var name = CleanInput(roleName).TrimStart('@');
             foreach (var role in context.Guild.Roles)
             {
-                if (role.Name == roleName)
+                if (string.Equals(CleanInput(role.Name).TrimStart('@'), name, StringComparison.OrdinalIgnoreCase))
                 {
                     return role.Id;
                 }
@@ -198,7 +353,7 @@
             return 0;
         }
 
-        private static ulong CheckIfRoleExistsAsync(ulong roleId, SocketCommandContext context)
+        private static ulong CheckIfRoleExists(ulong roleId, SocketCommandContext context)
         {
             if (context.IsPrivate)
             {
@@ -216,16 +371,10 @@
             return 0;
         }
 
-        private static ulong ConvertRolePingToId(string rolePing)
+        /// <summary>Returns the role id from a <c>&lt;@&amp;id&gt;</c> mention, or 0 if the text is not a valid role mention.</summary>
+        public static ulong ConvertRolePingToId(string rolePing)
         {
-            if (!rolePing.Contains("<@&") || !rolePing.Contains(">"))
-            {
-                return 0;
-            }
-
-            var frontTrim = rolePing[3..];
-            var trim = frontTrim.Split('>', 2)[0];
-            return ulong.Parse(trim);
+            return ParseMention(rolePing, "<@&");
         }
     }
 }

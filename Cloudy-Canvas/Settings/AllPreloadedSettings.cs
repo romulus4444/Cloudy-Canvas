@@ -1,16 +1,17 @@
 ﻿namespace Cloudy_Canvas.Settings
 {
-    using System.Collections.Generic;
+    using System.Collections.Concurrent;
 
     public class AllPreloadedSettings
     {
         public AllPreloadedSettings()
         {
-            Settings = new Dictionary<ulong, ServerPreloadedSettings>();
-            GuildList = new Dictionary<ulong, ulong>();
+            Settings = new ConcurrentDictionary<ulong, ServerPreloadedSettings>();
+            GuildList = new ConcurrentDictionary<ulong, ulong>();
         }
 
-        public Dictionary<ulong, ServerPreloadedSettings> Settings { get; set; }
-        public Dictionary<ulong, ulong> GuildList { get; set; }
+        // Shared by every gateway handler and command, so these must tolerate concurrent access.
+        public ConcurrentDictionary<ulong, ServerPreloadedSettings> Settings { get; set; }
+        public ConcurrentDictionary<ulong, ulong> GuildList { get; set; }
     }
 }

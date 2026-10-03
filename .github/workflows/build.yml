@@ -1,4 +1,4 @@
-name: Test and Publish
+name: Build and Test
 
 on:
   push:
@@ -7,12 +7,12 @@ on:
   pull_request:
       branches:
         - mane
-  release:
-    types:
-      - created
+
+permissions:
+  contents: read
 
 env:
-  DOTNET_VERSION: '7.0.x' # The .NET SDK version to use
+  DOTNET_VERSION: '10.0.x' # The .NET SDK version to use
 
 jobs:
   tests:
@@ -20,23 +20,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
-      - name: Setup .NET Core
-        uses: actions/setup-dotnet@v3
+        uses: actions/checkout@v7
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v6
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
-      - name: Cache
-        uses: actions/cache@v2
-        with:
-          path: |
-            Cloudy-Canvas/bin
-            Cloudy-Canvas/obj
-            Cloudy-Canvas.Tests/bin
-            Cloudy-Canvas.Tests/obj
-          key: dotnet-dep-builds
+          cache: true
+          cache-dependency-path: '**/packages.lock.json'
       - name: Install dependencies
-        run: dotnet restore
+        run: dotnet restore --locked-mode
       - name: Build
         run: dotnet build --configuration Release --no-restore
       - name: Test
-        run: dotnet test --no-restore --verbosity normal
+        run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults
+      - name: Coverage summary
+        # Shows line coverage per class on the run's summary page and fails if the total drops below the floor.
+        # Raise the floor as coverage improves; the classes that need a live Discord connection are checked by hand.
+        run: |
+          report=$(find TestResults -name coverage.cobertura.xml | head -n 1)
+          { echo "## Test coverage"; echo; python3 .github/scripts/coverage_summary.py "$report" --threshold 60; } >> "$GITHUB_STEP_SUMMARY"

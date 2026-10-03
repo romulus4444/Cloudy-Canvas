@@ -17,8 +17,8 @@
             pname = "Cloudy-Canvas";
             version = "0.0.1";
             src = ./Cloudy-Canvas;
-            dotnet-sdk = pkgs.dotnet-sdk_7;
-            dotnet-runtime = pkgs.dotnet-runtime_7;
+            dotnet-sdk = pkgs.dotnet-sdk_10;
+            dotnet-runtime = pkgs.dotnet-runtime_10;
             selfContainedBuild = true;
             buildType = "Release";
             runtimeDeps = with pkgs; [
@@ -40,6 +40,10 @@
         packages.cloudy-canvas = cloudy;
         packages.default = cloudy;
 
+        # A VM test of service.nix; it needs KVM, so only on Linux.
+        checks = nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          service = import ./service-test.nix self pkgs;
+        };
 
         formatter = nixpkgs.legacyPackages.${system}.nixpkgs-fmt;
 
@@ -54,7 +58,7 @@
           in
           pkgs.mkShell {
             buildInputs = with pkgs; [
-              dotnet-sdk_7
+              dotnet-sdk_10
             ];
           };
       });

@@ -1,0 +1,5 @@
+# Commits that only change formatting and should not show up in git blame.
+# GitHub honours this file automatically. Locally run once:  git config blame.ignoreRevsFile .git-blame-ignore-revs
+
+# Convert the remaining CRLF files to LF (line endings only)
+89a9651f35110feb264301ac7b5f852ea5983d29
