@@ -20,6 +20,7 @@
         /// </summary>
         public static Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
         {
+            channelName = CleanInput(channelName);
             var mention = ConvertChannelPingToId(channelName);
             if (mention > 0)
             {
@@ -46,6 +47,7 @@
         /// </summary>
         public static async Task<ulong> GetRoleIdAsync(string roleName, SocketCommandContext context)
         {
+            roleName = CleanInput(roleName);
             var mention = ConvertRolePingToId(roleName);
             if (mention > 0)
             {
@@ -160,6 +162,7 @@
 
         public static async Task<ulong> GetUserIdAsync(string userName, SocketCommandContext context)
         {
+            userName = CleanInput(userName);
             var userId = ConvertUserPingToId(userName);
             if (userId > 0)
             {
@@ -223,8 +226,8 @@
 
         private static ulong CheckIfChannelExists(string channelName, SocketCommandContext context)
         {
-            var name = channelName.Trim().TrimStart('#');
-            return FindChannelCloudyCanBeSeen(context, channel => string.Equals(channel.Name, name, StringComparison.OrdinalIgnoreCase));
+            var name = CleanInput(channelName).TrimStart('#');
+            return FindChannelCloudyCanBeSeen(context, channel => string.Equals(CleanInput(channel.Name), name, StringComparison.OrdinalIgnoreCase));
         }
 
         private static ulong CheckIfChannelExists(ulong channelId, SocketCommandContext context)
@@ -270,6 +273,20 @@
         public static bool IsValidPrefix(char prefix)
         {
             return (char.IsPunctuation(prefix) || char.IsSymbol(prefix)) && "@#`<>".IndexOf(prefix) < 0;
+        }
+
+        /// <summary>
+        /// The text without the invisible formatting characters (zero-width spaces, word joiners and the like) that copying a name out of
+        /// Discord or a web page often brings along, and without surrounding spaces. A name pasted with one never matched anything.
+        /// </summary>
+        public static string CleanInput(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return text ?? string.Empty;
+            }
+
+            return string.Concat(text.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.Format)).Trim();
         }
 
         /// <summary>
@@ -324,10 +341,10 @@
                 return 0;
             }
 
-            var name = roleName.Trim().TrimStart('@');
+            var name = CleanInput(roleName).TrimStart('@');
             foreach (var role in context.Guild.Roles)
             {
-                if (string.Equals(role.Name.TrimStart('@'), name, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(CleanInput(role.Name).TrimStart('@'), name, StringComparison.OrdinalIgnoreCase))
                 {
                     return role.Id;
                 }

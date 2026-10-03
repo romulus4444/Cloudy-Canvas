@@ -50,6 +50,20 @@ namespace Cloudy_Canvas.Tests.Helpers
         }
 
         [Theory]
+        [InlineData("admin", "admin")]
+        [InlineData("⁠admin", "admin")] // word joiner, as pasted from Discord
+        [InlineData("ad​min", "admin")] // zero-width space
+        [InlineData("﻿admin‍", "admin")] // byte order mark, zero-width joiner
+        [InlineData("  Server Moderators  ", "Server Moderators")] // inner spaces are kept
+        [InlineData("⁠<#123>", "<#123>")]
+        [InlineData("", "")]
+        [InlineData(null, "")]
+        public void InvisibleCharactersArePastedAlongWithNamesAndAreIgnored(string text, string expected)
+        {
+            Assert.Equal(expected, DiscordHelper.CleanInput(text));
+        }
+
+        [Theory]
         [InlineData("221742476153716736", 221742476153716736UL)]
         [InlineData("  221742476153716736  ", 221742476153716736UL)]
         [InlineData("12345678901234567", 12345678901234567UL)] // 17 digits: the oldest ids
