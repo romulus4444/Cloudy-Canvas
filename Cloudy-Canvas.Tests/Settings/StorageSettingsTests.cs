@@ -1,53 +1,21 @@
 namespace Cloudy_Canvas.Tests.Settings
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
     using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Settings;
-    using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
-    using Microsoft.Extensions.Hosting;
     using Microsoft.Extensions.Options;
     using Xunit;
 
     public class StorageSettingsTests
     {
-        private sealed class StubLifetime : IHostApplicationLifetime
-        {
-            public System.Threading.CancellationToken ApplicationStarted => System.Threading.CancellationToken.None;
-
-            public System.Threading.CancellationToken ApplicationStopping => System.Threading.CancellationToken.None;
-
-            public System.Threading.CancellationToken ApplicationStopped => System.Threading.CancellationToken.None;
-
-            public void StopApplication()
-            {
-            }
-        }
-
-        private static ServiceProvider Build(params (string Key, string Value)[] settings)
-        {
-            var values = new List<KeyValuePair<string, string>> { new("DiscordSettings:token", "x") };
-            foreach (var (key, value) in settings)
-            {
-                values.Add(new KeyValuePair<string, string>(key, value));
-            }
-
-            var config = new ConfigurationBuilder().AddInMemoryCollection(values).Build();
-            var services = new ServiceCollection();
-            services.AddLogging();
-            services.AddSingleton<IHostApplicationLifetime, StubLifetime>();
-            services.AddCloudyCanvas(config, new AllPreloadedSettings());
-            return services.BuildServiceProvider();
-        }
-
         [Fact]
         public void TheDefaultIsTheFolderTheBotAlwaysUsed()
         {
             Assert.Equal("botsettings", new StorageSettings().RootPath);
             Assert.Equal("botsettings", StorageSettings.DefaultRootPath);
-            using var provider = Build();
+            using var provider = TestServices.Build();
 
             Assert.Equal("botsettings", provider.GetRequiredService<IOptions<StorageSettings>>().Value.RootPath);
         }
@@ -58,7 +26,7 @@ namespace Cloudy_Canvas.Tests.Settings
         [InlineData("C:\\Bots\\Cloudy\\data")]
         public void TheRootPathComesFromConfiguration(string path)
         {
-            using var provider = Build(("Storage:RootPath", path));
+            using var provider = TestServices.Build(("Storage:RootPath", path));
 
             Assert.Equal(path, provider.GetRequiredService<IOptions<StorageSettings>>().Value.RootPath);
         }
@@ -68,7 +36,7 @@ namespace Cloudy_Canvas.Tests.Settings
         [InlineData("   ")]
         public void ABlankRootPathIsRejected(string path)
         {
-            using var provider = Build(("Storage:RootPath", path));
+            using var provider = TestServices.Build(("Storage:RootPath", path));
 
             var error = Assert.Throws<OptionsValidationException>(() => provider.GetRequiredService<IOptions<StorageSettings>>().Value);
             Assert.Contains("Storage:RootPath", error.Message);

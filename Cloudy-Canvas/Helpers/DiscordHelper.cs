@@ -236,6 +236,12 @@
             return 0;
         }
 
+        /// <summary>The prefix to listen for in a server: the configured override if there is one, otherwise the server's own.</summary>
+        public static char EffectivePrefix(char serverPrefix, char? prefixOverride)
+        {
+            return prefixOverride ?? serverPrefix;
+        }
+
         /// <summary>
         /// A prefix must be punctuation or a symbol; letters, digits and whitespace would make normal chat trigger the bot,
         /// and Discord's mention/markup characters would clash with formatting.

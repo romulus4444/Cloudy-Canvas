@@ -1,5 +1,6 @@
 namespace Cloudy_Canvas
 {
+    using Cloudy_Canvas.Helpers;
     using Cloudy_Canvas.Service;
     using Cloudy_Canvas.Settings;
     using Discord;
@@ -13,7 +14,12 @@ namespace Cloudy_Canvas
         /// <summary>Registers everything the bot needs. Kept in one place so a test can build and validate the same container.</summary>
         public static IServiceCollection AddCloudyCanvas(this IServiceCollection services, IConfiguration config, AllPreloadedSettings presettings)
         {
-            services.Configure<DiscordSettings>(config.GetSection(nameof(DiscordSettings)));
+            services.AddOptions<DiscordSettings>()
+                .Bind(config.GetSection(nameof(DiscordSettings)))
+                .Validate(
+                    settings => settings.PrefixOverride is not { } prefix || DiscordHelper.IsValidPrefix(prefix),
+                    "DiscordSettings:PrefixOverride must be a single punctuation or symbol character (not @, # ` < or >).")
+                .ValidateOnStart();
             services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
             services.Configure<LogRetentionSettings>(config.GetSection("LogRetention"));
             services.AddOptions<StorageSettings>()
