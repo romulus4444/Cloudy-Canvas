@@ -3,9 +3,13 @@ root = true
 
 [*]
 charset = utf-8
+end_of_line = lf
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
+
+[*.sln]
+end_of_line = crlf
 
 [*.{yml,yaml,json,nix,csproj,props}]
 indent_size = 2
@@ -14,8 +18,7 @@ indent_size = 2
 trim_trailing_whitespace = false
 
 [*.cs]
-# The C# sources use Windows line endings and block-scoped namespaces with the usings inside them.
-end_of_line = crlf
+# Block-scoped namespaces with the usings inside them.
 csharp_using_directive_placement = inside_namespace:suggestion
 csharp_style_namespace_declarations = block_scoped:suggestion
 dotnet_sort_system_directives_first = true
