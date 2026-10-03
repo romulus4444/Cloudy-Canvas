@@ -14,16 +14,54 @@
     {
         private static readonly MemberRoleCache MemberCache = new(TimeSpan.FromSeconds(30));
 
+        /// <summary>
+        /// Resolves a channel given as a mention, a bare id or a name to the id of a channel in this server that the bot can see (0 if none).
+        /// A text made only of digits that isn't the id of a channel is still tried as a channel name.
+        /// </summary>
         public static Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
         {
-            var id = ConvertChannelPingToId(channelName);
-            return Task.FromResult(id > 0 ? CheckIfChannelExists(id, context) : CheckIfChannelExists(channelName, context));
+            var mention = ConvertChannelPingToId(channelName);
+            if (mention > 0)
+            {
+                return Task.FromResult(CheckIfChannelExists(mention, context));
+            }
+
+            var bareId = ParseSnowflake(channelName);
+            if (bareId > 0)
+            {
+                var found = CheckIfChannelExists(bareId, context);
+                if (found > 0)
+                {
+                    return Task.FromResult(found);
+                }
+            }
+
+            return Task.FromResult(CheckIfChannelExists(channelName, context));
         }
 
+        /// <summary>
+        /// Resolves a role given as a mention, a bare id or a name to the id of a role in this server (0 if none).
+        /// A text made only of digits that isn't the id of a role is still tried as a role name.
+        /// </summary>
         public static ulong GetRoleIdIfAccessAsync(string roleName, SocketCommandContext context)
         {
-            var id = ConvertRolePingToId(roleName);
-            return id > 0 ? CheckIfRoleExistsAsync(id, context) : CheckIfRoleExistsAsync(roleName, context);
+            var mention = ConvertRolePingToId(roleName);
+            if (mention > 0)
+            {
+                return CheckIfRoleExistsAsync(mention, context);
+            }
+
+            var bareId = ParseSnowflake(roleName);
+            if (bareId > 0)
+            {
+                var found = CheckIfRoleExistsAsync(bareId, context);
+                if (found > 0)
+                {
+                    return found;
+                }
+            }
+
+            return CheckIfRoleExistsAsync(roleName, context);
         }
 
         public static async Task<bool> DoesUserHaveAdminRoleAsync(SocketCommandContext context, ServerSettings settings)
@@ -105,6 +143,13 @@
             if (userId > 0)
             {
                 return userId;
+            }
+
+            // A bare id is taken as it is, the same as a mention: the member may not be cached, or may have left (and still need removing).
+            var bareId = ParseSnowflake(userName);
+            if (bareId > 0)
+            {
+                return bareId;
             }
 
             var userList = await context.Guild.SearchUsersAsync(userName);
@@ -191,6 +236,21 @@
             return 0;
         }
 
+        /// <summary>
+        /// Returns the id when the text is a bare Discord id (what you get from "Copy ID" with Developer Mode on): 17 to 20 digits.
+        /// Anything else, including short numbers that are more likely a name or a typo, gives 0.
+        /// </summary>
+        public static ulong ParseSnowflake(string text)
+        {
+            var trimmed = text?.Trim();
+            if (string.IsNullOrEmpty(trimmed) || trimmed.Length is < 17 or > 20 || !trimmed.All(char.IsAsciiDigit))
+            {
+                return 0;
+            }
+
+            return ulong.TryParse(trimmed, NumberStyles.None, CultureInfo.InvariantCulture, out var id) ? id : 0;
+        }
+
         /// <summary>Returns the channel id from a <c>&lt;#id&gt;</c> mention, or 0 if the text is not a valid channel mention.</summary>
         public static ulong ConvertChannelPingToId(string channelPing)
         {
@@ -228,9 +288,10 @@
                 return 0;
             }
 
+            var name = roleName.Trim().TrimStart('@');
             foreach (var role in context.Guild.Roles)
             {
-                if (role.Name == roleName)
+                if (string.Equals(role.Name.TrimStart('@'), name, StringComparison.OrdinalIgnoreCase))
                 {
                     return role.Id;
                 }
