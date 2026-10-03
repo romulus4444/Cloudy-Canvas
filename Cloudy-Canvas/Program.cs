@@ -3,6 +3,7 @@ namespace Cloudy_Canvas
     using System;
     using System.Globalization;
     using Cloudy_Canvas.Helpers;
+    using Cloudy_Canvas.Settings;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
     using Microsoft.Extensions.Hosting;
@@ -46,6 +47,10 @@ namespace Cloudy_Canvas
                 }
             }).ConfigureServices((hostContext, services) =>
             {
+                // The storage location has to be known before anything is read from it. A blank value stops the start-up with a clear message.
+                var storage = hostContext.Configuration.GetSection("Storage").Get<StorageSettings>() ?? new StorageSettings();
+                FileHelper.UseRootPath(storage.RootPath);
+
                 var presettings = FileHelper.LoadAllPresettingsAsync().GetAwaiter().GetResult();
                 services.AddCloudyCanvas(hostContext.Configuration, presettings);
             });

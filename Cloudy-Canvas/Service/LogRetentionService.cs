@@ -32,7 +32,7 @@ namespace Cloudy_Canvas.Service
             }
 
             _logger.LogInformation("Deleting log files older than {Days} days", _settings.RetentionDays);
-            var serversDirectory = Path.Combine(DevSettings.RootPath, "servers");
+            var serversDirectory = Path.Combine(FileHelper.RootPath, "servers");
             try
             {
                 while (!stoppingToken.IsCancellationRequested)

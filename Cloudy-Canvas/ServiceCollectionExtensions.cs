@@ -16,6 +16,10 @@ namespace Cloudy_Canvas
             services.Configure<DiscordSettings>(config.GetSection(nameof(DiscordSettings)));
             services.Configure<ManebooruSettings>(config.GetSection(nameof(ManebooruSettings)));
             services.Configure<LogRetentionSettings>(config.GetSection("LogRetention"));
+            services.AddOptions<StorageSettings>()
+                .Bind(config.GetSection("Storage"))
+                .Validate(settings => !string.IsNullOrWhiteSpace(settings.RootPath), "Storage:RootPath must not be empty.")
+                .ValidateOnStart();
 
             services.AddTransient<IDateTimeService, DateTimeService>();
             services.AddTransient<MixinsService>();
