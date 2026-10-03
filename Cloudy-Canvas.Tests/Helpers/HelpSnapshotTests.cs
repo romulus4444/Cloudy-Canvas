@@ -5,6 +5,7 @@ namespace Cloudy_Canvas.Tests.Helpers
     using System.Linq;
     using System.Runtime.CompilerServices;
     using System.Text;
+    using System.Text.RegularExpressions;
     using Cloudy_Canvas.Helpers;
     using Xunit;
 
@@ -26,6 +27,9 @@ namespace Cloudy_Canvas.Tests.Helpers
             string.Empty, "pick", "pickrecent", "id", "tags", "featured", "getspoilers", "report", "setup", "watchlist", "log", "echo", "setprefix",
             "listentobots", "safemode", "alias", "getsettings", "refreshlists", "origin", "about", "help", "broadcast", "nonsense",
         };
+
+        // A ";" straight in front of a word is the default prefix left in the text; a ";" in a sentence is just punctuation.
+        private static readonly Regex DefaultPrefixedCommand = new(";[A-Za-z]", RegexOptions.CultureInvariant);
 
         private static string SourceDirectory([CallerFilePath] string path = "") => Path.GetDirectoryName(path);
 
@@ -81,13 +85,12 @@ namespace Cloudy_Canvas.Tests.Helpers
         {
             foreach (var topic in Topics)
             {
-                var reply = HelpText.Reply('!', true, topic, string.Empty);
-                Assert.DoesNotContain(";", reply);
+                Assert.DoesNotMatch(DefaultPrefixedCommand, HelpText.Reply('!', true, topic, string.Empty));
             }
 
             foreach (var setting in AdminSettings)
             {
-                Assert.DoesNotContain(";", HelpText.Reply('!', true, "admin", setting));
+                Assert.DoesNotMatch(DefaultPrefixedCommand, HelpText.Reply('!', true, "admin", setting));
             }
         }
     }

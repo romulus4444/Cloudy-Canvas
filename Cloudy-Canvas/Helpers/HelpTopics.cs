@@ -195,7 +195,7 @@ namespace Cloudy_Canvas.Helpers
                 new[]
                 {
                     "`{p}tags <number>`",
-                    "Posts the list of tags on Image <number> from Manebooru, if it is available, including identifying any tags that are spoilered.",
+                    "Posts the list of tags on Image #<number> from Manebooru, if it is available, including identifying any tags that are spoilered.",
                 }),
             new HelpTopic(
                 "featured",
@@ -225,7 +225,7 @@ namespace Cloudy_Canvas.Helpers
                 new[]
                 {
                     "`{p}report <id> <reason>`",
-                    "Alerts the admins about image #<id> with an optional <reason> for the admins to see. Only use this for images that violate the server rules!",
+                    "Alerts the admins about image #<id> with an optional <reason> for the admins to see. Only use this for images that violate the server rules; this is not a report to Manebooru itself!",
                 }),
             new HelpTopic(
                 "setup",
@@ -236,11 +236,10 @@ namespace Cloudy_Canvas.Helpers
                 {
                     "`{p}setup <filter ID> <admin channel> <admin role>`",
                     "*Only a server administrator may use this command.*",
-                    "Initial bot setup. Sets <filter ID> as the public Manebooru filter to use, <admin channel> for important admin output messages, and <admin role> as users who are allowed to use admin module commands. Validates that <Filter ID> is useable and if not, uses Filter 175.",
+                    "Initial bot setup. Run this before doing anything else when adding Cloudy Canvas to your server! Sets <filter ID> as the public Manebooru filter to use, <admin channel> for important admin output messages, and <admin role> as users who are allowed to use admin module commands. Validates that <Filter ID> is useable and if not, uses Filter 175.",
                 },
                 ReadmeNotes: new[]
                 {
-                    "Run this before doing anything else when adding Cloudy Canvas to your server!",
                     "Filters are viewable at `https://manebooru.art/filters/<filter ID>`. All alert channels are defaulted to the admin channel, and all alert roles and pings are turned off. The spoiler list is then built, which can take several minutes, depending on how many tags in the filter are spoilered. Please wait until it is done being built before running more commands; Cloudy will tell you when she is ready. This is a one-time process, unless manually initiated later.",
                 }),
             new HelpTopic("admin", HelpSection.Admin, true, "admin ...", AdminOverview()),
@@ -306,7 +305,7 @@ namespace Cloudy_Canvas.Helpers
                 {
                     "`{p}listentobots <pos/neg>`",
                     "*Only users with the specified admin role may use this command.*",
-                    "Toggles whether or not to run commands posted by other bots. Accepts y/n, yes/no, on/off, or true/false.",
+                    "Toggles whether or not to run commands posted by other bots. Accepts `y/n`, `yes/no`, `on/off`, or `true/false`.",
                 }),
             new HelpTopic(
                 "safemode",
@@ -317,7 +316,7 @@ namespace Cloudy_Canvas.Helpers
                 {
                     "`{p}safemode <pos/neg>`",
                     "*Only users with the specified admin role may use this command.*",
-                    "Toggles whether or not to automatically append `safe` to all booru queries. This overrides any channel-specific filters! Accepts y/n, yes/no, on/off, or true/false.",
+                    "Toggles whether or not to automatically append `safe` to all booru queries. This overrides any channel-specific filters! Accepts `y/n`, `yes/no`, `on/off`, or `true/false`.",
                 }),
             new HelpTopic(
                 "alias",
