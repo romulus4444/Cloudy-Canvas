@@ -20,11 +20,28 @@ Important terms:
 
 ## Running your own copy
 
+You need the [.NET 10 SDK](https://dotnet.microsoft.com/download), or Nix: `nix build .#cloudy-canvas` builds the bot from the included flake, and `service.nix` is a NixOS module that runs it as a service. From the repository folder, `dotnet run --project Cloudy-Canvas` starts the bot and `dotnet test` runs the tests.
+
+Create an application in the [Discord Developer Portal](https://discord.com/developers/applications), add a bot to it and turn on its **Message Content Intent**: it is a privileged intent, and Cloudy reads the text of messages to find commands. Cloudy does not need the Server Members or Presence intents. To invite your own copy, use the invite link above with your application's client ID in place of `828682017868218445` (its permissions value is `515396463680`).
+
 Copy `Cloudy-Canvas/appsettings.sample.json` to `Cloudy-Canvas/appsettings.json` (that file is git-ignored; never commit it) and fill in your Discord bot `token` and, optionally, a Manebooru API `token`. Instead of a file you can use environment variables (`DiscordSettings__token`, `ManebooruSettings__token`) or, in development, `dotnet user-secrets`. On NixOS, point `services.cloudy-canvas.environmentFile` at a root-only file containing those variables.
 
 Everything Cloudy stores (each server's settings and logs) lives in one folder, `botsettings` in the directory the bot is started from. Change it with `Storage:RootPath` (or `Storage__RootPath`); an absolute path works too.
 
-Cloudy keeps per-channel command logs (usernames, user IDs and the queries people run) under `<root>/servers/`, which admins can fetch with `;log`. They are kept forever by default; set `LogRetention:RetentionDays` (or the `LogRetention__RetentionDays` environment variable) to delete log files older than that many days.
+### What Cloudy stores
+
+Everything is in the storage folder described above. There is no database, and nothing is sent anywhere except to Discord and to Manebooru. Discord asks the people who run bots to be open about how they handle user data; this list describes what the code does, as a starting point for that, and is not a privacy policy itself.
+
+- **Settings.** `preloadedsettings.conf` holds, for each server (and for each user who has sent Cloudy a direct message), its name or username, prefix, command aliases and whether to answer other bots, plus the admin channel of each server. `servers/<server id>/settings.conf` holds the server's filter, its admin, alert and log channels and roles, the ignored channel and role IDs, the allowed user IDs, the watchlist, safe mode and the spoiler tag list.
+- **Console log.** Every command is written to the console (the journal, when run as a systemd service): the time, the server and channel names and IDs, the sender's username and ID, and the text of the command, including search queries. How long it is kept depends on where the console output goes. Line breaks in what people type are written out as `\n`, so a message cannot add lines to the log.
+- **Log files.** `servers/<server id>/<channel id>/<date>.log` records only admin changes to settings, `;setup`, `;echo`, watchlist changes, `;report`, and searches the watchlist blocked, each with the sender's username and ID (and, for a blocked search, its query). Admins can fetch them with `;log`. They are kept forever by default; set `LogRetention:RetentionDays` (or the `LogRetention__RetentionDays` environment variable) to delete log files older than that many days.
+- **Direct messages.** Settings and log files for direct messages are kept in `servers/_userdms/<user id>/`.
+- **Manebooru.** The search terms, image numbers and filter IDs in a command are sent to Manebooru to carry it out, together with the API key if one is configured.
+- **Everything else.** Cloudy only looks at a message to see whether it starts with the prefix or mentions her; no other message is kept.
+
+Cloudy does not delete a server's data when she is removed from it. To delete it, stop the bot, remove the `servers/<server id>` folder and that server's entry in `preloadedsettings.conf`, and start the bot again.
+
+To report a security problem, see [SECURITY.md](SECURITY.md).
 
 ### Running a development copy alongside the real one
 A test copy of the bot should not share the real one's data or answer the same commands. Give it its own settings, for example in `appsettings.Development.json` (also git-ignored), user secrets, or environment variables:
