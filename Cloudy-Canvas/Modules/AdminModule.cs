@@ -772,10 +772,32 @@
 
         [Command("broadcast", RunMode = RunMode.Async)]
         [Summary("Broadcasts a message to all servers")]
-        [RequireOwner]
-        public async Task BroadcastCommandAsync()
+        [RequireBroadcastUser]
+        public async Task BroadcastCommandAsync([Remainder] string message = "")
         {
-            await ReplyAsync("Message broadcasted to each guild's admin channel.");
+            message = message.Trim();
+            if (message == string.Empty)
+            {
+                await ReplyAsync("Cannot broadcast a blank message!");
+                return;
+            }
+
+            var sent = 0;
+            foreach (var (guildId, adminChannelId) in _servers.GuildList)
+            {
+                var channel = Context.Client.GetGuild(guildId)?.GetTextChannel(adminChannelId);
+                if (channel == null)
+                {
+                    await _logger.Log($"broadcast: skipped guild {guildId}, its admin channel {adminChannelId} is unavailable", Context);
+                    continue;
+                }
+
+                await channel.SendMessageAsync(message, allowedMentions: AllowedMentions.None);
+                sent++;
+            }
+
+            await _logger.Log($"broadcast: {message} (sent to {sent} of {_servers.GuildList.Count} servers)", Context, true);
+            await ReplyAsync($"Message broadcasted to {sent} of {_servers.GuildList.Count} servers' admin channels.");
         }
 
         [Command("<blank message>", RunMode = RunMode.Async)]

@@ -20,7 +20,7 @@ Important terms:
 
 ## Running your own copy
 
-Copy `Cloudy-Canvas/appsettings.sample.json` to `Cloudy-Canvas/appsettings.json` (that file is git-ignored; never commit it) and fill in your Discord bot `token` and, optionally, a Manebooru API `token`. Instead of a file you can use environment variables (`DiscordSettings__token`, `ManebooruSettings__token`) or, in development, `dotnet user-secrets`. On NixOS, point `services.cloudy-canvas.environmentFile` at a root-only file containing those variables. `DiscordSettings.BroadcastUserIds` lists the Discord user IDs allowed to use the owner-only `broadcast` command; leave it empty to disable it.
+Copy `Cloudy-Canvas/appsettings.sample.json` to `Cloudy-Canvas/appsettings.json` (that file is git-ignored; never commit it) and fill in your Discord bot `token` and, optionally, a Manebooru API `token`. Instead of a file you can use environment variables (`DiscordSettings__token`, `ManebooruSettings__token`) or, in development, `dotnet user-secrets`. On NixOS, point `services.cloudy-canvas.environmentFile` at a root-only file containing those variables.
 
 Cloudy keeps per-channel command logs (usernames, user IDs and the queries people run) under `botsettings/servers/`, which admins can fetch with `;log`. They are kept forever by default; set `LogRetention:RetentionDays` (or the `LogRetention__RetentionDays` environment variable) to delete log files older than that many days.
 

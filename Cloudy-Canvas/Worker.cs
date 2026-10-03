@@ -206,22 +206,6 @@ namespace Cloudy_Canvas
                     }
                 }
 
-                if (parsedMessage.Split(" ")[0] == "broadcast")
-                {
-                    if (_settings.BroadcastUserIds.Contains(context.User.Id))
-                    {
-                        if (parsedMessage == "broadcast")
-                        {
-                            await context.Channel.SendMessageAsync("Cannot broadcast a blank message!");
-                            return;
-                        }
-
-                        var messagePart = parsedMessage.Split(' ', 2)[1];
-                        await BroadcastAsync(messagePart);
-                        await context.Channel.SendMessageAsync("Message broadcasted to all servers' admin channels.");
-                    }
-                }
-
                 if (!_servers.Settings.ContainsKey(serverId))
                 {
                     await FileHelper.LoadServerPresettingsAsync(context, _servers);
@@ -245,23 +229,6 @@ namespace Cloudy_Canvas
 
             _logger.Log(level, msg.Exception, "{Source}: {Message}", msg.Source, msg.Message);
             return Task.CompletedTask;
-        }
-
-        // Callers must have already checked the user against DiscordSettings.BroadcastUserIds.
-        private async Task BroadcastAsync(string message = "")
-        {
-            var guildList = _servers.GuildList;
-            foreach (var (guild, adminChannel) in guildList)
-            {
-                var channel = _client.GetGuild(guild)?.GetTextChannel(adminChannel);
-                if (channel == null)
-                {
-                    _logger.LogWarning("Broadcast skipped: admin channel {Channel} in guild {Guild} is unavailable", adminChannel, guild);
-                    continue;
-                }
-
-                await channel.SendMessageAsync(message, allowedMentions: AllowedMentions.None);
-            }
         }
     }
 }
