@@ -81,7 +81,7 @@
             }
 
             await ReplyAsync("Looking for the bosses...");
-            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(adminRoleName, Context);
+            var roleSetId = DiscordHelper.GetRoleId(adminRoleName, Context);
             if (roleSetId > 0)
             {
                 settings.AdminRole = roleSetId;
@@ -122,7 +122,7 @@
             [Remainder] [Summary("Fourth subcommand")] int commandFour = 175)
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
             {
                 return;
             }
@@ -469,7 +469,7 @@
         public async Task EchoCommandAsync([Summary("The channel to send to")] string channelName = "", [Remainder] [Summary("The message to send")] string message = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
             {
                 return;
             }
@@ -515,7 +515,7 @@
         public async Task SetPrefixCommandAsync([Summary("The prefix character")] char prefix = ';')
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
             {
                 return;
             }
@@ -534,17 +534,17 @@
         }
 
         [Command("listentobots", RunMode = RunMode.Async)]
-        [Summary("Sets the bot listen prefix")]
+        [Summary("Sets whether the bot responds to commands from other bots")]
         public async Task ListenToBotsCommandAsync([Summary("yes or no")] string command = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
             {
                 return;
             }
 
             var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
-            switch (command.ToLower())
+            switch (command.ToLowerInvariant())
             {
                 case "":
                     var not = "";
@@ -584,13 +584,13 @@
         public async Task SafeModeCommandAsync([Summary("yes or no")] string command = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
             {
                 return;
             }
 
 
-            switch (command.ToLower())
+            switch (command.ToLowerInvariant())
             {
                 case "":
                     var not = "";
@@ -628,7 +628,7 @@
         public async Task AliasCommandAsync(string subcommand = "", string shortForm = "", [Remainder] string longForm = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
             {
                 return;
             }
@@ -649,21 +649,17 @@
                     await ReplyAsync(output);
                     break;
                 case "add":
-                    if (serverPresettings.Aliases.ContainsKey(shortForm))
+                    var replacing = !serverPresettings.Aliases.TryAdd(shortForm, longForm);
+                    if (replacing)
                     {
                         serverPresettings.Aliases[shortForm] = longForm;
-                        _servers.Settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
-                        await FileHelper.SaveAllPresettingsAsync(_servers);
-                        await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`, replacing what was there before.");
-                    }
-                    else
-                    {
-                        serverPresettings.Aliases.Add(shortForm, longForm);
-                        _servers.Settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
-                        await FileHelper.SaveAllPresettingsAsync(_servers);
-                        await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`");
                     }
 
+                    _servers.Settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                    await FileHelper.SaveAllPresettingsAsync(_servers);
+                    await ReplyAsync(replacing
+                        ? $"`{shortForm}` now aliased to `{longForm}`, replacing what was there before."
+                        : $"`{shortForm}` now aliased to `{longForm}`");
                     break;
                 case "remove":
                     serverPresettings.Aliases.Remove(shortForm);
@@ -688,7 +684,7 @@
         public async Task GetSettingsCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
             {
                 return;
             }
@@ -717,7 +713,7 @@
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
             var prefix = serverPresettings.Prefix;
-            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
             {
                 return;
             }
@@ -805,7 +801,7 @@
         public async Task BlankMessageCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!await DiscordHelper.CanUserRunCommandsAsync(Context, settings))
             {
                 return;
             }
@@ -914,7 +910,7 @@
 
         private async Task AdminRoleSetAsync(string roleName, ServerSettings settings)
         {
-            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            var roleSetId = DiscordHelper.GetRoleId(roleName, Context);
             if (roleSetId > 0)
             {
                 settings.AdminRole = roleSetId;
@@ -1108,7 +1104,7 @@
 
         private async Task IgnoreRoleRemoveAsync(string roleName, ServerSettings settings)
         {
-            var roleRemoveId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            var roleRemoveId = DiscordHelper.GetRoleId(roleName, Context);
             if (roleRemoveId > 0)
             {
                 for (var x = settings.IgnoredRoles.Count - 1; x >= 0; x--)
@@ -1129,13 +1125,13 @@
             }
             else
             {
-                await ReplyAsync($"Invalid channel name @{roleName}.", allowedMentions: AllowedMentions.None);
+                await ReplyAsync($"Invalid role name @{roleName}.", allowedMentions: AllowedMentions.None);
             }
         }
 
         private async Task IgnoreRoleAddAsync(string roleName, ServerSettings settings)
         {
-            var roleAddId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            var roleAddId = DiscordHelper.GetRoleId(roleName, Context);
             if (roleAddId > 0)
             {
                 foreach (var role in settings.IgnoredRoles)
@@ -1179,7 +1175,7 @@
 
         private async Task AllowUserRemoveAsync(string userName, ServerSettings settings)
         {
-            var userRemoveId = await DiscordHelper.GeUserIdFromPingOrIfOnlySearchResultAsync(userName, Context);
+            var userRemoveId = await DiscordHelper.GetUserIdAsync(userName, Context);
             if (userRemoveId > 0)
             {
                 for (var x = settings.AllowedUsers.Count - 1; x >= 0; x--)
@@ -1206,7 +1202,7 @@
 
         private async Task AllowUserAddAsync(string userName, ServerSettings settings)
         {
-            var userAddId = await DiscordHelper.GeUserIdFromPingOrIfOnlySearchResultAsync(userName, Context);
+            var userAddId = await DiscordHelper.GetUserIdAsync(userName, Context);
             if (userAddId > 0)
             {
                 foreach (var user in settings.AllowedUsers)
@@ -1291,7 +1287,7 @@
 
         private async Task WatchRoleSetAsync(string roleName, ServerSettings settings)
         {
-            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            var roleSetId = DiscordHelper.GetRoleId(roleName, Context);
             if (roleSetId > 0)
             {
                 settings.WatchAlertRole = roleSetId;
@@ -1300,7 +1296,7 @@
             }
             else
             {
-                await ReplyAsync($"Invalid role name #{roleName}.");
+                await ReplyAsync($"Invalid role name @{roleName}.");
             }
         }
 
@@ -1359,7 +1355,7 @@
 
         private async Task ReportRoleSetAsync(string roleName, ServerSettings settings)
         {
-            var roleSetId = DiscordHelper.GetRoleIdIfAccessAsync(roleName, Context);
+            var roleSetId = DiscordHelper.GetRoleId(roleName, Context);
             if (roleSetId > 0)
             {
                 settings.ReportRole = roleSetId;
@@ -1368,7 +1364,7 @@
             }
             else
             {
-                await ReplyAsync($"Invalid role name #{roleName}.");
+                await ReplyAsync($"Invalid role name @{roleName}.");
             }
         }
 
@@ -1388,7 +1384,7 @@
         {
             settings.LogPostChannel = settings.AdminChannel;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
-            await ReplyAsync($"Report alert channel reset to the current admin channel, <#{settings.LogPostChannel}>");
+            await ReplyAsync($"Log post channel reset to the current admin channel, <#{settings.LogPostChannel}>");
         }
 
         private async Task LogChannelSetAsync(string channelName, ServerSettings settings)
@@ -1433,7 +1429,7 @@
             public async Task WatchListCommandAsync([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
             {
                 var settings = await FileHelper.LoadServerSettingsAsync(Context);
-                if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+                if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
                 {
                     return;
                 }
@@ -1556,7 +1552,7 @@
             }
         }
 
-        [Summary("Submodule for retreiving log files")]
+        [Summary("Submodule for retrieving log files")]
         public class LogModule : BotModuleBase
         {
             private readonly LoggingService _logger;
@@ -1573,7 +1569,7 @@
                 [Summary("The date (in format (YYYY-MM-DD) to get the log from")] string date = "")
             {
                 var settings = await FileHelper.LoadServerSettingsAsync(Context);
-                if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+                if (!await DiscordHelper.IsBotAdminAsync(Context, settings))
                 {
                     return;
                 }
@@ -1631,7 +1627,7 @@
                 await ReplyAsync($"Retrieving log from {channel.Name} on {date}...");
 
                 // Logs are stored per channel id, in a folder that can only be inside this server's own directory.
-                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "log", context, channelId.ToString(), date);
+                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "log", context, channelId.ToString(CultureInfo.InvariantCulture), date);
                 if (!File.Exists(filepath))
                 {
                     return "<ERROR> File does not exist";

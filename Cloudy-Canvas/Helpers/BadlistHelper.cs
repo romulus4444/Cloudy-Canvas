@@ -11,7 +11,7 @@
     {
         public static async Task<bool> RemoveWatchTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
-            var lower = term.ToLower();
+            var lower = term.ToLowerInvariant();
             for (var x = settings.WatchList.Count - 1; x >= 0; x--)
             {
                 var watch = settings.WatchList[x];
@@ -59,7 +59,7 @@
 
         public static async Task<Tuple<List<string>, List<string>>> AddWatchTerm(string term, ServerSettings settings, SocketCommandContext context)
         {
-            var termList = term.ToLower().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+            var termList = term.ToLowerInvariant().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
             var failList = new List<string>();
             var addList = new List<string>();
             foreach (var singleTerm in termList)
@@ -128,7 +128,7 @@
                 terms.Add(term);
             }
 
-            if (term.StartsWith("id:"))
+            if (term.StartsWith("id:", StringComparison.Ordinal))
             {
                 var id = term[3..].Trim();
                 if (id.Length > 0 && !terms.Contains(id))
@@ -146,7 +146,7 @@
                 term = term[1..].TrimStart();
             }
 
-            if (term.StartsWith("not "))
+            if (term.StartsWith("not ", StringComparison.Ordinal))
             {
                 term = term[4..].TrimStart();
             }

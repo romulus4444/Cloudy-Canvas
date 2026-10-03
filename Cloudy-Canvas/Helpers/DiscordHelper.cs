@@ -43,28 +43,28 @@
         /// Resolves a role given as a mention, a bare id or a name to the id of a role in this server (0 if none).
         /// A text made only of digits that isn't the id of a role is still tried as a role name.
         /// </summary>
-        public static ulong GetRoleIdIfAccessAsync(string roleName, SocketCommandContext context)
+        public static ulong GetRoleId(string roleName, SocketCommandContext context)
         {
             var mention = ConvertRolePingToId(roleName);
             if (mention > 0)
             {
-                return CheckIfRoleExistsAsync(mention, context);
+                return CheckIfRoleExists(mention, context);
             }
 
             var bareId = ParseSnowflake(roleName);
             if (bareId > 0)
             {
-                var found = CheckIfRoleExistsAsync(bareId, context);
+                var found = CheckIfRoleExists(bareId, context);
                 if (found > 0)
                 {
                     return found;
                 }
             }
 
-            return CheckIfRoleExistsAsync(roleName, context);
+            return CheckIfRoleExists(roleName, context);
         }
 
-        public static async Task<bool> DoesUserHaveAdminRoleAsync(SocketCommandContext context, ServerSettings settings)
+        public static async Task<bool> IsBotAdminAsync(SocketCommandContext context, ServerSettings settings)
         {
             if (context.IsPrivate)
             {
@@ -80,7 +80,7 @@
             return AccessPolicy.IsBotAdmin(member.RoleIds, member.Permissions, settings);
         }
 
-        public static async Task<bool> CanUserRunThisCommandAsync(SocketCommandContext context, ServerSettings settings)
+        public static async Task<bool> CanUserRunCommandsAsync(SocketCommandContext context, ServerSettings settings)
         {
             if (context.IsPrivate)
             {
@@ -137,7 +137,7 @@
             return new GuildMember(cachedUser.Roles.Select(role => role.Id).ToList(), cachedUser.GuildPermissions);
         }
 
-        public static async Task<ulong> GeUserIdFromPingOrIfOnlySearchResultAsync(string userName, SocketCommandContext context)
+        public static async Task<ulong> GetUserIdAsync(string userName, SocketCommandContext context)
         {
             var userId = ConvertUserPingToId(userName);
             if (userId > 0)
@@ -186,7 +186,7 @@
             }
 
             var split = rawCommand.Split(' ', 2);
-            var command = split[0].ToLower();
+            var command = split[0].ToLowerInvariant();
             if (split.Length > 1)
             {
                 command += " " + split[1];
@@ -272,7 +272,7 @@
             }
 
             var trimmed = text.Trim();
-            if (!trimmed.StartsWith(prefix) || !trimmed.EndsWith('>'))
+            if (!trimmed.StartsWith(prefix, StringComparison.Ordinal) || !trimmed.EndsWith('>'))
             {
                 return 0;
             }
@@ -281,7 +281,7 @@
             return ulong.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out var id) ? id : 0;
         }
 
-        private static ulong CheckIfRoleExistsAsync(string roleName, SocketCommandContext context)
+        private static ulong CheckIfRoleExists(string roleName, SocketCommandContext context)
         {
             if (context.IsPrivate)
             {
@@ -300,7 +300,7 @@
             return 0;
         }
 
-        private static ulong CheckIfRoleExistsAsync(ulong roleId, SocketCommandContext context)
+        private static ulong CheckIfRoleExists(ulong roleId, SocketCommandContext context)
         {
             if (context.IsPrivate)
             {

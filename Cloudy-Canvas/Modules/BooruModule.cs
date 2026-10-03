@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Threading.Tasks;
     using Cloudy_Canvas.Helpers;
@@ -56,13 +57,13 @@
             }
 
             var (filterId, usesChannelFilter) = ResolveFilter(settings);
-            if (!usesChannelFilter && !await CheckBadlistsAsync("id", id.ToString(), settings))
+            if (!usesChannelFilter && !await CheckBadlistsAsync("id", id.ToString(CultureInfo.InvariantCulture), settings))
             {
                 return;
             }
 
             var result = await _booru.GetImageByIdAsync(id, settings, filterId);
-            if (await ReplyIfFailedAsync("id", id.ToString(), result))
+            if (await ReplyIfFailedAsync("id", id.ToString(CultureInfo.InvariantCulture), result))
             {
                 return;
             }
@@ -88,13 +89,13 @@
             }
 
             var (filterId, usesChannelFilter) = ResolveFilter(settings);
-            if (!usesChannelFilter && !await CheckBadlistsAsync("tags", id.ToString(), settings))
+            if (!usesChannelFilter && !await CheckBadlistsAsync("tags", id.ToString(CultureInfo.InvariantCulture), settings))
             {
                 return;
             }
 
             var result = await _booru.GetImageTagsIdAsync(id, settings, filterId);
-            if (await ReplyIfFailedAsync("tags", id.ToString(), result))
+            if (await ReplyIfFailedAsync("tags", id.ToString(CultureInfo.InvariantCulture), result))
             {
                 return;
             }
@@ -184,14 +185,14 @@
             }
 
             var (filterId, usesChannelFilter) = ResolveFilter(settings);
-            if (!usesChannelFilter && BadlistHelper.CheckWatchList(reportedImageId.ToString(), settings) != "")
+            if (!usesChannelFilter && BadlistHelper.CheckWatchList(reportedImageId.ToString(CultureInfo.InvariantCulture), settings) != "")
             {
                 await ReplyAsync("That image is already blocked.");
                 return;
             }
 
             var result = await _booru.GetImageByIdAsync(reportedImageId, settings, filterId);
-            if (await ReplyIfFailedAsync("report", reportedImageId.ToString(), result))
+            if (await ReplyIfFailedAsync("report", reportedImageId.ToString(CultureInfo.InvariantCulture), result))
             {
                 return;
             }
@@ -234,8 +235,8 @@
             var sorted = tags.ToList();
             sorted.Sort();
             var ordered = TagGroupPrefixes
-                .SelectMany(prefix => sorted.Where(tag => tag.StartsWith(prefix)))
-                .Concat(sorted.Where(tag => !TagGroupPrefixes.Any(prefix => tag.StartsWith(prefix))));
+                .SelectMany(prefix => sorted.Where(tag => tag.StartsWith(prefix, StringComparison.Ordinal)))
+                .Concat(sorted.Where(tag => !TagGroupPrefixes.Any(prefix => tag.StartsWith(prefix, StringComparison.Ordinal))));
             return string.Join(", ", ordered.Select(tag => $"`{tag}`"));
         }
 
@@ -307,7 +308,7 @@
         private async Task<ServerSettings> LoadAllowedSettingsAsync(bool callsBooru = true)
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!await DiscordHelper.CanUserRunCommandsAsync(Context, settings))
             {
                 return null;
             }

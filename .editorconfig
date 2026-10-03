@@ -1,0 +1,25 @@
+# https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+[*.{yml,yaml,json,nix,csproj,props}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.cs]
+# The C# sources use Windows line endings and block-scoped namespaces with the usings inside them.
+end_of_line = crlf
+csharp_using_directive_placement = inside_namespace:suggestion
+csharp_style_namespace_declarations = block_scoped:suggestion
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+
+# Code analysis is configured in Cloudy-Canvas.csproj (AnalysisLevel and NoWarn), not here: the Nix build only sees that project folder,
+# so rules set in this file would apply to local builds and CI but not to the Nix build.

@@ -115,7 +115,7 @@ namespace Cloudy_Canvas
                 if (context is SocketCommandContext socketContext)
                 {
                     var settings = await FileHelper.LoadServerSettingsAsync(socketContext);
-                    if (!await DiscordHelper.CanUserRunThisCommandAsync(socketContext, settings))
+                    if (!await DiscordHelper.CanUserRunCommandsAsync(socketContext, settings))
                     {
                         return;
                     }

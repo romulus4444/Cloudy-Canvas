@@ -12,7 +12,7 @@ Cloudy Canvas's profile picture was drawn by me and can be found [here](https://
 
 Important terms:
 
-`query` Any query that could be entered into the search field on Manebooru. This is a list of comma-seprated terms, and may include logical operators and image metadata flags. See [here](https://manebooru.art/pages/search_syntax) for more details.
+`query` Any query that could be entered into the search field on Manebooru. This is a list of comma-separated terms, and may include logical operators and image metadata flags. See [here](https://manebooru.art/pages/search_syntax) for more details.
 
 `active filter` The Manebooru filter that your server uses to filter images in the search results. It is advisable to make your own account on Manebooru, add a new filter, tailor it to your server's needs, and make it public (at the bottom of the page under Advanced Options). You do not need to leave it as your account's active filter, as long as you know the ID (it's in the URL when viewing the filter: `https://manebooru.art/filters/<filter ID>`) and the filter is public.
 
@@ -63,7 +63,7 @@ Cloudy keeps per-channel command logs (usernames, user IDs and the queries peopl
 ### Mixins:
 
 Use mixins (one of the terms below wrapped in double curly braces with no spaces `{ { term } }`) in the `<query>` to introduce values that are calculated when the query is executed.
-Example: If today was May 23rd, 2021, then `;pick created_at:{ { today } }, lyra` (with no spaces between { and }) would execute as `;pick created_at:2021-05-23, lyra`. All date values are generatd using UTC ("Zulu") time. [More info](https://manebooru.art/pages/search_syntax#date-range).
+Example: If today was May 23rd, 2021, then `;pick created_at:{ { today } }, lyra` (with no spaces between { and }) would execute as `;pick created_at:2021-05-23, lyra`. All date values are generated using UTC ("Zulu") time. [More info](https://manebooru.art/pages/search_syntax#date-range).
 
 | Term | Info |
 | -------- | ---- |

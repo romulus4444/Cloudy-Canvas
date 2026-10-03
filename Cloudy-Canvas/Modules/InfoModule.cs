@@ -25,7 +25,7 @@
         public async Task HelpCommandAsync([Summary("First subcommand")] string command = "", [Remainder] [Summary("Second subcommand")] string subCommand = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!await DiscordHelper.CanUserRunCommandsAsync(Context, settings))
             {
                 return;
             }
@@ -35,7 +35,7 @@
 
             await _logger.Log($"help {command} {subCommand}", Context);
 
-            var isAdmin = await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings);
+            var isAdmin = await DiscordHelper.IsBotAdminAsync(Context, settings);
             if (!isAdmin && HelpText.IsAdminTopic(command))
             {
                 // Don't show admin commands to people who can't use them; state that these are only available to admins.
@@ -111,7 +111,7 @@
                             break;
                         case "allowuser":
                             await ReplyAsync(
-                                $"__{prefix}admin allowuser Commands:__{Environment.NewLine}*Manages the list of users to allow commands from.*{Environment.NewLine}`{prefix}admin allowuser get` Gets the current list of allowd users.{Environment.NewLine}`{prefix}admin allowuser add <user>` Adds <user> to the list of allowd users. Accepts a user ping or plain text.{Environment.NewLine}`{prefix}admin allowuser remove <user>` Removes <user> from the list of allowed users. Accepts a user ping or plain text.{Environment.NewLine}`{prefix}admin allowuser clear` Clears the list of allowd users.");
+                                $"__{prefix}admin allowuser Commands:__{Environment.NewLine}*Manages the list of users to allow commands from.*{Environment.NewLine}`{prefix}admin allowuser get` Gets the current list of allowed users.{Environment.NewLine}`{prefix}admin allowuser add <user>` Adds <user> to the list of allowed users. Accepts a user ping or plain text.{Environment.NewLine}`{prefix}admin allowuser remove <user>` Removes <user> from the list of allowed users. Accepts a user ping or plain text.{Environment.NewLine}`{prefix}admin allowuser clear` Clears the list of allowed users.");
                             break;
                         case "watchchannel":
                             await ReplyAsync(
@@ -127,7 +127,7 @@
                             break;
                         case "reportrole":
                             await ReplyAsync(
-                                $"__{prefix}admin reportrole Commands:__{Environment.NewLine}*Manages the report alert role.*{Environment.NewLine}`{prefix}admin reportrole get` Gets the current report alert role.{Environment.NewLine}`{prefix}admin reportrole set <role>` Sets the report alert role to <role> and turns pinging on. Accepts a role ping or plain text.{Environment.NewLine}`{prefix}admin reportrole clear` Resets the report alert channel to no role and turns pinging off.");
+                                $"__{prefix}admin reportrole Commands:__{Environment.NewLine}*Manages the report alert role.*{Environment.NewLine}`{prefix}admin reportrole get` Gets the current report alert role.{Environment.NewLine}`{prefix}admin reportrole set <role>` Sets the report alert role to <role> and turns pinging on. Accepts a role ping or plain text.{Environment.NewLine}`{prefix}admin reportrole clear` Resets the report alert role to no role and turns pinging off.");
                             break;
                         case "logchannel":
                             await ReplyAsync(
@@ -169,7 +169,7 @@
                     break;
                 case "getsettings":
                     await ReplyAsync(
-                        $"`{prefix}getsettings`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Posts the settings file to the log channel. This includes the redlist.");
+                        $"`{prefix}getsettings`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Posts the settings file to the log channel. This includes the watchlist.");
                     break;
                 case "refreshlists":
                     await ReplyAsync(
@@ -195,7 +195,7 @@
         public async Task OriginCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!await DiscordHelper.CanUserRunCommandsAsync(Context, settings))
             {
                 return;
             }
@@ -210,7 +210,7 @@
         public async Task AboutCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!await DiscordHelper.CanUserRunCommandsAsync(Context, settings))
             {
                 return;
             }

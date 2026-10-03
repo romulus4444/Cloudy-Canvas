@@ -7,17 +7,20 @@
     <PublishSingleFile>false</PublishSingleFile>
     <SelfContained>false</SelfContained>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <AnalysisLevel>latest-recommended</AnalysisLevel>
+    <!-- Rules switched off, and why. They live here rather than in .editorconfig because the Nix build only sees this project folder:
+         CA1848 and CA1873: source-generated LoggerMessage delegates; the bot logs a handful of lines per command, so the boilerplate
+         isn't worth the performance.
+         CA1707: the root namespace is Cloudy_Canvas (the project name has a hyphen); renaming it would touch every file.
+         CA1822: Discord.Net command methods must be instance methods even when they don't use instance state. -->
+    <NoWarn>$(NoWarn);CA1848;CA1873;CA1707;CA1822</NoWarn>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="BotSettings\**" />
-    <Compile Remove="DevSettings\**" />
-    <Content Remove="BotSettings\**" />
-    <Content Remove="DevSettings\**" />
-    <EmbeddedResource Remove="BotSettings\**" />
-    <EmbeddedResource Remove="DevSettings\**" />
-    <None Remove="BotSettings\**" />
-    <None Remove="DevSettings\**" />
-  </ItemGroup>
+  <PropertyGroup Condition="'$(CI)' == 'true'">
+    <!-- CI (GitHub Actions sets CI=true) fails on warnings; local builds don't. Vulnerable-package advisories (NU190x) are excluded so a
+         new advisory can't block unrelated pull requests; Dependabot and the vulnerable-package report of dotnet list package cover those. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Discord.Net" Version="3.20.1" />
     <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.12" />
