@@ -21,17 +21,5 @@ csharp_style_namespace_declarations = block_scoped:suggestion
 dotnet_sort_system_directives_first = true
 csharp_new_line_before_open_brace = all
 
-# Code analysis: Cloudy-Canvas.csproj turns on the recommended rules (AnalysisLevel=latest-recommended), and CI fails on warnings.
-# Rules switched off here, and why:
-
-# Logging performance micro-optimisations (source-generated LoggerMessage delegates). The bot logs a handful of lines per command; the
-# extra boilerplate isn't worth it.
-dotnet_diagnostic.CA1848.severity = none
-dotnet_diagnostic.CA1873.severity = none
-
-# The root namespace is Cloudy_Canvas (the project name contains a hyphen); renaming it would touch every file.
-dotnet_diagnostic.CA1707.severity = none
-
-[Cloudy-Canvas/Modules/*.cs]
-# Discord.Net command methods have to be instance methods even when they don't use instance state.
-dotnet_diagnostic.CA1822.severity = none
+# Code analysis is configured in Cloudy-Canvas.csproj (AnalysisLevel and NoWarn), not here: the Nix build only sees that project folder,
+# so rules set in this file would apply to local builds and CI but not to the Nix build.
