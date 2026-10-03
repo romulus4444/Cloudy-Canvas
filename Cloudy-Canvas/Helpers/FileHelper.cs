@@ -30,62 +30,15 @@
 
         public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null, string logChannel = "", string date = "")
         {
-            //Root
-            var filepath = RootPath;
-            CreateDirectoryIfNotExists(filepath);
-
-            //Server
-            if (type != FilePathType.Root)
+            StorageScope scope = null;
+            if (context != null)
             {
-                filepath = Path.Join(filepath, "servers");
-                CreateDirectoryIfNotExists(filepath);
-
-                if (context is { IsPrivate: true })
-                {
-                    filepath = Path.Join(filepath, "_userdms");
-                    CreateDirectoryIfNotExists(filepath);
-                    filepath = Path.Join(filepath, $"{context.User.Id}");
-                    CreateDirectoryIfNotExists(filepath);
-                }
-                else
-                {
-                    if (context != null)
-                    {
-                        filepath = Path.Join(filepath, $"{context.Guild.Id}");
-                        CreateDirectoryIfNotExists(filepath);
-
-                        //channel
-                        if (type != FilePathType.Server)
-                        {
-                            if (type == FilePathType.Channel)
-                            {
-                                filepath = Path.Join(filepath, $"{context.Channel.Id}");
-                                CreateDirectoryIfNotExists(filepath);
-                            }
-                            else
-                            {
-                                if (!IsSafePathSegment(logChannel) || !IsSafePathSegment(date))
-                                {
-                                    throw new ArgumentException("Log channel and date may only contain letters, digits, '-' and '_'.");
-                                }
-
-                                filepath = Path.Join(filepath, $"{logChannel}");
-                                CreateDirectoryIfNotExists(filepath);
-                                filepath = Path.Join(filepath, $"{date}.{extension}");
-                                return filepath;
-                            }
-                        }
-                    }
-                }
+                scope = context.IsPrivate
+                    ? new StorageScope(context.User.Id, null, context.Channel.Id)
+                    : new StorageScope(context.User.Id, context.Guild.Id, context.Channel.Id);
             }
 
-            filepath = filename switch
-            {
-                "" => Path.Join(filepath, $"default.{extension}"),
-                "<date>" => Path.Join(filepath, $"{DateStamp(DateTime.UtcNow)}.{extension}"),
-                _ => Path.Join(filepath, $"{filename}.{extension}"),
-            };
-            return filepath;
+            return StoragePaths.Build(RootPath, type, filename, extension, scope, logChannel, date, DateTime.UtcNow);
         }
 
         public static async Task<ServerSettings> LoadServerSettingsAsync(SocketCommandContext context)
@@ -161,15 +114,6 @@
         public static bool IsSafePathSegment(string segment)
         {
             return !string.IsNullOrEmpty(segment) && segment.All(c => char.IsAsciiLetterOrDigit(c) || c == '-' || c == '_');
-        }
-
-        private static void CreateDirectoryIfNotExists(string path)
-        {
-            var directory = new DirectoryInfo(path);
-            if (!directory.Exists)
-            {
-                directory.Create();
-            }
         }
     }
 

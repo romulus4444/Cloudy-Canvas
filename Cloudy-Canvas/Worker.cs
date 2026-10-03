@@ -159,49 +159,23 @@ namespace Cloudy_Canvas
             }
 
             var prefix = DiscordHelper.EffectivePrefix(settings.Prefix, _settings.PrefixOverride);
-            if (message.HasCharPrefix(prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
+            var startsWithMention = message.HasMentionPrefix(_client.CurrentUser, ref argPos);
+            var startsWithPrefix = startsWithMention || message.HasCharPrefix(prefix, ref argPos);
+
+            // Search matches the whole command path, so commands inside a group ("admin filter get") are found too.
+            var parsedMessage = CommandRouting.Resolve(
+                startsWithPrefix, startsWithMention, message.Author.IsBot, message.Content, settings, command => _commands.Search(command).IsSuccess);
+            if (parsedMessage == null)
             {
-                if (!(settings.ListenToBots) && message.Author.IsBot)
-                {
-                    return;
-                }
-
-                string parsedMessage;
-                var checkCommands = true;
-                if (message.HasMentionPrefix(_client.CurrentUser, ref argPos))
-                {
-                    parsedMessage = "<mention>";
-                    checkCommands = false;
-                }
-                else
-                {
-                    parsedMessage = DiscordHelper.ResolveAliases(message.Content, settings);
-                }
-
-                if (parsedMessage == "")
-                {
-                    parsedMessage = "<blank message>";
-                    checkCommands = false;
-                }
-
-                if (checkCommands)
-                {
-                    // Search matches the whole command path, so commands inside a group ("admin filter get") are found too.
-                    if (!_commands.Search(parsedMessage).IsSuccess)
-                    {
-                        // Stay quiet on unknown commands so the bot doesn't answer every message that happens to start with the prefix
-                        // (other bots on the server often share it).
-                        return;
-                    }
-                }
-
-                if (!_servers.Settings.ContainsKey(serverId))
-                {
-                    await FileHelper.LoadServerPresettingsAsync(context, _servers);
-                }
-
-                await _commands.ExecuteAsync(context, parsedMessage, _services);
+                return;
             }
+
+            if (!_servers.Settings.ContainsKey(serverId))
+            {
+                await FileHelper.LoadServerPresettingsAsync(context, _servers);
+            }
+
+            await _commands.ExecuteAsync(context, parsedMessage, _services);
         }
 
         private Task Log(LogMessage msg)
