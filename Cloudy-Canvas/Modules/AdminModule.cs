@@ -122,7 +122,7 @@
             [Remainder] [Summary("Fourth subcommand")] int commandFour = 175)
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
@@ -469,7 +469,7 @@
         public async Task EchoCommandAsync([Summary("The channel to send to")] string channelName = "", [Remainder] [Summary("The message to send")] string message = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
@@ -515,7 +515,7 @@
         public async Task SetPrefixCommandAsync([Summary("The prefix character")] char prefix = ';')
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
@@ -538,7 +538,7 @@
         public async Task ListenToBotsCommandAsync([Summary("yes or no")] string command = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
@@ -584,7 +584,7 @@
         public async Task SafeModeCommandAsync([Summary("yes or no")] string command = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
@@ -628,7 +628,7 @@
         public async Task AliasCommandAsync(string subcommand = "", string shortForm = "", [Remainder] string longForm = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
@@ -688,7 +688,7 @@
         public async Task GetSettingsCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
@@ -717,7 +717,7 @@
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
             var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
             var prefix = serverPresettings.Prefix;
-            if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+            if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
             {
                 return;
             }
@@ -783,7 +783,7 @@
         public async Task BlankMessageCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
             {
                 return;
             }
@@ -1411,7 +1411,7 @@
             public async Task WatchListCommandAsync([Summary("Subcommand")] string command = "", [Remainder] [Summary("Search term")] string term = "")
             {
                 var settings = await FileHelper.LoadServerSettingsAsync(Context);
-                if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+                if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
                 {
                     return;
                 }
@@ -1551,7 +1551,7 @@
                 [Summary("The date (in format (YYYY-MM-DD) to get the log from")] string date = "")
             {
                 var settings = await FileHelper.LoadServerSettingsAsync(Context);
-                if (!DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
+                if (!await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings))
                 {
                     return;
                 }
