@@ -1,0 +1,8 @@
+# Line endings
+#
+# Text files are stored with LF and checked out with LF on every platform, so every tool (editors, scripts, CI, the Nix build) sees
+# the same bytes and a file never changes just because it was touched on another operating system. Git normalises on commit.
+* text=auto eol=lf
+
+# Visual Studio expects Windows line endings in solution files.
+*.sln text eol=crlf
