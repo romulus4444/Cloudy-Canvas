@@ -76,7 +76,7 @@ namespace Cloudy_Canvas.Modules
             }
 
             await ReplyAsync("Looking for the bosses...");
-            var roleSetId = DiscordHelper.GetRoleId(adminRoleName, Context);
+            var roleSetId = await DiscordHelper.GetRoleIdAsync(adminRoleName, Context);
             if (roleSetId > 0)
             {
                 settings.AdminRole = roleSetId;

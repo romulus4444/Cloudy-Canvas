@@ -271,7 +271,7 @@ namespace Cloudy_Canvas.Modules
             RunAsync(setting.Key, "get", null, s => Task.FromResult(SettingOperations.GetRole(setting, s)));
 
         private Task SetRoleAsync(RoleSetting setting, string typed) =>
-            RunAsync(setting.Key, "set", typed, s => Task.FromResult(SettingOperations.SetRole(setting, s, string.IsNullOrWhiteSpace(typed) ? 0 : DiscordHelper.GetRoleId(typed, Context), typed)));
+            RunAsync(setting.Key, "set", typed, async s => SettingOperations.SetRole(setting, s, string.IsNullOrWhiteSpace(typed) ? 0 : await DiscordHelper.GetRoleIdAsync(typed, Context), typed));
 
         private Task ClearRoleAsync(RoleSetting setting) =>
             RunAsync(setting.Key, "clear", null, s => Task.FromResult(SettingOperations.ClearRole(setting, s)));
@@ -291,7 +291,7 @@ namespace Cloudy_Canvas.Modules
             return setting.Noun switch
             {
                 "channel" => await DiscordHelper.GetChannelIdIfAccessAsync(typed, Context),
-                "role" => DiscordHelper.GetRoleId(typed, Context),
+                "role" => await DiscordHelper.GetRoleIdAsync(typed, Context),
                 _ => await DiscordHelper.GetUserIdAsync(typed, Context),
             };
         }

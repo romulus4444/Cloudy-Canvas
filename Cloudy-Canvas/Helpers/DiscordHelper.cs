@@ -42,19 +42,20 @@
         /// <summary>
         /// Resolves a role given as a mention, a bare id or a name to the id of a role in this server (0 if none).
         /// A text made only of digits that isn't the id of a role is still tried as a role name.
+        /// An id the bot hasn't cached (a role made moments ago) is checked with Discord before being called invalid.
         /// </summary>
-        public static ulong GetRoleId(string roleName, SocketCommandContext context)
+        public static async Task<ulong> GetRoleIdAsync(string roleName, SocketCommandContext context)
         {
             var mention = ConvertRolePingToId(roleName);
             if (mention > 0)
             {
-                return CheckIfRoleExists(mention, context);
+                return await FindRoleByIdAsync(mention, context);
             }
 
             var bareId = ParseSnowflake(roleName);
             if (bareId > 0)
             {
-                var found = CheckIfRoleExists(bareId, context);
+                var found = await FindRoleByIdAsync(bareId, context);
                 if (found > 0)
                 {
                     return found;
@@ -62,6 +63,26 @@
             }
 
             return CheckIfRoleExists(roleName, context);
+        }
+
+        private static async Task<ulong> FindRoleByIdAsync(ulong roleId, SocketCommandContext context)
+        {
+            var cached = CheckIfRoleExists(roleId, context);
+            if (cached > 0 || context.IsPrivate)
+            {
+                return cached;
+            }
+
+            try
+            {
+                var guild = await context.Client.Rest.GetGuildAsync(context.Guild.Id);
+                return guild?.GetRole(roleId)?.Id ?? 0;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Could not ask Discord whether role {Role} exists in {Guild}", roleId, context.Guild.Id);
+                return 0;
+            }
         }
 
         public static async Task<bool> IsBotAdminAsync(SocketCommandContext context, ServerSettings settings)
