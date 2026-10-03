@@ -520,7 +520,7 @@
                 return;
             }
 
-            if (!IsValidPrefix(prefix))
+            if (!DiscordHelper.IsValidPrefix(prefix))
             {
                 await ReplyAsync("The prefix must be a single punctuation or symbol character (not `@`, `#`, `` ` ``, `<` or `>`).");
                 return;
@@ -815,15 +815,6 @@
         {
             //removed ping reply, add custom replies here if desired
             return Task.CompletedTask;
-        }
-
-        /// <summary>
-        /// A prefix must be punctuation or a symbol; letters, digits and whitespace would make normal chat trigger the bot,
-        /// and Discord's mention/markup characters would clash with formatting.
-        /// </summary>
-        public static bool IsValidPrefix(char prefix)
-        {
-            return (char.IsPunctuation(prefix) || char.IsSymbol(prefix)) && "@#`<>".IndexOf(prefix) < 0;
         }
 
         private async Task<string> SettingsGetAsync(SocketCommandContext context, ServerSettings settings)

@@ -237,6 +237,15 @@
         }
 
         /// <summary>
+        /// A prefix must be punctuation or a symbol; letters, digits and whitespace would make normal chat trigger the bot,
+        /// and Discord's mention/markup characters would clash with formatting.
+        /// </summary>
+        public static bool IsValidPrefix(char prefix)
+        {
+            return (char.IsPunctuation(prefix) || char.IsSymbol(prefix)) && "@#`<>".IndexOf(prefix) < 0;
+        }
+
+        /// <summary>
         /// Returns the id when the text is a bare Discord id (what you get from "Copy ID" with Developer Mode on): 17 to 20 digits.
         /// Anything else, including short numbers that are more likely a name or a typo, gives 0.
         /// </summary>
