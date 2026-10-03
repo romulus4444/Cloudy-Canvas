@@ -1,6 +1,7 @@
 ﻿namespace Cloudy_Canvas.Helpers
 {
     using System;
+    using System.Globalization;
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
@@ -68,7 +69,7 @@
             filepath = filename switch
             {
                 "" => Path.Join(filepath, $"default.{extension}"),
-                "<date>" => Path.Join(filepath, $"{DateTime.UtcNow:yyyy-MM-dd}.{extension}"),
+                "<date>" => Path.Join(filepath, $"{DateStamp(DateTime.UtcNow)}.{extension}"),
                 _ => Path.Join(filepath, $"{filename}.{extension}"),
             };
             return filepath;
@@ -132,6 +133,12 @@
         {
             var filepath = SetUpFilepath(FilePathType.Root, "preloadedsettings", "conf");
             await PresettingsStore.SaveAsync(filepath, settings);
+        }
+
+        /// <summary>The date part of a daily log file name.</summary>
+        public static string DateStamp(DateTime date)
+        {
+            return date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
         }
 
         /// <summary>

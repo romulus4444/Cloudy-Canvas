@@ -2,6 +2,7 @@ namespace Cloudy_Canvas.Helpers
 {
     using System;
     using System.Collections.Concurrent;
+    using System.Globalization;
     using System.IO;
     using System.Threading;
     using System.Threading.Tasks;
@@ -160,7 +161,7 @@ namespace Cloudy_Canvas.Helpers
 
         private static void Quarantine(string path)
         {
-            var aside = $"{path}.corrupt-{DateTime.UtcNow:yyyyMMddHHmmss}";
+            var aside = $"{path}.corrupt-{DateTime.UtcNow.ToString("yyyyMMddHHmmss", CultureInfo.InvariantCulture)}";
             try
             {
                 File.Move(path, aside, true);

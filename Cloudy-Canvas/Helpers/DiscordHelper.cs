@@ -186,7 +186,7 @@
             }
 
             var split = rawCommand.Split(' ', 2);
-            var command = split[0].ToLower();
+            var command = split[0].ToLowerInvariant();
             if (split.Length > 1)
             {
                 command += " " + split[1];
@@ -272,7 +272,7 @@
             }
 
             var trimmed = text.Trim();
-            if (!trimmed.StartsWith(prefix) || !trimmed.EndsWith('>'))
+            if (!trimmed.StartsWith(prefix, StringComparison.Ordinal) || !trimmed.EndsWith('>'))
             {
                 return 0;
             }

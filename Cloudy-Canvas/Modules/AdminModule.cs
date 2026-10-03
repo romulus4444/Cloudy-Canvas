@@ -544,7 +544,7 @@
             }
 
             var serverPresettings = await FileHelper.LoadServerPresettingsAsync(Context);
-            switch (command.ToLower())
+            switch (command.ToLowerInvariant())
             {
                 case "":
                     var not = "";
@@ -590,7 +590,7 @@
             }
 
 
-            switch (command.ToLower())
+            switch (command.ToLowerInvariant())
             {
                 case "":
                     var not = "";

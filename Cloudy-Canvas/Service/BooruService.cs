@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.Globalization;
     using System.Linq;
     using System.Net.Http;
     using System.Net.Http.Json;
@@ -165,7 +166,7 @@
                 {
                     var query = string.Join(" || ", batch.Select(id => $"id:{id}"));
                     return await GetJsonAsync<TagSearchResponse>(
-                        "api/v1/json/search/tags", ("q", query), ("per_page", TagBatchSize.ToString()));
+                        "api/v1/json/search/tags", ("q", query), ("per_page", TagBatchSize.ToString(CultureInfo.InvariantCulture)));
                 }
                 finally
                 {
@@ -246,7 +247,7 @@
             {
                 ("q", query),
                 ("per_page", "1"),
-                ("filter_id", filterId.ToString()),
+                ("filter_id", filterId.ToString(CultureInfo.InvariantCulture)),
             };
             parameters.AddRange(extra);
             if (!string.IsNullOrEmpty(_settings.token))

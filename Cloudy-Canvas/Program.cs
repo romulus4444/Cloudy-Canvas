@@ -1,6 +1,7 @@
 namespace Cloudy_Canvas
 {
     using System;
+    using System.Globalization;
     using Cloudy_Canvas.Helpers;
     using Microsoft.Extensions.Configuration;
     using Microsoft.Extensions.DependencyInjection;
@@ -14,7 +15,7 @@ namespace Cloudy_Canvas
         {
             // The HttpClient request log would print the full URL, which includes the Manebooru API key for image searches.
             Log.Logger = new LoggerConfiguration().MinimumLevel.Override("System.Net.Http.HttpClient", LogEventLevel.Warning).Enrich.FromLogContext().WriteTo
-                .Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}").CreateLogger();
+                .Console(outputTemplate: "[{Timestamp:yyyy-MM-dd HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}", formatProvider: CultureInfo.InvariantCulture).CreateLogger();
 
             try
             {
