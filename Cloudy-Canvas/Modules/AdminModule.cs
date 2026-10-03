@@ -649,21 +649,17 @@
                     await ReplyAsync(output);
                     break;
                 case "add":
-                    if (serverPresettings.Aliases.ContainsKey(shortForm))
+                    var replacing = !serverPresettings.Aliases.TryAdd(shortForm, longForm);
+                    if (replacing)
                     {
                         serverPresettings.Aliases[shortForm] = longForm;
-                        _servers.Settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
-                        await FileHelper.SaveAllPresettingsAsync(_servers);
-                        await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`, replacing what was there before.");
-                    }
-                    else
-                    {
-                        serverPresettings.Aliases.Add(shortForm, longForm);
-                        _servers.Settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
-                        await FileHelper.SaveAllPresettingsAsync(_servers);
-                        await ReplyAsync($"`{shortForm}` now aliased to `{longForm}`");
                     }
 
+                    _servers.Settings[Context.IsPrivate ? Context.User.Id : Context.Guild.Id] = serverPresettings;
+                    await FileHelper.SaveAllPresettingsAsync(_servers);
+                    await ReplyAsync(replacing
+                        ? $"`{shortForm}` now aliased to `{longForm}`, replacing what was there before."
+                        : $"`{shortForm}` now aliased to `{longForm}`");
                     break;
                 case "remove":
                     serverPresettings.Aliases.Remove(shortForm);
@@ -1631,7 +1627,7 @@
                 await ReplyAsync($"Retrieving log from {channel.Name} on {date}...");
 
                 // Logs are stored per channel id, in a folder that can only be inside this server's own directory.
-                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "log", context, channelId.ToString(), date);
+                var filepath = FileHelper.SetUpFilepath(FilePathType.LogRetrieval, date, "log", context, channelId.ToString(CultureInfo.InvariantCulture), date);
                 if (!File.Exists(filepath))
                 {
                     return "<ERROR> File does not exist";
