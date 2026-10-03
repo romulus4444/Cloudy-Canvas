@@ -1,0 +1,274 @@
+=== admin: help  
+**__All Commands:__**
+**Booru Module:**
+`;pick ...`
+`;pickrecent ...`
+`;id ...`
+`;tags ...`
+`;featured`
+`;getspoilers`
+`;report ...`
+**Admin Module:**
+`;setup ...`
+`;admin ...`
+`;watchlist ...`
+`;log ...`
+`;echo ...`
+`;setprefix ...`
+`;listentobots ...`
+`;safemode ...`
+`;alias ...`
+`;getsettings`
+`;refreshlists`
+**Info Module:**
+`;origin`
+`;about`
+
+Use `;help <command>` for more details on a particular command.
+
+=== admin: help pick 
+`;pick <query>`
+Posts a random image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.
+
+=== admin: help pickrecent 
+`;pickrecent <query>`
+Posts the most recently posted image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.
+
+=== admin: help id 
+`;id <number>`
+Posts Image #<number> from Manebooru, if it is available. If the image includes spoilered tags, the post is made in `||` spoiler bars.
+
+=== admin: help tags 
+`;tags <number>`
+Posts the list of tags on Image <number> from Manebooru, if it is available, including identifying any tags that are spoilered.
+
+=== admin: help featured 
+`;featured`
+Posts the current Featured Image from Manebooru.
+
+=== admin: help getspoilers 
+`;getspoilers`
+Posts a list of currently spoilered tags.
+
+=== admin: help report 
+`;report <id> <reason>`
+Alerts the admins about image #<id> with an optional <reason> for the admins to see. Only use this for images that violate the server rules!
+
+=== admin: help setup 
+`;setup <filter ID> <admin channel> <admin role>`
+*Only a server administrator may use this command.*
+Initial bot setup. Sets <filter ID> as the public Manebooru filter to use, <admin channel> for important admin output messages, and <admin role> as users who are allowed to use admin module commands. Validates that <Filter ID> is useable and if not, uses Filter 175.
+
+=== admin: help watchlist 
+**__;watchlist Commands:__**
+*Only users with the specified admin role may use these commands.*
+Manages the list of terms users are unable to search for.
+`;watchlist add <term>` Add <term> to the watchlist. <term> may be a comma-separated list.
+`;watchlist remove <term>` Removes <term> from the watchlist.
+`;watchlist get` Gets the current list of watchlisted terms.
+`;watchlist clear` Clears the watchlist of all terms.
+
+=== admin: help log 
+`;log <channel> <date>`
+*Only users with the specified admin role may use this command.*
+Posts the log file from <channel> and <date> into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD.
+
+=== admin: help echo 
+`;echo <channel> <message>`
+*Only users with the specified admin role may use this command.*
+Posts <message> to a valid <channel>. If <channel> is invalid, posts to the current channel instead. Accepts a channel ping or plain text.
+
+=== admin: help setprefix 
+`;setprefix <prefix>`
+*Only users with the specified admin role may use this command.*
+Sets the prefix in front of commands to listen for to <prefix>. Accepts a single punctuation or symbol character (not @, #, <, > or a backtick).
+
+=== admin: help listentobots 
+`;listentobots <pos/neg>`
+*Only users with the specified admin role may use this command.*
+Toggles whether or not to run commands posted by other bots. Accepts y/n, yes/no, on/off, or true/false.
+
+=== admin: help safemode 
+`;safemode <pos/neg>`
+*Only users with the specified admin role may use this command.*
+Toggles whether or not to automatically append `safe` to all booru queries. This overrides any channel-specific filters! Accepts y/n, yes/no, on/off, or true/false.
+
+=== admin: help alias 
+**__;alias Commands:__**
+*Only users with the specified admin role may use these commands.*
+Manages the list of command aliases.
+`;alias add <short> <long>` Sets <short> as an alias of <long>. If a command starts with <short>, <short> is replaced with <long> and the command is then processed normally. Do not include prefixes in <short> or <long>. Example: `;alias cute pick cute` sets `;cute` to run `;pick cute` instead. To use an alias that includes spaces, surround the entire <short> term with "" quotes. If an alias for <short> already exists, it replaces the previous value of <long> with the new one.
+`;alias remove <short>` Removes <short> as an alias for anything.
+`;alias get` Gets the current list of aliases.
+`;alias clear` Clears all aliases.
+
+=== admin: help getsettings 
+`;getsettings`
+*Only users with the specified admin role may use this command.*
+Posts the settings file to the log channel. This includes the watchlist.
+
+=== admin: help refreshlists 
+`;refreshlists`
+*Only users with the specified admin role may use this command.*
+Rebuilds the spoiler list from the current active filter. This may take several minutes depending on how many tags are in there.
+
+=== admin: help origin 
+`;origin`
+Posts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.
+
+=== admin: help about 
+`;about` Information about this bot.
+
+=== admin: help help 
+<:sweetiegrump:642466824696627200>
+
+=== admin: help broadcast 
+Invalid command. Use `;help` for a list of available commands.
+
+=== admin: help nonsense 
+Invalid command. Use `;help` for a list of available commands.
+
+=== admin: help admin 
+**__;admin Commands:__**
+*Only users with the specified admin role may use these commands*
+`;admin filter ...`
+`;admin adminchannel ...`
+`;admin adminrole ...`
+`;admin filterchannel ...`
+`;admin ignorechannel ...`
+`;admin ignorerole ...`
+`;admin allowuser ...`
+`;admin watchchannel ...`
+`;admin watchrole ...`
+`;admin reportchannel ...`
+`;admin reportrole ...`
+`;admin logchannel ...`
+
+Use `;help admin <command>` for more details on a particular command.
+
+=== admin: help admin filter
+__;admin filter Commands:__
+*Manages the active filter.*
+`;admin filter get` Gets the current active filter.
+`;admin filter set <filter ID>` Sets the active filter to <Filter ID>. Validates that the filter is useable by the bot.
+
+=== admin: help admin adminchannel
+__;admin adminchannel Commands:__
+*Manages the admin channel.*
+`;admin adminchannel get` Gets the current admin channel.
+`;admin adminchannel set <channel>` Sets the admin channel to <channel>. Accepts a channel ping or plain text.
+
+=== admin: help admin adminrole
+__;admin adminrole Commands:__
+*Manages the admin role.*
+`;admin adminrole get` Gets the current admin role.
+`;admin adminrole set <role>` Sets the admin role to <role>. Accepts a role ping or plain text.
+
+=== admin: help admin filterchannel
+__;admin filterchannel Commands:__
+*Manages the list of channel-specific filters. NOTE: red and watch list checks are disabled for any channels on this list!*
+`;admin filterchannel get` Gets the current list of channel-specific filters.
+`;admin filterchannel add <channel> <filterId>` Sets <channel> to use filter #<filterId>. Validates the filter first. Accepts a channel ping or plain text.
+`;admin filterchannel remove <channel>` Removes <channel> from the list of channel-specific filters. This channel will now use the default server filter. Accepts a channel ping or plain text.
+`;admin filterchannel clear` Clears the list of channel-specific filters. All channels will use the default server filter.
+
+=== admin: help admin ignorechannel
+__;admin ignorechannel Commands:__
+*Manages the list of channels to ignore commands from.*
+`;admin ignorechannel get` Gets the current list of ignored channels.
+`;admin ignorechannel add <channel>` Adds <channel> to the list of ignored channels. Accepts a channel ping or plain text.
+`;admin ignorechannel remove <channel>` Removes <channel> from the list of ignored channels. Accepts a channel ping or plain text.
+`;admin ignorechannel clear` Clears the list of ignored channels.
+
+=== admin: help admin ignorerole
+__;admin ignorerole Commands:__
+*Manages the list of roles to ignore commands from.*
+`;admin ignorerole get` Gets the current list of ignored roles.
+`;admin ignorerole add <role>` Adds <role> to the list of ignored roles. Accepts a role ping or plain text.
+`;admin ignorerole remove <role>` Removes <role> from the list of ignored roles. Accepts a role ping or plain text.
+`;admin ignorerole clear` Clears the list of ignored roles.
+
+=== admin: help admin allowuser
+__;admin allowuser Commands:__
+*Manages the list of users to allow commands from.*
+`;admin allowuser get` Gets the current list of allowed users.
+`;admin allowuser add <user>` Adds <user> to the list of allowed users. Accepts a user ping or plain text.
+`;admin allowuser remove <user>` Removes <user> from the list of allowed users. Accepts a user ping or plain text.
+`;admin allowuser clear` Clears the list of allowed users.
+
+=== admin: help admin watchchannel
+__;admin watchchannel Commands:__
+*Manages the watch alert channel.*
+`;admin watchchannel get` Gets the current watch alert channel.
+`;admin watchchannel set <channel>` Sets the watch alert channel to <channel>. Accepts a channel ping or plain text.
+`;admin watchchannel clear` Resets the watch alert channel to the current admin channel.
+
+=== admin: help admin watchrole
+__;admin watchrole Commands:__
+*Manages the watch alert role.*
+`;admin watchrole get` Gets the current watch alert role.
+`;admin watchrole set <role>` Sets the watch alert role to <role> and turns pinging on. Accepts a role ping or plain text.
+`;admin watchrole clear` Resets the watch alert role to no role and turns pinging off.
+
+=== admin: help admin reportchannel
+__;admin reportchannel Commands:__
+*Manages the report alert channel.*
+`;admin reportchannel get` Gets the current report alert channel.
+`;admin reportchannel set <channel>` Sets the report alert channel to <channel>. Accepts a channel ping or plain text.
+`;admin reportchannel clear` Resets the report alert channel to the current admin channel.
+
+=== admin: help admin reportrole
+__;admin reportrole Commands:__
+*Manages the report alert role.*
+`;admin reportrole get` Gets the current report alert role.
+`;admin reportrole set <role>` Sets the report alert role to <role> and turns pinging on. Accepts a role ping or plain text.
+`;admin reportrole clear` Resets the report alert role to no role and turns pinging off.
+
+=== admin: help admin logchannel
+__;admin logchannel Commands:__
+*Manages the log post channel.*
+`;admin logchannel get` Gets the current log post channel.
+`;admin logchannel set <channel>` Sets the log post channel to <channel>. Accepts a channel ping or plain text.
+`;admin logchannel clear` Resets the log post channel to the current admin channel.
+
+=== admin: help admin nonsense
+Invalid subcommand. Use `;help admin` for a list of available subcommands.
+
+=== member: help  
+**__All Commands:__**
+**Booru Module:**
+`;pick ...`
+`;pickrecent ...`
+`;id ...`
+`;tags ...`
+`;featured`
+`;getspoilers`
+`;report ...`
+**Info Module:**
+`;origin`
+`;about`
+
+Use `;help <command>` for more details on a particular command.
+
+=== member: help pick 
+`;pick <query>`
+Posts a random image from a Manebooru <query>, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.
+
+=== member: help setup 
+Only available to bot admins. Use ;help for a list of available commands.
+
+=== member: help admin 
+Only available to bot admins. Use ;help for a list of available commands.
+
+=== member: help broadcast 
+Only available to bot admins. Use ;help for a list of available commands.
+
+=== member: help ADMIN 
+Only available to bot admins. Use ;help for a list of available commands.
+
+=== member: help nonsense 
+Invalid command. Use `;help` for a list of available commands.
+
+=== member: help admin filter
+Only available to bot admins. Use ;help for a list of available commands.
+
