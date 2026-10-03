@@ -186,19 +186,8 @@ namespace Cloudy_Canvas
 
                 if (checkCommands)
                 {
-                    var validCommand = false;
-                    foreach (var command in _commands.Commands)
-                    {
-                        if (command.Name != parsedMessage.Split(" ")[0])
-                        {
-                            continue;
-                        }
-
-                        validCommand = true;
-                        break;
-                    }
-
-                    if (!validCommand)
+                    // Search matches the whole command path, so commands inside a group ("admin filter get") are found too.
+                    if (!_commands.Search(parsedMessage).IsSuccess)
                     {
                         // Stay quiet on unknown commands so the bot doesn't answer every message that happens to start with the prefix
                         // (other bots on the server often share it).

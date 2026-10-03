@@ -153,7 +153,7 @@ namespace Cloudy_Canvas.Tests.Modules
         [Fact]
         public void TheRealBroadcastCommandIsGatedByTheSameAttribute()
         {
-            var method = typeof(AdminModule).GetMethod(nameof(AdminModule.BroadcastCommandAsync));
+            var method = typeof(MessagingModule).GetMethod(nameof(MessagingModule.BroadcastCommandAsync));
 
             Assert.NotNull(method.GetCustomAttribute<RequireBroadcastUserAttribute>());
             Assert.Null(method.GetCustomAttribute<RequireOwnerAttribute>()); // the old, second gate is gone

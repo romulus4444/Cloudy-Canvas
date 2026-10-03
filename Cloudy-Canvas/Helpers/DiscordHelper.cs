@@ -20,6 +20,7 @@
         /// </summary>
         public static Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
         {
+            channelName = CleanInput(channelName);
             var mention = ConvertChannelPingToId(channelName);
             if (mention > 0)
             {
@@ -42,19 +43,21 @@
         /// <summary>
         /// Resolves a role given as a mention, a bare id or a name to the id of a role in this server (0 if none).
         /// A text made only of digits that isn't the id of a role is still tried as a role name.
+        /// An id the bot hasn't cached (a role made moments ago) is checked with Discord before being called invalid.
         /// </summary>
-        public static ulong GetRoleId(string roleName, SocketCommandContext context)
+        public static async Task<ulong> GetRoleIdAsync(string roleName, SocketCommandContext context)
         {
+            roleName = CleanInput(roleName);
             var mention = ConvertRolePingToId(roleName);
             if (mention > 0)
             {
-                return CheckIfRoleExists(mention, context);
+                return await FindRoleByIdAsync(mention, context);
             }
 
             var bareId = ParseSnowflake(roleName);
             if (bareId > 0)
             {
-                var found = CheckIfRoleExists(bareId, context);
+                var found = await FindRoleByIdAsync(bareId, context);
                 if (found > 0)
                 {
                     return found;
@@ -62,6 +65,26 @@
             }
 
             return CheckIfRoleExists(roleName, context);
+        }
+
+        private static async Task<ulong> FindRoleByIdAsync(ulong roleId, SocketCommandContext context)
+        {
+            var cached = CheckIfRoleExists(roleId, context);
+            if (cached > 0 || context.IsPrivate)
+            {
+                return cached;
+            }
+
+            try
+            {
+                var guild = await context.Client.Rest.GetGuildAsync(context.Guild.Id);
+                return guild?.GetRole(roleId)?.Id ?? 0;
+            }
+            catch (Exception ex)
+            {
+                Log.Warning(ex, "Could not ask Discord whether role {Role} exists in {Guild}", roleId, context.Guild.Id);
+                return 0;
+            }
         }
 
         public static async Task<bool> IsBotAdminAsync(SocketCommandContext context, ServerSettings settings)
@@ -139,6 +162,7 @@
 
         public static async Task<ulong> GetUserIdAsync(string userName, SocketCommandContext context)
         {
+            userName = CleanInput(userName);
             var userId = ConvertUserPingToId(userName);
             if (userId > 0)
             {
@@ -202,8 +226,8 @@
 
         private static ulong CheckIfChannelExists(string channelName, SocketCommandContext context)
         {
-            var name = channelName.Trim().TrimStart('#');
-            return FindChannelCloudyCanBeSeen(context, channel => string.Equals(channel.Name, name, StringComparison.OrdinalIgnoreCase));
+            var name = CleanInput(channelName).TrimStart('#');
+            return FindChannelCloudyCanBeSeen(context, channel => string.Equals(CleanInput(channel.Name), name, StringComparison.OrdinalIgnoreCase));
         }
 
         private static ulong CheckIfChannelExists(ulong channelId, SocketCommandContext context)
@@ -249,6 +273,20 @@
         public static bool IsValidPrefix(char prefix)
         {
             return (char.IsPunctuation(prefix) || char.IsSymbol(prefix)) && "@#`<>".IndexOf(prefix) < 0;
+        }
+
+        /// <summary>
+        /// The text without the invisible formatting characters (zero-width spaces, word joiners and the like) that copying a name out of
+        /// Discord or a web page often brings along, and without surrounding spaces. A name pasted with one never matched anything.
+        /// </summary>
+        public static string CleanInput(string text)
+        {
+            if (string.IsNullOrEmpty(text))
+            {
+                return text ?? string.Empty;
+            }
+
+            return string.Concat(text.Where(c => CharUnicodeInfo.GetUnicodeCategory(c) != UnicodeCategory.Format)).Trim();
         }
 
         /// <summary>
@@ -303,10 +341,10 @@
                 return 0;
             }
 
-            var name = roleName.Trim().TrimStart('@');
+            var name = CleanInput(roleName).TrimStart('@');
             foreach (var role in context.Guild.Roles)
             {
-                if (string.Equals(role.Name.TrimStart('@'), name, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(CleanInput(role.Name).TrimStart('@'), name, StringComparison.OrdinalIgnoreCase))
                 {
                     return role.Id;
                 }
