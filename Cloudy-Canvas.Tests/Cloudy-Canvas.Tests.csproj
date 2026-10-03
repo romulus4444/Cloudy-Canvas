@@ -19,4 +19,8 @@
   <ItemGroup>
     <ProjectReference Include="..\Cloudy-Canvas\Cloudy-Canvas.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <!-- The sample configuration is checked against the real settings classes by SampleConfigurationTests. -->
+    <None Include="..\Cloudy-Canvas\appsettings.sample.json" Link="appsettings.sample.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>
