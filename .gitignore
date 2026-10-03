@@ -357,6 +357,7 @@ BotSettings\**
 /.envrc
 /.direnv
 **/botsettings/**
+**/devsettings/**
 **/appsettings.json
 **/appsettings.*.json
 /result
