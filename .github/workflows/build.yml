@@ -38,4 +38,4 @@ jobs:
         # Raise the floor as coverage improves; the classes that need a live Discord connection are checked by hand.
         run: |
           report=$(find TestResults -name coverage.cobertura.xml | head -n 1)
-          { echo "## Test coverage"; echo; python3 .github/scripts/coverage_summary.py "$report" --threshold 55; } >> "$GITHUB_STEP_SUMMARY"
+          { echo "## Test coverage"; echo; python3 .github/scripts/coverage_summary.py "$report" --threshold 60; } >> "$GITHUB_STEP_SUMMARY"
