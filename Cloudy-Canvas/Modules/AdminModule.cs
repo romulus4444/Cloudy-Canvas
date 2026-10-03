@@ -534,7 +534,7 @@
         }
 
         [Command("listentobots", RunMode = RunMode.Async)]
-        [Summary("Sets the bot listen prefix")]
+        [Summary("Sets whether the bot responds to commands from other bots")]
         public async Task ListenToBotsCommandAsync([Summary("yes or no")] string command = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
@@ -1129,7 +1129,7 @@
             }
             else
             {
-                await ReplyAsync($"Invalid channel name @{roleName}.", allowedMentions: AllowedMentions.None);
+                await ReplyAsync($"Invalid role name @{roleName}.", allowedMentions: AllowedMentions.None);
             }
         }
 
@@ -1300,7 +1300,7 @@
             }
             else
             {
-                await ReplyAsync($"Invalid role name #{roleName}.");
+                await ReplyAsync($"Invalid role name @{roleName}.");
             }
         }
 
@@ -1368,7 +1368,7 @@
             }
             else
             {
-                await ReplyAsync($"Invalid role name #{roleName}.");
+                await ReplyAsync($"Invalid role name @{roleName}.");
             }
         }
 
@@ -1388,7 +1388,7 @@
         {
             settings.LogPostChannel = settings.AdminChannel;
             await FileHelper.SaveServerSettingsAsync(settings, Context);
-            await ReplyAsync($"Report alert channel reset to the current admin channel, <#{settings.LogPostChannel}>");
+            await ReplyAsync($"Log post channel reset to the current admin channel, <#{settings.LogPostChannel}>");
         }
 
         private async Task LogChannelSetAsync(string channelName, ServerSettings settings)
@@ -1556,7 +1556,7 @@
             }
         }
 
-        [Summary("Submodule for retreiving log files")]
+        [Summary("Submodule for retrieving log files")]
         public class LogModule : BotModuleBase
         {
             private readonly LoggingService _logger;

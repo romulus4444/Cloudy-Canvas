@@ -111,7 +111,7 @@
                             break;
                         case "allowuser":
                             await ReplyAsync(
-                                $"__{prefix}admin allowuser Commands:__{Environment.NewLine}*Manages the list of users to allow commands from.*{Environment.NewLine}`{prefix}admin allowuser get` Gets the current list of allowd users.{Environment.NewLine}`{prefix}admin allowuser add <user>` Adds <user> to the list of allowd users. Accepts a user ping or plain text.{Environment.NewLine}`{prefix}admin allowuser remove <user>` Removes <user> from the list of allowed users. Accepts a user ping or plain text.{Environment.NewLine}`{prefix}admin allowuser clear` Clears the list of allowd users.");
+                                $"__{prefix}admin allowuser Commands:__{Environment.NewLine}*Manages the list of users to allow commands from.*{Environment.NewLine}`{prefix}admin allowuser get` Gets the current list of allowed users.{Environment.NewLine}`{prefix}admin allowuser add <user>` Adds <user> to the list of allowed users. Accepts a user ping or plain text.{Environment.NewLine}`{prefix}admin allowuser remove <user>` Removes <user> from the list of allowed users. Accepts a user ping or plain text.{Environment.NewLine}`{prefix}admin allowuser clear` Clears the list of allowed users.");
                             break;
                         case "watchchannel":
                             await ReplyAsync(
@@ -127,7 +127,7 @@
                             break;
                         case "reportrole":
                             await ReplyAsync(
-                                $"__{prefix}admin reportrole Commands:__{Environment.NewLine}*Manages the report alert role.*{Environment.NewLine}`{prefix}admin reportrole get` Gets the current report alert role.{Environment.NewLine}`{prefix}admin reportrole set <role>` Sets the report alert role to <role> and turns pinging on. Accepts a role ping or plain text.{Environment.NewLine}`{prefix}admin reportrole clear` Resets the report alert channel to no role and turns pinging off.");
+                                $"__{prefix}admin reportrole Commands:__{Environment.NewLine}*Manages the report alert role.*{Environment.NewLine}`{prefix}admin reportrole get` Gets the current report alert role.{Environment.NewLine}`{prefix}admin reportrole set <role>` Sets the report alert role to <role> and turns pinging on. Accepts a role ping or plain text.{Environment.NewLine}`{prefix}admin reportrole clear` Resets the report alert role to no role and turns pinging off.");
                             break;
                         case "logchannel":
                             await ReplyAsync(
@@ -169,7 +169,7 @@
                     break;
                 case "getsettings":
                     await ReplyAsync(
-                        $"`{prefix}getsettings`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Posts the settings file to the log channel. This includes the redlist.");
+                        $"`{prefix}getsettings`{Environment.NewLine}*Only users with the specified admin role may use this command.*{Environment.NewLine}Posts the settings file to the log channel. This includes the watchlist.");
                     break;
                 case "refreshlists":
                     await ReplyAsync(
