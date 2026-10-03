@@ -43,6 +43,25 @@ Cloudy does not delete a server's data when she is removed from it. To delete it
 
 To report a security problem, see [SECURITY.md](SECURITY.md).
 
+### Running on NixOS
+
+The flake provides a NixOS module that runs Cloudy as a systemd service. The module is per system, so on x86-64 Linux with a flake-based configuration:
+
+```nix
+{
+  inputs.cloudy-canvas.url = "github:romulus4444/Cloudy-Canvas";
+
+  # in your NixOS configuration:
+  imports = [ inputs.cloudy-canvas.nixosModules.x86_64-linux.default ];
+  services.cloudy-canvas = {
+    enable = true;
+    environmentFile = "/run/secrets/cloudy-canvas.env"; # a root-only file with DiscordSettings__token=...
+  };
+}
+```
+
+The service runs as its own `cloudy-canvas` user and keeps its data in `/var/lib/cloudy-canvas` (`services.cloudy-canvas.workDir`). If it stops with an error, such as a bad token or a long outage, systemd starts it again after 10 seconds, waiting longer after each failure up to 10 minutes, and never gives up. It runs in systemd's sandbox: it can use the network and write to its own folder, and nothing else. If the sandbox ever stops something you need, `services.cloudy-canvas.sandbox = false;` turns it off (please report what broke). `nix build .#checks.x86_64-linux.service` runs a virtual-machine test of the module (it needs KVM).
+
 ### Running a development copy alongside the real one
 A test copy of the bot should not share the real one's data or answer the same commands. Give it its own settings, for example in `appsettings.Development.json` (also git-ignored), user secrets, or environment variables:
 
