@@ -25,7 +25,7 @@
         public async Task HelpCommandAsync([Summary("First subcommand")] string command = "", [Remainder] [Summary("Second subcommand")] string subCommand = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
             {
                 return;
             }
@@ -188,7 +188,7 @@
         public async Task OriginCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
             {
                 return;
             }
@@ -203,7 +203,7 @@
         public async Task AboutCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!DiscordHelper.CanUserRunThisCommand(Context, settings))
+            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
             {
                 return;
             }

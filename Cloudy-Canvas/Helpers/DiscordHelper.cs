@@ -6,10 +6,14 @@
     using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
     using Discord.Commands;
+    using Discord;
     using Discord.WebSocket;
+    using Serilog;
 
     public static class DiscordHelper
     {
+        private static readonly MemberRoleCache MemberCache = new(TimeSpan.FromSeconds(30));
+
         public static Task<ulong> GetChannelIdIfAccessAsync(string channelName, SocketCommandContext context)
         {
             var id = ConvertChannelPingToId(channelName);
@@ -22,34 +26,23 @@
             return id > 0 ? CheckIfRoleExistsAsync(id, context) : CheckIfRoleExistsAsync(roleName, context);
         }
 
-        public static bool DoesUserHaveAdminRoleAsync(SocketCommandContext context, ServerSettings settings)
+        public static async Task<bool> DoesUserHaveAdminRoleAsync(SocketCommandContext context, ServerSettings settings)
         {
             if (context.IsPrivate)
             {
                 return true;
             }
 
-            if (context.User is not SocketGuildUser user)
+            if (context.User is not SocketGuildUser)
             {
                 return false;
             }
 
-            // Server administrators can always use the bot's admin commands.
-            if (user.GuildPermissions.Administrator)
-            {
-                return true;
-            }
-
-            // Fail closed: until an admin role has been configured, only members who can manage the server count as admins.
-            if (settings.AdminRole == 0)
-            {
-                return user.GuildPermissions.ManageGuild;
-            }
-
-            return user.Roles.Any(x => x.Id == settings.AdminRole);
+            var member = await GetGuildMemberAsync(context);
+            return AccessPolicy.IsBotAdmin(member.RoleIds, member.Permissions, settings);
         }
 
-        public static bool CanUserRunThisCommand(SocketCommandContext context, ServerSettings settings)
+        public static async Task<bool> CanUserRunThisCommandAsync(SocketCommandContext context, ServerSettings settings)
         {
             if (context.IsPrivate)
             {
@@ -61,36 +54,49 @@
                 return false;
             }
 
-            if (guildUser.Roles.Any(x => x.Id == settings.AdminRole))
+            var member = await GetGuildMemberAsync(context);
+            return AccessPolicy.CanRunCommands(guildUser.Id, context.Channel.Id, member.RoleIds, settings);
+        }
+
+        /// <summary>
+        /// The member's current roles and permissions, straight from Discord (cached for 30 seconds).
+        /// The member held in the socket cache can't be trusted for this: the bot doesn't have the GuildMembers intent, so it is never
+        /// told when a member's roles change, and Discord.Net keeps whatever roles it first saw. A role granted or revoked after the
+        /// member first spoke (an ignored role, the bot's admin role) would otherwise not count until the bot restarted.
+        /// If Discord can't be reached this falls back to the cached member rather than failing the command.
+        /// </summary>
+        public static async Task<GuildMember> GetGuildMemberAsync(SocketCommandContext context)
+        {
+            var guild = context.Guild;
+            var cachedUser = (SocketGuildUser)context.User;
+            var now = DateTime.UtcNow;
+            if (MemberCache.TryGet(guild.Id, cachedUser.Id, now, out var known))
             {
-                return true;
+                return known;
             }
 
-            foreach (var allowedUser in settings.AllowedUsers)
+            try
             {
-                if (context.User.Id == allowedUser)
+                var fresh = await context.Client.Rest.GetGuildUserAsync(guild.Id, cachedUser.Id);
+                if (fresh != null)
                 {
-                    return true;
+                    var roleIds = fresh.RoleIds.ToList();
+                    var permissions = guild.OwnerId == cachedUser.Id
+                        ? GuildPermissions.All
+                        : AccessPolicy.CombinePermissions(
+                            roleIds.Select(id => guild.GetRole(id)?.Permissions.RawValue ?? 0).Append(guild.EveryoneRole.Permissions.RawValue));
+                    var member = new GuildMember(roleIds, permissions);
+                    MemberCache.Set(guild.Id, cachedUser.Id, now, member);
+                    return member;
                 }
             }
-
-            foreach (var ignoredChannel in settings.IgnoredChannels)
+            catch (Exception ex)
             {
-                if (context.Channel.Id == ignoredChannel)
-                {
-                    return false;
-                }
+                // Not cached, so the next command tries Discord again.
+                Log.Warning(ex, "Could not fetch the current roles of {User} in {Guild}; using the cached ones", cachedUser.Id, guild.Id);
             }
 
-            foreach (var ignoredRole in settings.IgnoredRoles)
-            {
-                if (guildUser.Roles.Any(x => x.Id == ignoredRole))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return new GuildMember(cachedUser.Roles.Select(role => role.Id).ToList(), cachedUser.GuildPermissions);
         }
 
         public static async Task<ulong> GeUserIdFromPingOrIfOnlySearchResultAsync(string userName, SocketCommandContext context)

@@ -138,7 +138,7 @@ Manages the admin role.
  
 ---
 
-Manages the list of roles to ignore commands from. Cloudy will not respond to users that have any of these roles.
+Manages the list of roles to ignore commands from. Cloudy will not respond to users that have any of these roles, not even with an error message. Users with the admin role, and users on the allowed-user list, are never ignored. Role changes take effect within about 30 seconds.
 
 `;admin ignorerole get` Gets the current list of ignored roles.
 

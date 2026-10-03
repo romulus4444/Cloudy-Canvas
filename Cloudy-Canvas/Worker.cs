@@ -110,6 +110,17 @@ namespace Cloudy_Canvas
 
             try
             {
+                // A failure like a malformed command happens before the command's own checks run, so apply the ignore rules here too:
+                // someone the server told the bot to ignore gets no reply at all, not even an error message.
+                if (context is SocketCommandContext socketContext)
+                {
+                    var settings = await FileHelper.LoadServerSettingsAsync(socketContext);
+                    if (!await DiscordHelper.CanUserRunThisCommandAsync(socketContext, settings))
+                    {
+                        return;
+                    }
+                }
+
                 await context.Channel.SendMessageAsync(reply, allowedMentions: AllowedMentions.None);
             }
             catch (Exception ex)
