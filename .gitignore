@@ -353,7 +353,6 @@ MigrationBackup/
 # Locally stored settings and logs
 BotSettings\**
 /Cloudy-Canvas/BotSettings
-/Cloudy-Canvas/DevSettings
 
 /.envrc
 /.direnv
