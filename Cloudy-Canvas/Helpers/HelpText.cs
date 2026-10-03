@@ -97,10 +97,16 @@ namespace Cloudy_Canvas.Helpers
                 return $"Invalid subcommand. Use `{prefix}help admin` for a list of available subcommands.";
             }
 
-            var lines = new List<string> { $"__{{p}}admin {found.Name} Commands:__", $"*{found.Summary}*" };
-            lines.AddRange(found.Actions.Select(action =>
-                $"`{{p}}admin {found.Name} {action.Action}{(action.Arguments.Length > 0 ? " " + action.Arguments : string.Empty)}` {action.Description}"));
-            return Render(prefix, lines);
+            return Render(prefix, AdminSettingLines(found));
+        }
+
+        /// <summary>The lines of the help for one ";admin &lt;setting&gt;" group, with {p} standing for the prefix.</summary>
+        public static IReadOnlyList<string> AdminSettingLines(AdminSettingHelp setting)
+        {
+            var lines = new List<string> { $"__{{p}}admin {setting.Name} Commands:__", $"*{setting.Summary}*" };
+            lines.AddRange(setting.Actions.Select(action =>
+                $"`{{p}}admin {setting.Name} {action.Action}{(action.Arguments.Length > 0 ? " " + action.Arguments : string.Empty)}` {action.Description}"));
+            return lines;
         }
 
         /// <summary>The lines of a help text, with the server's prefix filled in, as one message.</summary>

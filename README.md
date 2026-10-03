@@ -46,11 +46,13 @@ A test copy of the bot should not share the real one's data or answer the same c
 
 ---
 
-`;pick <query>` Posts a random image from a Manebooru `<query>`, if it is available. If results include any spoilered tags, the post is made in `||` spoiler bars.
+<!-- BEGIN GENERATED: booru. Do not edit by hand: change Cloudy-Canvas/Helpers/HelpTopics.cs, then run the tests with UPDATE_SNAPSHOTS=1 to rewrite this part. -->
+
+`;pick <query>` Posts a random image from a Manebooru `<query>`, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.
 
 ---
 
-`;pickrecent <query>` Posts the most recently posted image from a Manebooru `<query>`, if it is available. If results include any spoilered tags, the post is made in `||` spoiler bars.
+`;pickrecent <query>` Posts the most recently posted image from a Manebooru `<query>`, if it is available. Each different search term in the query is separated by a comma. If results include any spoilered tags, the post is made in `||` spoiler bars.
 
 ---
 
@@ -62,7 +64,7 @@ A test copy of the bot should not share the real one's data or answer the same c
 
 ---
 
-`;featured` Posts the current Manebooru Spotlight featured image.
+`;featured` Posts the current Featured Image from Manebooru.
 
 ---
 
@@ -70,9 +72,11 @@ A test copy of the bot should not share the real one's data or answer the same c
 
 ---
 
-`;report <id> <reason>` Alerts the admins about image #`<id>` with an optional `<reason>` for the admins to see. Only use this for images that violate the server rules; this is not a report to manebooru itself!
+`;report <id> <reason>` Alerts the admins about image #`<id>` with an optional `<reason>` for the admins to see. Only use this for images that violate the server rules; this is not a report to Manebooru itself!
 
 ---
+
+<!-- END GENERATED: booru -->
 
 ### Mixins:
 
@@ -96,11 +100,11 @@ Example: If today was May 23rd, 2021, then `;pick created_at:{ { today } }, lyra
 
 ---
 
-Initial bot setup. Run this before doing anything else when adding Cloudy Canvas to your server!
+<!-- BEGIN GENERATED: admin. Do not edit by hand: change Cloudy-Canvas/Helpers/HelpTopics.cs, then run the tests with UPDATE_SNAPSHOTS=1 to rewrite this part. -->
 
-`;setup <filter ID> <admin channel> <admin role>` *(Only a server administrator may use this command)*
+`;setup <filter ID> <admin channel> <admin role>` *Only a server administrator may use this command.* Initial bot setup. Run this before doing anything else when adding Cloudy Canvas to your server! Sets `<filter ID>` as the public Manebooru filter to use, `<admin channel>` for important admin output messages, and `<admin role>` as users who are allowed to use admin module commands. Validates that `<Filter ID>` is useable and if not, uses Filter 175.
 
-Sets `<filter ID>` as the public Manebooru filter to use, `<admin channel>` for important admin output messages, and `<admin role>` as users who are allowed to use admin module commands. Validates that `<Filter ID>` is useable and if not, uses Filter 175 (Cloudy Canvas's default filter). Filters are viewable at `https://manebooru.art/filters/<filter ID>`. All alert channels are defaulted to the admin channel, and all alert roles and pings are turned off. The spoiler list is then built, which can take several minutes, depending on how many tags in the filter are spoilered. Please wait until is done being built before running more commands; Cloudy will tell you when she is ready. This is a one-time process, unless manually initiated later.
+Filters are viewable at `https://manebooru.art/filters/<filter ID>`. All alert channels are defaulted to the admin channel, and all alert roles and pings are turned off. The spoiler list is then built, which can take several minutes, depending on how many tags in the filter are spoilered. Please wait until it is done being built before running more commands; Cloudy will tell you when she is ready. This is a one-time process, unless manually initiated later.
 
 ---
 
@@ -109,9 +113,9 @@ Manages the active filter.
 `;admin filter get` Gets the current active filter.
 
 `;admin filter set <filter ID>` Sets the active filter to `<Filter ID>`. Validates that the filter is useable by the bot. The spoiler list is rebuilt after the new filter is set.
- 
- ---
- 
+
+---
+
 Manages the admin channel.
 
 `;admin adminchannel get` Gets the current admin channel.
@@ -128,40 +132,42 @@ Manages the admin role.
 
 ---
 
- Manages the list of channel-specific filters. NOTE: watchlist checks are disabled for any channels on this list! Moderators will need to keep an eye on searches performed here!
+Manages the list of channel-specific filters. NOTE: watchlist checks are disabled for any channels on this list! Moderators will need to keep an eye on searches performed here!
 
 `;admin filterchannel get` Gets the current list of channel-specific filters.
 
 `;admin filterchannel add <channel> <filterId>` Sets `<channel>` to use filter #`<filterId>`. Validates the filter first. Accepts a channel ping or plain text.
- 
+
 `;admin filterchannel remove <channel>` Removes `<channel>` from the list of channel-specific filters. This channel will now use the default server filter. Accepts a channel ping or plain text.
- 
+
 `;admin filterchannel clear` Clears the list of channel-specific filters. All channels will use the default server filter.
- 
+
 ---
- 
- Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.
+
+Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.
 
 `;admin ignorechannel get` Gets the current list of ignored channels.
 
 `;admin ignorechannel add <channel>` Adds `<channel>` to the list of ignored channels. Accepts a channel ping or plain text.
- 
+
 `;admin ignorechannel remove <channel>` Removes `<channel>` from the list of ignored channels. Accepts a channel ping or plain text.
- 
+
 `;admin ignorechannel clear` Clears the list of ignored channels.
- 
+
 ---
 
-Manages the list of roles to ignore commands from. Cloudy will not respond to users that have any of these roles, not even with an error message. Users with the admin role, and users on the allowed-user list, are never ignored. Role changes take effect within about 30 seconds.
+Manages the list of roles to ignore commands from.
+
+Cloudy will not respond to users that have any of these roles, not even with an error message. Users with the admin role, and users on the allowed-user list, are never ignored. Role changes take effect within about 30 seconds.
 
 `;admin ignorerole get` Gets the current list of ignored roles.
 
 `;admin ignorerole add <role>` Adds `<role>` to the list of ignored roles. Accepts a role ping or plain text.
- 
+
 `;admin ignorerole remove <role>` Removes `<role>` from the list of ignored roles. Accepts a role ping or plain text.
- 
+
 `;admin ignorerole clear` Clears the list of ignored roles.
- 
+
 ---
 
 Manages the list of users to allow commands from. This overrides the ignorechannel and ignorerole restrictions!
@@ -171,11 +177,11 @@ Everywhere a command takes a user, channel or role you can give a ping, a name, 
 `;admin allowuser get` Gets the current list of allowed users.
 
 `;admin allowuser add <user>` Adds `<user>` to the list of allowed users. Accepts a user ping or plain text.
- 
+
 `;admin allowuser remove <user>` Removes `<user>` from the list of allowed users. Accepts a user ping or plain text.
- 
+
 `;admin allowuser clear` Clears the list of allowed users.
- 
+
 ---
 
 Manages the watch alert channel.
@@ -183,9 +189,9 @@ Manages the watch alert channel.
 `;admin watchchannel get` Gets the current watch alert channel.
 
 `;admin watchchannel set <channel>` Sets the watch alert channel to `<channel>`. Accepts a channel ping or plain text.
- 
+
 `;admin watchchannel clear` Resets the watch alert channel to the current admin channel.
- 
+
 ---
 
 Manages the watch alert role.
@@ -193,7 +199,7 @@ Manages the watch alert role.
 `;admin watchrole get` Gets the current watch alert role.
 
 `;admin watchrole set <role>` Sets the watch alert role to `<role>` and turns pinging on. Accepts a role ping or plain text.
- 
+
 `;admin watchrole clear` Resets the watch alert role to no role and turns pinging off.
 
 ---
@@ -203,7 +209,7 @@ Manages the report alert channel.
 `;admin reportchannel get` Gets the current report alert channel.
 
 `;admin reportchannel set <channel>` Sets the report alert channel to `<channel>`. Accepts a channel ping or plain text.
- 
+
 `;admin reportchannel clear` Resets the report alert channel to the current admin channel.
 
 ---
@@ -213,9 +219,9 @@ Manages the report alert role.
 `;admin reportrole get` Gets the current report alert role.
 
 `;admin reportrole set <role>` Sets the report alert role to `<role>` and turns pinging on. Accepts a role ping or plain text.
- 
-`;admin reportrole clear` Resets the report alert channel to no role and turns pinging off.
- 
+
+`;admin reportrole clear` Resets the report alert role to no role and turns pinging off.
+
 ---
 
 Manages the log post channel.
@@ -223,35 +229,37 @@ Manages the log post channel.
 `;admin logchannel get` Gets the current log post channel.
 
 `;admin logchannel set <channel>` Sets the log post channel to `<channel>`. Accepts a channel ping or plain text.
- 
+
 `;admin logchannel clear` Resets the log post channel to the current admin channel.
- 
+
 ---
 
 Manages the list of terms users are unable to search for.
-
-`;watchlist get` Gets the current list of watchlisted terms.
 
 `;watchlist add <term>` Add `<term>` to the watchlist. `<term>` may be a comma-separated list.
 
 `;watchlist remove <term>` Removes `<term>` from the watchlist.
 
+`;watchlist get` Gets the current list of watchlisted terms.
+
 `;watchlist clear` Clears the watchlist of all terms.
- 
+
 ---
 
 `;log <channel> <date>` Posts the log file from `<channel>` and `<date>` into the admin channel. Accepts a channel ping or plain text. `<date>` must be formatted as `YYYY-MM-DD`. Logs are saved based on date in UTC.
- 
+
 ---
 
 `;echo <message>` Posts `<message>` to the current channel.
 
 `;echo <channel> <message>` Posts `<message>` to a valid `<channel>`. If `<channel>` is invalid, posts to the current channel instead. Accepts a channel ping or plain text.
- 
+
 ---
 
-`;setprefix <prefix>` Sets the prefix in front of commands to listen for to `<prefix>`. Accepts a single punctuation or symbol character (not `@`, `#`, `` ` ``, `<` or `>`). Cloudy stays silent when a message starts with the prefix but isn't one of her commands.
- 
+`;setprefix <prefix>` Sets the prefix in front of commands to listen for to `<prefix>`. Accepts a single punctuation or symbol character (not `@`, `#`, `<`, `>` or a backtick).
+
+Cloudy stays silent when a message starts with the prefix but isn't one of her commands.
+
 ---
 
 `;listentobots <pos/neg>` Toggles whether or not to run commands posted by other bots. Accepts `y/n`, `yes/no`, `on/off`, or `true/false`.
@@ -263,18 +271,18 @@ Manages the list of terms users are unable to search for.
 ---
 
 Manages the list of command aliases.
- 
-`;alias add <short> <long>` Sets `<short>` as an alias of `<long>`. If a command starts with `<short>`, `<short>` is replaced with `<long>` and the command is then processed normally. Do not include prefixes in `<short>` or `<long>`. Example: `;alias cute pick cute` sets `;cute` to run `;pick cute` instead. To use an alias that includes spaces, surround the entire `<short>` term with "" quotes. If an alias for `<short>` already exists, it replaces the previous value of `<long>` with the new one.
+
+`;alias add <short> <long>` Sets `<short>` as an alias of `<long>`. If a command starts with `<short>`, `<short>` is replaced with `<long>` and the command is then processed normally. Do not include prefixes in `<short>` or `<long>`. Example: `;alias add cute pick cute` sets `;cute` to run `;pick cute` instead. To use an alias that includes spaces, surround the entire `<short>` term with "" quotes. If an alias for `<short>` already exists, it replaces the previous value of `<long>` with the new one.
 
 `;alias remove <short>` Removes `<short>` as an alias for anything.
 
 `;alias get` Gets the current list of aliases.
 
 `;alias clear` Clears all aliases.
- 
+
 ---
 
-`;getsettings` Posts the settings file to the log channel.
+`;getsettings` Posts the settings file to the log channel. This includes the watchlist.
 
 ---
 
@@ -282,7 +290,12 @@ Manages the list of command aliases.
 
 ---
 
+<!-- END GENERATED: admin -->
+
 ### Info Module
+
+<!-- BEGIN GENERATED: info. Do not edit by hand: change Cloudy-Canvas/Helpers/HelpTopics.cs, then run the tests with UPDATE_SNAPSHOTS=1 to rewrite this part. -->
+
 `;origin` Posts the origin of Manebooru's cute kirin mascot and the namesake of this bot, Cloudy Canvas.
 
 ---
@@ -290,6 +303,8 @@ Manages the list of command aliases.
 `;about` Information about this bot.
 
 ---
+
+<!-- END GENERATED: info -->
 
 `;help` A list of commands and descriptions, much like this page. The admin commands are only listed, and their help only shown, to users who can use them.
 
