@@ -3,31 +3,10 @@
     using System;
     using System.Collections.Generic;
     using System.Text.RegularExpressions;
-    using System.Threading.Tasks;
     using Cloudy_Canvas.Settings;
-    using Discord.Commands;
 
     public static class BadlistHelper
     {
-        public static async Task<bool> RemoveWatchTerm(string term, ServerSettings settings, SocketCommandContext context)
-        {
-            var lower = term.ToLowerInvariant();
-            for (var x = settings.WatchList.Count - 1; x >= 0; x--)
-            {
-                var watch = settings.WatchList[x];
-                if (watch != lower)
-                {
-                    continue;
-                }
-
-                settings.WatchList.Remove(watch);
-                await FileHelper.SaveServerSettingsAsync(settings, context);
-                return true;
-            }
-
-            return false;
-        }
-
         /// <summary>
         /// Returns the (comma separated) search terms in <paramref name="query"/> that hit the watchlist, or an empty string if none do.
         /// Terms are pulled out of the query however they are written: separated by commas (with or without a space), grouped in parentheses,
@@ -55,39 +34,6 @@
             }
 
             return string.Join(", ", matched);
-        }
-
-        public static async Task<Tuple<List<string>, List<string>>> AddWatchTerm(string term, ServerSettings settings, SocketCommandContext context)
-        {
-            var termList = term.ToLowerInvariant().Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-            var failList = new List<string>();
-            var addList = new List<string>();
-            foreach (var singleTerm in termList)
-            {
-                var failed = false;
-                foreach (var watch in settings.WatchList)
-                {
-                    if (watch != singleTerm)
-                    {
-                        continue;
-                    }
-
-                    failList.Add(singleTerm);
-                    failed = true;
-                }
-
-                if (failed)
-                {
-                    continue;
-                }
-
-                settings.WatchList.Add(singleTerm);
-                addList.Add(singleTerm);
-            }
-
-            await FileHelper.SaveServerSettingsAsync(settings, context);
-            var combined = new Tuple<List<string>, List<string>>(addList, failList);
-            return combined;
         }
 
         private static readonly Regex OperatorRegex = new(@"\|\||&&|\s+(?:and|or)\s+", RegexOptions.IgnoreCase | RegexOptions.Compiled);
