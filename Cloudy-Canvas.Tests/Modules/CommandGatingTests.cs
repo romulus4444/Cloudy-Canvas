@@ -84,7 +84,7 @@ namespace Cloudy_Canvas.Tests.Modules
             Assert.True(gated.Count >= 11, $"expected to find the admin commands, found {gated.Count}");
             foreach (var word in gated)
             {
-                Assert.True(HelpText.IsAdminTopic(word), $"'{word}' is a restricted command; add it to HelpText.AdminTopics so its help is hidden from non-admins");
+                Assert.True(HelpText.IsAdminTopic(word), $"'{word}' is a restricted command; give it an AdminOnly entry in HelpTopics so its help is hidden from non-admins");
             }
         }
 
