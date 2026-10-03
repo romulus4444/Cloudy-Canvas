@@ -19,13 +19,14 @@ namespace Cloudy_Canvas.Helpers
     /// <param name="AdminOnly">True if only bot admins may use it; its help is then shown only to admins.</param>
     /// <param name="Listing">How it appears in the overview ("pick ..." when it takes arguments), or null if it is not listed.</param>
     /// <param name="Text">What the help says, one entry per line; {p} stands for the server's prefix. Null if there is nothing to say.</param>
-    public sealed record HelpTopic(string Name, HelpSection Section, bool AdminOnly, string Listing, IReadOnlyList<string> Text);
+    /// <param name="ReadmeNotes">Paragraphs for the README only: detail that is too long for a Discord message but belongs in the reference.</param>
+    public sealed record HelpTopic(string Name, HelpSection Section, bool AdminOnly, string Listing, IReadOnlyList<string> Text, IReadOnlyList<string> ReadmeNotes = null);
 
     /// <summary>One thing an admin can do to a setting: ";admin &lt;setting&gt; &lt;action&gt; &lt;arguments&gt;".</summary>
     public sealed record AdminActionHelp(string Action, string Arguments, string Description);
 
     /// <summary>The help for one ";admin &lt;setting&gt;" command group. A test checks these against the actions the bot really has.</summary>
-    public sealed record AdminSettingHelp(string Name, string Summary, IReadOnlyList<AdminActionHelp> Actions);
+    public sealed record AdminSettingHelp(string Name, string Summary, IReadOnlyList<AdminActionHelp> Actions, IReadOnlyList<string> ReadmeNotes = null);
 
     /// <summary>
     /// Everything ";help" can say, as data. HelpText turns it into replies and into the overview, and tests compare it with the real
@@ -41,7 +42,7 @@ namespace Cloudy_Canvas.Helpers
                 new[]
                 {
                     new AdminActionHelp("get", "", "Gets the current active filter."),
-                    new AdminActionHelp("set", "<filter ID>", "Sets the active filter to <Filter ID>. Validates that the filter is useable by the bot."),
+                    new AdminActionHelp("set", "<filter ID>", "Sets the active filter to <Filter ID>. Validates that the filter is useable by the bot. The spoiler list is rebuilt after the new filter is set."),
                 }),
             new AdminSettingHelp(
                 "adminchannel",
@@ -61,7 +62,7 @@ namespace Cloudy_Canvas.Helpers
                 }),
             new AdminSettingHelp(
                 "filterchannel",
-                "Manages the list of channel-specific filters. NOTE: red and watch list checks are disabled for any channels on this list!",
+                "Manages the list of channel-specific filters. NOTE: watchlist checks are disabled for any channels on this list! Moderators will need to keep an eye on searches performed here!",
                 new[]
                 {
                     new AdminActionHelp("get", "", "Gets the current list of channel-specific filters."),
@@ -71,7 +72,7 @@ namespace Cloudy_Canvas.Helpers
                 }),
             new AdminSettingHelp(
                 "ignorechannel",
-                "Manages the list of channels to ignore commands from.",
+                "Manages the list of channels to ignore commands from. Cloudy will not respond in any of these channels.",
                 new[]
                 {
                     new AdminActionHelp("get", "", "Gets the current list of ignored channels."),
@@ -88,16 +89,24 @@ namespace Cloudy_Canvas.Helpers
                     new AdminActionHelp("add", "<role>", "Adds <role> to the list of ignored roles. Accepts a role ping or plain text."),
                     new AdminActionHelp("remove", "<role>", "Removes <role> from the list of ignored roles. Accepts a role ping or plain text."),
                     new AdminActionHelp("clear", "", "Clears the list of ignored roles."),
+                },
+                ReadmeNotes: new[]
+                {
+                    "Cloudy will not respond to users that have any of these roles, not even with an error message. Users with the admin role, and users on the allowed-user list, are never ignored. Role changes take effect within about 30 seconds.",
                 }),
             new AdminSettingHelp(
                 "allowuser",
-                "Manages the list of users to allow commands from.",
+                "Manages the list of users to allow commands from. This overrides the ignorechannel and ignorerole restrictions!",
                 new[]
                 {
                     new AdminActionHelp("get", "", "Gets the current list of allowed users."),
                     new AdminActionHelp("add", "<user>", "Adds <user> to the list of allowed users. Accepts a user ping or plain text."),
                     new AdminActionHelp("remove", "<user>", "Removes <user> from the list of allowed users. Accepts a user ping or plain text."),
                     new AdminActionHelp("clear", "", "Clears the list of allowed users."),
+                },
+                ReadmeNotes: new[]
+                {
+                    "Everywhere a command takes a user, channel or role you can give a ping, a name, or the ID (right-click > Copy ID with Developer Mode on), for example `;admin allowuser add 221742476153716736`.",
                 }),
             new AdminSettingHelp(
                 "watchchannel",
@@ -228,6 +237,11 @@ namespace Cloudy_Canvas.Helpers
                     "`{p}setup <filter ID> <admin channel> <admin role>`",
                     "*Only a server administrator may use this command.*",
                     "Initial bot setup. Sets <filter ID> as the public Manebooru filter to use, <admin channel> for important admin output messages, and <admin role> as users who are allowed to use admin module commands. Validates that <Filter ID> is useable and if not, uses Filter 175.",
+                },
+                ReadmeNotes: new[]
+                {
+                    "Run this before doing anything else when adding Cloudy Canvas to your server!",
+                    "Filters are viewable at `https://manebooru.art/filters/<filter ID>`. All alert channels are defaulted to the admin channel, and all alert roles and pings are turned off. The spoiler list is then built, which can take several minutes, depending on how many tags in the filter are spoilered. Please wait until it is done being built before running more commands; Cloudy will tell you when she is ready. This is a one-time process, unless manually initiated later.",
                 }),
             new HelpTopic("admin", HelpSection.Admin, true, "admin ...", AdminOverview()),
             new HelpTopic(
@@ -254,7 +268,7 @@ namespace Cloudy_Canvas.Helpers
                 {
                     "`{p}log <channel> <date>`",
                     "*Only users with the specified admin role may use this command.*",
-                    "Posts the log file from <channel> and <date> into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as YYYY-MM-DD.",
+                    "Posts the log file from <channel> and <date> into the admin channel. Accepts a channel ping or plain text. <date> must be formatted as `YYYY-MM-DD`. Logs are saved based on date in UTC.",
                 }),
             new HelpTopic(
                 "echo",
@@ -263,9 +277,10 @@ namespace Cloudy_Canvas.Helpers
                 "echo ...",
                 new[]
                 {
-                    "`{p}echo <channel> <message>`",
-                    "*Only users with the specified admin role may use this command.*",
-                    "Posts <message> to a valid <channel>. If <channel> is invalid, posts to the current channel instead. Accepts a channel ping or plain text.",
+                    "**__{p}echo Commands:__**",
+                    "*Only users with the specified admin role may use these commands.*",
+                    "`{p}echo <message>` Posts <message> to the current channel.",
+                    "`{p}echo <channel> <message>` Posts <message> to a valid <channel>. If <channel> is invalid, posts to the current channel instead. Accepts a channel ping or plain text.",
                 }),
             new HelpTopic(
                 "setprefix",
@@ -276,7 +291,11 @@ namespace Cloudy_Canvas.Helpers
                 {
                     "`{p}setprefix <prefix>`",
                     "*Only users with the specified admin role may use this command.*",
-                    "Sets the prefix in front of commands to listen for to <prefix>. Accepts a single punctuation or symbol character (not @, #, <, > or a backtick).",
+                    "Sets the prefix in front of commands to listen for to <prefix>. Accepts a single punctuation or symbol character (not `@`, `#`, `<`, `>` or a backtick).",
+                },
+                ReadmeNotes: new[]
+                {
+                    "Cloudy stays silent when a message starts with the prefix but isn't one of her commands.",
                 }),
             new HelpTopic(
                 "listentobots",
@@ -310,7 +329,7 @@ namespace Cloudy_Canvas.Helpers
                     "**__{p}alias Commands:__**",
                     "*Only users with the specified admin role may use these commands.*",
                     "Manages the list of command aliases.",
-                    "`{p}alias add <short> <long>` Sets <short> as an alias of <long>. If a command starts with <short>, <short> is replaced with <long> and the command is then processed normally. Do not include prefixes in <short> or <long>. Example: `{p}alias cute pick cute` sets `{p}cute` to run `{p}pick cute` instead. To use an alias that includes spaces, surround the entire <short> term with \"\" quotes. If an alias for <short> already exists, it replaces the previous value of <long> with the new one.",
+                    "`{p}alias add <short> <long>` Sets <short> as an alias of <long>. If a command starts with <short>, <short> is replaced with <long> and the command is then processed normally. Do not include prefixes in <short> or <long>. Example: `{p}alias add cute pick cute` sets `{p}cute` to run `{p}pick cute` instead. To use an alias that includes spaces, surround the entire <short> term with \"\" quotes. If an alias for <short> already exists, it replaces the previous value of <long> with the new one.",
                     "`{p}alias remove <short>` Removes <short> as an alias for anything.",
                     "`{p}alias get` Gets the current list of aliases.",
                     "`{p}alias clear` Clears all aliases.",
