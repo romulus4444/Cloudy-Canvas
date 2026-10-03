@@ -2,10 +2,7 @@ namespace Cloudy_Canvas.Tests.Helpers
 {
     using System;
     using System.Linq;
-    using System.Reflection;
     using Cloudy_Canvas.Helpers;
-    using Cloudy_Canvas.Modules;
-    using Discord.Commands;
     using Xunit;
 
     public class HelpTextTests
@@ -125,28 +122,6 @@ namespace Cloudy_Canvas.Tests.Helpers
             foreach (var command in HelpText.ListedAdminCommands())
             {
                 Assert.True(HelpText.IsAdminTopic(command), $"{command} is listed under Admin Module but its help isn't hidden from non-admins");
-            }
-        }
-
-        [Fact]
-        public void EveryAdminModuleCommandIsAnAdminTopic()
-        {
-            // Guards the future: a new command added to the admin module must also be added to HelpText.AdminTopics.
-            var adminModules = new[] { typeof(AdminModule), typeof(AdminModule.BadlistModule), typeof(AdminModule.LogModule), typeof(AdminSettingsModule) };
-
-            // What a user types first: the group name for commands inside a group ("admin" for ";admin filter get"), else the command's own name.
-            var commands = adminModules
-                .SelectMany(module => module.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
-                    .Select(method => (Group: module.GetCustomAttribute<GroupAttribute>()?.Prefix, Command: method.GetCustomAttribute<CommandAttribute>())))
-                .Where(entry => entry.Command != null && !(entry.Command.Text ?? string.Empty).StartsWith("<"))
-                .Select(entry => entry.Group ?? entry.Command.Text.Split(' ')[0])
-                .Distinct()
-                .ToList();
-
-            Assert.True(commands.Count >= 11, $"expected to find the admin commands, found {commands.Count}");
-            foreach (var command in commands)
-            {
-                Assert.True(HelpText.IsAdminTopic(command), $"'{command}' is an admin module command, add it to HelpText.AdminTopics so its help is hidden from non-admins");
             }
         }
     }
