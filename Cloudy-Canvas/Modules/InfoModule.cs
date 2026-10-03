@@ -38,8 +38,8 @@
             var isAdmin = await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings);
             if (!isAdmin && HelpText.IsAdminTopic(command))
             {
-                // Don't show admin commands to people who can't use them: answer exactly as for a command that doesn't exist.
-                await ReplyAsync($"Invalid command. Use `{prefix}help` for a list of available commands.");
+                // Don't show admin commands to people who can't use them; state that these are only available to admins.
+                await ReplyAsync($"Only available to bot admins. Use {prefix}help for a list of available commands.");
                 return;
             }
 
