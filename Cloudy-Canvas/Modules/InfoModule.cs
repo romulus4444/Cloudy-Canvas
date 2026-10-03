@@ -35,11 +35,18 @@
 
             await _logger.Log($"help {command} {subCommand}", Context);
 
+            var isAdmin = await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings);
+            if (!isAdmin && HelpText.IsAdminTopic(command))
+            {
+                // Don't show admin commands to people who can't use them; state that these are only available to admins.
+                await ReplyAsync($"Only available to bot admins. Use {prefix}help for a list of available commands.");
+                return;
+            }
+
             switch (command)
             {
                 case "":
-                    await ReplyAsync(
-                        $"**__All Commands:__**{Environment.NewLine}**Booru Module:**{Environment.NewLine}`{prefix}pick ...`{Environment.NewLine}`{prefix}pickrecent ...`{Environment.NewLine}`{prefix}id ...`{Environment.NewLine}`{prefix}tags ...`{Environment.NewLine}`{prefix}featured`{Environment.NewLine}`{prefix}getspoilers`{Environment.NewLine}`{prefix}report ...`{Environment.NewLine}**Admin Module:**{Environment.NewLine}`{prefix}setup ...`{Environment.NewLine}`{prefix}admin ...`{Environment.NewLine}`{prefix}watchlist ...`{Environment.NewLine}`{prefix}log ...`{Environment.NewLine}`{prefix}echo ...`{Environment.NewLine}`{prefix}setprefix ...`{Environment.NewLine}`{prefix}listentobots ...`{Environment.NewLine}`{prefix}safemode ...`{Environment.NewLine}`{prefix}alias ...`{Environment.NewLine}`{prefix}getsettings`{Environment.NewLine}`{prefix}refreshlists`{Environment.NewLine}**Info Module:**{Environment.NewLine}`{prefix}origin`{Environment.NewLine}`{prefix}about`{Environment.NewLine}{Environment.NewLine}Use `{prefix}help <command>` for more details on a particular command.");
+                    await ReplyAsync(HelpText.Overview(prefix, isAdmin));
                     break;
                 case "pick":
                     await ReplyAsync(

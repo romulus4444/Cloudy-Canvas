@@ -152,6 +152,8 @@ Manages the list of roles to ignore commands from. Cloudy will not respond to us
 
 Manages the list of users to allow commands from. This overrides the ignorechannel and ignorerole restrictions!
 
+Everywhere a command takes a user, channel or role you can give a ping, a name, or the ID (right-click > Copy ID with Developer Mode on), for example `;admin allowuser add 221742476153716736`.
+
 `;admin allowuser get` Gets the current list of allowed users.
 
 `;admin allowuser add <user>` Adds `<user>` to the list of allowed users. Accepts a user ping or plain text.
@@ -275,6 +277,6 @@ Manages the list of command aliases.
 
 ---
 
-`;help` A list of commands and descriptions, much like this page.
+`;help` A list of commands and descriptions, much like this page. The admin commands are only listed, and their help only shown, to users who can use them.
 
 ---

@@ -51,6 +51,36 @@ namespace Cloudy_Canvas.Tests.Helpers
         }
 
         [Theory]
+        [InlineData("221742476153716736", 221742476153716736UL)]
+        [InlineData("  221742476153716736  ", 221742476153716736UL)]
+        [InlineData("12345678901234567", 12345678901234567UL)] // 17 digits: the oldest ids
+        [InlineData("18446744073709551615", 18446744073709551615UL)] // 20 digits: ulong.MaxValue
+        public void BareDiscordIdsAreParsed(string text, ulong expected)
+        {
+            Assert.Equal(expected, DiscordHelper.ParseSnowflake(text));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        [InlineData(null)]
+        [InlineData("1234567890123456")] // 16 digits: too short to be an id, more likely a typo or a name
+        [InlineData("5")]
+        [InlineData("18446744073709551616")] // 20 digits but overflows ulong
+        [InlineData("99999999999999999999")]
+        [InlineData("123456789012345678901")] // 21 digits
+        [InlineData("22174247615371673x")]
+        [InlineData("-22174247615371673")]
+        [InlineData("2217424761537167.6")]
+        [InlineData("<@221742476153716736>")] // mentions have their own parsers
+        [InlineData("221742476153 716736")]
+        [InlineData("\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668\u0669\u0661\u0662\u0663\u0664\u0665\u0666\u0667\u0668")] // non-ASCII digits
+        public void ThingsThatAreNotBareIdsGiveZero(string text)
+        {
+            Assert.Equal(0UL, DiscordHelper.ParseSnowflake(text));
+        }
+
+        [Theory]
         [InlineData("2024-01-01")]
         [InlineData("123456789012345678")]
         [InlineData("some_channel-1")]
