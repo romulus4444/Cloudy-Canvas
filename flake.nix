@@ -41,7 +41,7 @@
         packages.default = cloudy;
 
         # A VM test of service.nix; it needs KVM, so only on Linux.
-        checks = nixpkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+        checks = nixpkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
           service = import ./service-test.nix self pkgs;
         };
 
