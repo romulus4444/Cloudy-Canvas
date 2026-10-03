@@ -45,6 +45,17 @@ namespace Cloudy_Canvas.Admin
             return AdminOutcome.Updated(Fill(setting.ClearFormat, Mentions.Channel(setting.Get(settings))));
         }
 
+        /// <summary>Checks a channel argument that has been resolved but not yet used; returns the problem to report, or null if it is fine.</summary>
+        public static AdminOutcome CheckChannelArgument(ulong channelId, string typed)
+        {
+            if (string.IsNullOrWhiteSpace(typed))
+            {
+                return AdminOutcome.Failure("You must specify a channel.");
+            }
+
+            return channelId == 0 ? AdminOutcome.Failure($"Invalid channel name #{typed}.") : null;
+        }
+
         // ---- a single role --------------------------------------------------------------------------------------------
 
         public static AdminOutcome GetRole(RoleSetting setting, ServerSettings settings)

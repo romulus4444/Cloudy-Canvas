@@ -37,7 +37,7 @@ namespace Cloudy_Canvas
             {
                 GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.DirectMessages | GatewayIntents.MessageContent,
             }));
-            services.AddSingleton(new CommandService());
+            services.AddSingleton(new CommandService(new CommandServiceConfig { DefaultRunMode = RunMode.Async }));
 
             services.AddHostedService<Worker>();
             services.AddHostedService<LogRetentionService>();
