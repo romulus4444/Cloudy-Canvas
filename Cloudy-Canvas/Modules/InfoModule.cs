@@ -25,7 +25,7 @@
         public async Task HelpCommandAsync([Summary("First subcommand")] string command = "", [Remainder] [Summary("Second subcommand")] string subCommand = "")
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!await DiscordHelper.CanUserRunCommandsAsync(Context, settings))
             {
                 return;
             }
@@ -35,7 +35,7 @@
 
             await _logger.Log($"help {command} {subCommand}", Context);
 
-            var isAdmin = await DiscordHelper.DoesUserHaveAdminRoleAsync(Context, settings);
+            var isAdmin = await DiscordHelper.IsBotAdminAsync(Context, settings);
             if (!isAdmin && HelpText.IsAdminTopic(command))
             {
                 // Don't show admin commands to people who can't use them; state that these are only available to admins.
@@ -195,7 +195,7 @@
         public async Task OriginCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!await DiscordHelper.CanUserRunCommandsAsync(Context, settings))
             {
                 return;
             }
@@ -210,7 +210,7 @@
         public async Task AboutCommandAsync()
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!await DiscordHelper.CanUserRunCommandsAsync(Context, settings))
             {
                 return;
             }

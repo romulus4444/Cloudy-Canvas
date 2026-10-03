@@ -307,7 +307,7 @@
         private async Task<ServerSettings> LoadAllowedSettingsAsync(bool callsBooru = true)
         {
             var settings = await FileHelper.LoadServerSettingsAsync(Context);
-            if (!await DiscordHelper.CanUserRunThisCommandAsync(Context, settings))
+            if (!await DiscordHelper.CanUserRunCommandsAsync(Context, settings))
             {
                 return null;
             }
