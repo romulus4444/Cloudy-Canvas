@@ -34,19 +34,7 @@
                 return false;
             }
 
-            // Server administrators can always use the bot's admin commands.
-            if (user.GuildPermissions.Administrator)
-            {
-                return true;
-            }
-
-            // Fail closed: until an admin role has been configured, only members who can manage the server count as admins.
-            if (settings.AdminRole == 0)
-            {
-                return user.GuildPermissions.ManageGuild;
-            }
-
-            return user.Roles.Any(x => x.Id == settings.AdminRole);
+            return AccessPolicy.IsBotAdmin(user.Roles.Select(role => role.Id).ToList(), user.GuildPermissions, settings);
         }
 
         public static bool CanUserRunThisCommand(SocketCommandContext context, ServerSettings settings)
@@ -61,36 +49,7 @@
                 return false;
             }
 
-            if (guildUser.Roles.Any(x => x.Id == settings.AdminRole))
-            {
-                return true;
-            }
-
-            foreach (var allowedUser in settings.AllowedUsers)
-            {
-                if (context.User.Id == allowedUser)
-                {
-                    return true;
-                }
-            }
-
-            foreach (var ignoredChannel in settings.IgnoredChannels)
-            {
-                if (context.Channel.Id == ignoredChannel)
-                {
-                    return false;
-                }
-            }
-
-            foreach (var ignoredRole in settings.IgnoredRoles)
-            {
-                if (guildUser.Roles.Any(x => x.Id == ignoredRole))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return AccessPolicy.CanRunCommands(guildUser.Id, context.Channel.Id, guildUser.Roles.Select(role => role.Id).ToList(), settings);
         }
 
         public static async Task<ulong> GeUserIdFromPingOrIfOnlySearchResultAsync(string userName, SocketCommandContext context)
