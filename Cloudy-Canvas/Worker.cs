@@ -158,7 +158,7 @@ namespace Cloudy_Canvas
                 settings = new ServerPreloadedSettings();
             }
 
-            var prefix = DevSettings.useDevPrefix ? DevSettings.prefix : settings.Prefix;
+            var prefix = DiscordHelper.EffectivePrefix(settings.Prefix, _settings.PrefixOverride);
             if (message.HasCharPrefix(prefix, ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos))
             {
                 if (!(settings.ListenToBots) && message.Author.IsBot)

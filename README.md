@@ -22,7 +22,21 @@ Important terms:
 
 Copy `Cloudy-Canvas/appsettings.sample.json` to `Cloudy-Canvas/appsettings.json` (that file is git-ignored; never commit it) and fill in your Discord bot `token` and, optionally, a Manebooru API `token`. Instead of a file you can use environment variables (`DiscordSettings__token`, `ManebooruSettings__token`) or, in development, `dotnet user-secrets`. On NixOS, point `services.cloudy-canvas.environmentFile` at a root-only file containing those variables.
 
-Cloudy keeps per-channel command logs (usernames, user IDs and the queries people run) under `botsettings/servers/`, which admins can fetch with `;log`. They are kept forever by default; set `LogRetention:RetentionDays` (or the `LogRetention__RetentionDays` environment variable) to delete log files older than that many days.
+Everything Cloudy stores (each server's settings and logs) lives in one folder, `botsettings` in the directory the bot is started from. Change it with `Storage:RootPath` (or `Storage__RootPath`); an absolute path works too.
+
+Cloudy keeps per-channel command logs (usernames, user IDs and the queries people run) under `<root>/servers/`, which admins can fetch with `;log`. They are kept forever by default; set `LogRetention:RetentionDays` (or the `LogRetention__RetentionDays` environment variable) to delete log files older than that many days.
+
+### Running a development copy alongside the real one
+A test copy of the bot should not share the real one's data or answer the same commands. Give it its own settings, for example in `appsettings.Development.json` (also git-ignored), user secrets, or environment variables:
+
+```json
+{
+  "Storage": { "RootPath": "devsettings" },
+  "DiscordSettings": { "token": "<the test bot's token>", "PrefixOverride": "?" }
+}
+```
+
+`Storage:RootPath` keeps its servers' settings and logs in a separate folder. `DiscordSettings:PrefixOverride` is a single punctuation or symbol character that replaces every server's prefix, so the test bot answers `?pick` while the real one keeps answering `;pick`. Leave it unset in production. (These replace the old `DevSettings.cs`, which you had to edit and recompile.)
 
 ## Commands:
 ### Booru Module:

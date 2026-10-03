@@ -1,7 +1,6 @@
 namespace Cloudy_Canvas.Tests.Helpers
 {
     using Cloudy_Canvas.Helpers;
-    using Cloudy_Canvas.Modules;
     using Xunit;
 
     public class DiscordHelperTests
@@ -124,7 +123,7 @@ namespace Cloudy_Canvas.Tests.Helpers
         [InlineData('>', false)]
         public void PrefixValidation(char prefix, bool expected)
         {
-            Assert.Equal(expected, AdminModule.IsValidPrefix(prefix));
+            Assert.Equal(expected, DiscordHelper.IsValidPrefix(prefix));
         }
     }
 }

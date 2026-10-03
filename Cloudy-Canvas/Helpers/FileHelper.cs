@@ -15,10 +15,23 @@
         private static readonly JsonFileStore<ServerSettings> ServerSettingsStore = new(true);
         private static readonly JsonFileStore<AllPreloadedSettings> PresettingsStore = new(false);
 
+        /// <summary>Where settings and logs are stored; set once at startup from the Storage:RootPath setting.</summary>
+        public static string RootPath { get; private set; } = StorageSettings.DefaultRootPath;
+
+        public static void UseRootPath(string rootPath)
+        {
+            if (string.IsNullOrWhiteSpace(rootPath))
+            {
+                throw new ArgumentException("Storage:RootPath must not be empty.", nameof(rootPath));
+            }
+
+            RootPath = rootPath;
+        }
+
         public static string SetUpFilepath(FilePathType type, string filename, string extension, SocketCommandContext context = null, string logChannel = "", string date = "")
         {
             //Root
-            var filepath = DevSettings.RootPath;
+            var filepath = RootPath;
             CreateDirectoryIfNotExists(filepath);
 
             //Server
