@@ -32,4 +32,10 @@ jobs:
       - name: Build
         run: dotnet build --configuration Release --no-restore
       - name: Test
-        run: dotnet test --configuration Release --no-build --verbosity normal
+        run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage" --results-directory TestResults
+      - name: Coverage summary
+        # Shows line coverage per class on the run's summary page and fails if the total drops below the floor.
+        # Raise the floor as coverage improves; the classes that need a live Discord connection are checked by hand.
+        run: |
+          report=$(find TestResults -name coverage.cobertura.xml | head -n 1)
+          { echo "## Test coverage"; echo; python3 .github/scripts/coverage_summary.py "$report" --threshold 55; } >> "$GITHUB_STEP_SUMMARY"
