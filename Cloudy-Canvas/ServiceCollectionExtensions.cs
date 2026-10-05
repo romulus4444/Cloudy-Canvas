@@ -33,15 +33,25 @@ namespace Cloudy_Canvas
             services.AddSingleton<LoggingService>();
             services.AddSingleton<CooldownService>();
             services.AddSingleton(presettings);
-            services.AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
-            {
-                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.DirectMessages | GatewayIntents.MessageContent,
-            }));
+            services.AddSingleton(new DiscordSocketClient(ClientConfig()));
             services.AddSingleton(new CommandService(new CommandServiceConfig { DefaultRunMode = RunMode.Async }));
 
             services.AddHostedService<Worker>();
             services.AddHostedService<LogRetentionService>();
             return services;
+        }
+
+        /// <summary>
+        /// What the bot asks Discord for. PRIVACY.md describes exactly this: no member list or presence, and no cache of messages.
+        /// A test pins both, so widening either means updating the privacy policy first.
+        /// </summary>
+        public static DiscordSocketConfig ClientConfig()
+        {
+            return new DiscordSocketConfig
+            {
+                GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMessages | GatewayIntents.DirectMessages | GatewayIntents.MessageContent,
+                MessageCacheSize = 0,
+            };
         }
     }
 }
