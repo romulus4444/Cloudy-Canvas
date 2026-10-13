@@ -6,7 +6,7 @@ A Discord bot for interfacing with the [Manebooru](https://manebooru.art/) image
 
 Written by ([@romulus4444](https://github.com/romulus4444) on Discord) in C# using Discord.net and hosted on the Manebooru server. Special thanks to Ember Heartshine and CULTPONY.
 
-Interested in adding Cloudy to your own server? Click [here](https://discord.com/api/oauth2/authorize?client_id=828682017868218445&permissions=515396463680&scope=bot) to add her! Please make sure you run the setup command once you do!
+Interested in adding Cloudy to your own server? Click [here](https://discord.com/api/oauth2/authorize?client_id=828682017868218445&permissions=515396463680&scope=bot) to add her! Please make sure you run the setup command once you do! The [privacy policy](PRIVACY.md) explains what information Cloudy handles.
 
 Cloudy Canvas's profile picture was drawn by me and can be found [here](https://manebooru.art/images/4010266).
 
@@ -30,7 +30,7 @@ Everything Cloudy stores (each server's settings and logs) lives in one folder, 
 
 ### What Cloudy stores
 
-Everything is in the storage folder described above. There is no database, and nothing is sent anywhere except to Discord and to Manebooru. Discord asks the people who run bots to be open about how they handle user data; this list describes what the code does, as a starting point for that, and is not a privacy policy itself.
+Everything is in the storage folder described above. There is no database, and nothing is sent anywhere except to Discord and to Manebooru. This list is the technical detail behind the [privacy policy](PRIVACY.md), which is the document to read (and to adapt, if you run your own copy) for what is kept, why, for how long, and how to have it removed.
 
 - **Settings.** `preloadedsettings.conf` holds, for each server (and for each user who has sent Cloudy a direct message), its name or username, prefix, command aliases and whether to answer other bots, plus the admin channel of each server. `servers/<server id>/settings.conf` holds the server's filter, its admin, alert and log channels and roles, the ignored channel and role IDs, the allowed user IDs, the watchlist, safe mode and the spoiler tag list.
 - **Console log.** Every command is written to the console (the journal, when run as a systemd service): the time, the server and channel names and IDs, the sender's username and ID, and the text of the command, including search queries. How long it is kept depends on where the console output goes. Line breaks in what people type are written out as `\n`, so a message cannot add lines to the log.
