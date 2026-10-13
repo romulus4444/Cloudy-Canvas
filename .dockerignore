@@ -1,0 +1,9 @@
+# Only Cloudy-Canvas/ is copied into the image; everything else is kept out of the build context.
+*
+!Cloudy-Canvas/
+Cloudy-Canvas/bin/
+Cloudy-Canvas/obj/
+Cloudy-Canvas/botsettings/
+Cloudy-Canvas/devsettings/
+Cloudy-Canvas/appsettings*.json
+!Cloudy-Canvas/appsettings.sample.json

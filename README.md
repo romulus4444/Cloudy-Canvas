@@ -43,6 +43,19 @@ Cloudy does not delete a server's data when she is removed from it. To delete it
 
 To report a security problem, see [SECURITY.md](SECURITY.md).
 
+### Running in a container
+
+Each release (a `v1.2.3` tag) publishes an image to `ghcr.io/romulus4444/cloudy-canvas` for x86-64 and ARM64. It runs as a non-root user, has no shell, and keeps its data in `/data`, which must be a writable volume owned by UID 1654:
+
+```sh
+docker volume create cloudy-data
+docker run --rm -v cloudy-data:/data busybox chown 1654:1654 /data
+docker run -d --name cloudy-canvas --restart unless-stopped --read-only --tmpfs /tmp --cap-drop ALL \
+  -e DiscordSettings__token=... -v cloudy-data:/data ghcr.io/romulus4444/cloudy-canvas:latest
+```
+
+Kubernetes manifests are in [`deploy/kubernetes`](deploy/kubernetes/README.md); each release also publishes them, pinned to that release's image, as an OCI artifact that a cluster can follow.
+
 ### Running on NixOS
 
 The flake provides a NixOS module that runs Cloudy as a systemd service. The module is per system, so on x86-64 Linux with a flake-based configuration:

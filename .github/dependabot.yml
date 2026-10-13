@@ -21,3 +21,13 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+
+  # Keeps the digests of the .NET base images in the Dockerfile current, so the image picks up security fixes.
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    groups:
+      dotnet-images:
+        patterns:
+          - "dotnet/*"
