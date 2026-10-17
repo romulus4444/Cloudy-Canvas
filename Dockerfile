@@ -2,7 +2,7 @@
 
 # The build stage runs on the build machine's own architecture. The bot is published as portable IL (no runtime identifier),
 # so the same output runs on every architecture the runtime image supports, and restore matches packages.lock.json exactly.
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-noble@sha256:e70cdb7f80b0348f5cb85f19a8f670fca061f033d57eed12fa003d58b0e06317 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-noble@sha256:0d99ebf1ccad15037b5c98c9fe8979d6b8dbac23812feae2277a0b277b5c5ffa AS build
 WORKDIR /src
 
 COPY Cloudy-Canvas/Cloudy-Canvas.csproj Cloudy-Canvas/packages.lock.json Cloudy-Canvas/
@@ -23,7 +23,7 @@ RUN --mount=type=cache,target=/root/.nuget/packages \
 
 # Chiseled image: no shell, no package manager, runs as the non-root "app" user (UID/GID 1654).
 # The -extra variant includes ICU and tzdata, which the bot needs because it does not run in invariant globalization mode.
-FROM mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra@sha256:b18ef5184a6afa186bdeb51cfff41751ab9f7daec068f1419af0982a0964ba90
+FROM mcr.microsoft.com/dotnet/runtime:10.0-noble-chiseled-extra@sha256:11f4c921d75b7a1f19d4eb5b7069f9e92a9d1b8412a04b3475a664b62a9b88cb
 
 LABEL org.opencontainers.image.title="Cloudy Canvas" \
       org.opencontainers.image.description="Discord bot for the Manebooru imageboard" \
